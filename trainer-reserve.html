@@ -9,50 +9,48 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
-
-/* TOPBAR */
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid #e5e5e5;position:sticky;top:0;background:#fff;z-index:50;}
-.logo{font-size:15px;font-weight:700;color:#1a1a1a;letter-spacing:-.3px;}
-.logo .reserve{color:#c2410c;}
-.mode-toggle{display:flex;gap:3px;background:#f5f5f5;padding:3px;border-radius:8px;}
-.mode-btn{padding:4px 11px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;background:transparent;color:#666;transition:all .15s;}
-.mode-btn.active{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,.1);}
-
-/* LOADING */
-.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);display:none;align-items:center;justify-content:center;z-index:997;font-size:14px;color:#666;}
-
-/* PASSWORD SCREEN */
-.pw-screen{position:fixed;inset:0;background:#fff;z-index:998;display:flex;align-items:center;justify-content:center;}
-.pw-box{background:#fff;border:0.5px solid #e5e5e5;border-radius:16px;padding:32px 28px;width:min(340px,90vw);box-shadow:0 4px 24px rgba(0,0,0,.08);}
-.pw-logo{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);display:none;align-items:center;justify-content:center;z-index:999;font-size:14px;color:#666;}
+.login-screen{position:fixed;inset:0;background:#fff;z-index:998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.login-logo{font-size:24px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+.login-logo span{color:#c2410c;}
+.login-sub{font-size:13px;color:#999;margin-bottom:32px;}
+.login-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:340px;}
+.login-card{border-radius:16px;padding:24px 16px;cursor:pointer;transition:all .15s;text-align:center;border:2px solid transparent;}
+.lc-trainer{background:#fff7ed;border-color:#fed7aa;}
+.lc-trainer:hover{background:#ffedd5;border-color:#f97316;}
+.lc-client{background:#f0fdf4;border-color:#bbf7d0;}
+.lc-client:hover{background:#dcfce7;border-color:#22c55e;}
+.lc-icon{font-size:32px;margin-bottom:10px;}
+.lc-name{font-size:14px;font-weight:700;color:#1a1a1a;}
+.lc-sub{font-size:11px;color:#666;margin-top:3px;}
+.pw-screen{position:fixed;inset:0;background:#fff;z-index:998;display:none;align-items:center;justify-content:center;}
+.pw-box{background:#fff;border:0.5px solid #e5e5e5;border-radius:16px;padding:32px 28px;width:min(340px,90vw);}
+.pw-logo{font-size:18px;font-weight:700;margin-bottom:4px;}
 .pw-logo span{color:#c2410c;}
 .pw-sub{font-size:12px;color:#666;margin-bottom:24px;}
-.pw-label{font-size:11px;font-weight:600;color:#666;margin-bottom:5px;display:block;}
-.pw-input{width:100%;padding:10px 12px;border:0.5px solid #e5e5e5;border-radius:8px;font-size:14px;margin-bottom:6px;background:#fff;color:#1a1a1a;}
-.pw-input:focus{outline:none;border-color:#c2410c;box-shadow:0 0 0 2px rgba(194,65,12,.1);}
+.pw-input{width:100%;padding:10px 12px;border:0.5px solid #e5e5e5;border-radius:8px;font-size:14px;margin-bottom:6px;}
+.pw-input:focus{outline:none;border-color:#c2410c;}
 .pw-err{font-size:11px;color:#e94560;margin-bottom:12px;min-height:16px;}
 .pw-btn{width:100%;padding:11px;background:#c2410c;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;}
-.pw-btn:hover{opacity:.88;}
-.pw-bypass{text-align:center;margin-top:14px;font-size:11px;color:#999;}
-.pw-bypass a{color:#666;cursor:pointer;text-decoration:underline;}
-
-/* WEEK BAR */
-.week-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:0.5px solid #e5e5e5;}
-.wbtn{background:#f5f5f5;border:.5px solid #e5e5e5;border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#666;display:flex;align-items:center;justify-content:center;}
-.wbtn:hover{color:#1a1a1a;}
-.wlbl{font-size:12px;font-weight:600;color:#1a1a1a;}
-
-/* MODE SELECTOR */
+.pw-back{text-align:center;margin-top:12px;font-size:11px;color:#999;cursor:pointer;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid #e5e5e5;position:sticky;top:0;background:#fff;z-index:50;}
+.logo{font-size:15px;font-weight:700;}
+.logo span{color:#c2410c;}
+.tbadge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;}
+.tbadge-t{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.tbadge-c{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;}
+.logout-btn{font-size:11px;color:#999;background:none;border:none;cursor:pointer;padding:4px 8px;}
+.t-tabs{display:flex;border-bottom:0.5px solid #e5e5e5;position:sticky;top:44px;background:#fff;z-index:40;}
+.t-tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:#666;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;}
+.t-tab.active{color:#c2410c;border-bottom-color:#c2410c;}
 .mode-selector{display:flex;gap:8px;padding:10px 14px;border-bottom:0.5px solid #e5e5e5;background:#f5f5f5;}
-.msel-btn{flex:1;padding:10px 8px;border-radius:9px;border:2px solid #e5e5e5;cursor:pointer;font-size:12px;font-weight:700;text-align:center;transition:all .15s;background:#fff;color:#666;}
+.msel-btn{flex:1;padding:10px 8px;border-radius:9px;border:2px solid #e5e5e5;cursor:pointer;font-size:12px;font-weight:700;text-align:center;background:#fff;color:#666;}
 .msel-btn .msel-icon{font-size:16px;display:block;margin-bottom:3px;}
-.msel-btn.mode-add{border-color:#f59e0b;color:#92400e;background:#fffbeb;}
-.msel-btn.mode-add.active{background:#f59e0b;color:#fff;border-color:#f59e0b;box-shadow:0 2px 8px rgba(245,158,11,.3);}
-.msel-btn.mode-off{border-color:#f43f5e;color:#9f1239;background:#fff1f2;}
-.msel-btn.mode-off.active{background:#f43f5e;color:#fff;border-color:#f43f5e;box-shadow:0 2px 8px rgba(244,63,94,.3);}
 .msel-hint{font-size:10px;display:block;margin-top:1px;opacity:.8;}
-
-/* ACTION TOOLBAR */
+.msel-btn.mode-add{border-color:#f59e0b;color:#92400e;background:#fffbeb;}
+.msel-btn.mode-add.active{background:#f59e0b;color:#fff;}
+.msel-btn.mode-off{border-color:#f43f5e;color:#9f1239;background:#fff1f2;}
+.msel-btn.mode-off.active{background:#f43f5e;color:#fff;}
 .action-toolbar{display:none;padding:8px 14px;border-bottom:1px solid;flex-wrap:wrap;gap:6px;align-items:center;}
 .action-toolbar.active{display:flex;}
 .at-add{background:#fffbeb;border-color:#fde68a;}
@@ -60,249 +58,227 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .at-count{font-size:12px;font-weight:700;white-space:nowrap;}
 .at-add .at-count{color:#92400e;}.at-off .at-count{color:#9f1239;}
 .at-chips{display:flex;gap:4px;flex-wrap:wrap;}
-.atc{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .12s;white-space:nowrap;}
+.atc{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;white-space:nowrap;}
 .atc-pm{background:#dbeafe;border-color:#93c5fd;color:#1e40af;}
 .atc-py{background:#fef9c3;border-color:#fde047;color:#854d0e;}
 .atc-te{background:#fce7f3;border-color:#f9a8d4;color:#9d174d;}
 .atc-ty{background:#d1fae5;border-color:#6ee7b7;color:#065f46;}
 .atc-rm{background:#fee2e2;border-color:#fca5a5;color:#991b1b;}
 .atc-off{background:#ffe4e6;border-color:#fda4af;color:#9f1239;}
-.at-done{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:transparent;border:1px solid #e5e5e5;color:#666;white-space:nowrap;}
-
-/* STATS */
+.at-done{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:transparent;border:1px solid #e5e5e5;color:#666;}
 .stats-bar{display:flex;gap:8px;padding:8px 14px;border-bottom:0.5px solid #e5e5e5;}
 .stat-pill{flex:1;background:#f5f5f5;border-radius:8px;padding:6px 10px;display:flex;align-items:center;justify-content:space-between;}
 .stat-num{font-size:18px;font-weight:700;line-height:1;}
 .stat-lbl{font-size:10px;color:#666;}
 .sp-avail .stat-num{color:#16a34a;}.sp-booked .stat-num{color:#e94560;}
-
-/* LEGEND */
 .legend-bar{display:flex;gap:8px;padding:6px 14px;border-bottom:0.5px solid #e5e5e5;flex-wrap:wrap;}
 .li{display:flex;align-items:center;gap:4px;font-size:10px;color:#666;}
-.ld{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
-
-/* CALENDAR */
+.ld{width:9px;height:9px;border-radius:2px;}
+.week-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:0.5px solid #e5e5e5;}
+.wbtn{background:#f5f5f5;border:.5px solid #e5e5e5;border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#666;display:flex;align-items:center;justify-content:center;}
+.wlbl{font-size:12px;font-weight:600;}
 .cal-outer{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.cal-inner{padding:8px 10px;min-width:320px;}
-.cal-head{display:grid;gap:1px;margin-bottom:2px;}
-.cdh{text-align:center;padding:3px 1px;position:relative;border-radius:4px;transition:background .12s;}
-.cdn{font-size:9px;color:#999;font-weight:500;letter-spacing:.3px;}
-.cdd{font-size:13px;font-weight:600;color:#1a1a1a;}
+.cal-inner{padding:6px 8px;min-width:320px;}
+.cal-head{display:grid;margin-bottom:2px;}
+.cdh{text-align:center;padding:3px 1px;position:relative;}
+.cdn{font-size:9px;color:#999;font-weight:500;}
+.cdd{font-size:13px;font-weight:600;}
 .cdd.today{color:#e94560;}
-.cdh.off-mode-hover:hover{background:#fff1f2;cursor:pointer;}
 .cdh.day-off .cdd{color:#f43f5e;}
-.cdh.day-off .cdn{opacity:.6;color:#f43f5e;}
 .dob{display:none;position:absolute;bottom:1px;left:3px;right:3px;height:2px;background:#f43f5e;border-radius:1px;}
 .cdh.day-off .dob{display:block;}
-.cal-body{display:grid;gap:1px;}
-.tlbl{font-size:8px;color:#999;text-align:right;padding-right:3px;padding-top:3px;line-height:1.2;}
-.cell{display:flex;flex-direction:column;gap:1px;}
-
-/* SLOTS */
-.slot{border-radius:3px;height:24px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:600;transition:background .08s,border .08s;border:1px solid transparent;overflow:hidden;padding:0 2px;white-space:nowrap;}
-.slot.t-empty{background:#f5f5f5;opacity:.15;cursor:default;}
-.slot.t-idle{background:#f5f5f5;border:.5px solid #e5e5e5;opacity:.4;cursor:default;}
-.slot.t-idle-add{background:#fef9c3;border:.5px dashed #fbbf24;opacity:.7;cursor:pointer;}
-.slot.t-idle-add:hover{opacity:1;}
-.slot.t-idle-off{background:#fff1f2;border:.5px dashed #fda4af;opacity:.7;cursor:pointer;}
-.slot.t-idle-off:hover{opacity:1;}
-.slot.t-sel-add{background:#f59e0b !important;border:2px solid #d97706 !important;opacity:1 !important;}
-.slot.t-sel-off{background:#f43f5e !important;border:2px solid #be123c !important;opacity:1 !important;}
-.slot.t-avail{background:#dcfce7;border-color:#86efac;cursor:pointer;}
-.slot.t-avail-add{background:#dcfce7;border:2px dashed #fbbf24;cursor:pointer;}
-.slot.t-avail-off{background:#dcfce7;border:2px dashed #fda4af;cursor:pointer;}
-.slot.t-avail:hover,.slot.t-avail-add:hover,.slot.t-avail-off:hover{filter:brightness(.93);}
-.slot.t-off{background:#ffe4e6;border:.5px solid #fda4af;cursor:pointer;}
-.slot.t-dayoff{background:#ffe4e6;border:.5px solid #fda4af;cursor:default;opacity:.6;}
-.slot.t-bk-m{background:#dbeafe;border-color:#93c5fd;cursor:pointer;}
-.slot.t-bk-y{background:#fef9c3;border-color:#fde047;cursor:pointer;}
-.slot.t-bk-e{background:#fce7f3;border-color:#f9a8d4;cursor:pointer;}
-.slot.t-bk-m:hover,.slot.t-bk-y:hover,.slot.t-bk-e:hover{filter:brightness(.96);}
+.cdh.off-mode-hover:hover{background:#fff1f2;cursor:pointer;border-radius:4px;}
+.cal-body{display:grid;border-top:1px solid #e8e8e8;border-left:1px solid #e8e8e8;}
+.tlbl{font-size:8px;color:#bbb;text-align:right;padding:3px 4px 0 0;display:flex;align-items:flex-start;justify-content:flex-end;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;height:40px;background:#fafafa;}
+.cdd.sat{color:#1e40af;}
+.cdd.sun{color:#e94560;}
+.cdn.sat{color:#93c5fd;}
+.cdn.sun{color:#fca5a5;}
+.slot-cell{border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;padding:2px;height:40px;display:flex;}
+.slot{border-radius:4px;flex:1;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:600;border:1px solid transparent;overflow:hidden;padding:0 2px;cursor:default;}
+.t-empty{background:transparent;}
+.t-idle{background:#f5f5f5;border:.5px solid #efefef;opacity:.5;}
+.t-idle-add{background:#fef9c3;border:.5px dashed #fbbf24;opacity:.8;cursor:pointer;}
+.t-idle-off{background:#fff1f2;border:.5px dashed #fda4af;opacity:.8;cursor:pointer;}
+.t-sel-add{background:#f59e0b !important;border:2px solid #d97706 !important;}
+.t-sel-off{background:#f43f5e !important;border:2px solid #be123c !important;}
+.t-avail{background:#dcfce7;border-color:#86efac;cursor:pointer;}
+.t-avail-add{background:#dcfce7;border:2px dashed #fbbf24;cursor:pointer;}
+.t-avail-off{background:#dcfce7;border:2px dashed #fda4af;cursor:pointer;}
+.t-avail:hover,.t-avail-add:hover,.t-avail-off:hover{filter:brightness(.93);}
+.t-off{background:#ffe4e6;border:.5px solid #fda4af;}
+.t-dayoff{background:#ffe4e6;opacity:.5;}
+.t-bk-m{background:#dbeafe;border-color:#93c5fd;cursor:pointer;}
+.t-bk-y{background:#fef9c3;border-color:#fde047;cursor:pointer;}
+.t-bk-e{background:#fce7f3;border-color:#f9a8d4;cursor:pointer;}
+.t-bk-m:hover,.t-bk-y:hover,.t-bk-e:hover{filter:brightness(.96);}
 .bl-m{color:#1e40af;}.bl-y{color:#854d0e;}.bl-e{color:#9d174d;}
-.x-off{font-size:9px;color:#f43f5e;font-weight:700;}
-.slot.c-avail{background:#dcfce7;border-color:#86efac;color:#166534;cursor:pointer;}
-.slot.c-avail:hover{filter:brightness(.93);}
-.slot.c-mine{background:#16a34a;border-color:#15803d;cursor:pointer;}
-.slot.c-booked{background:#f5f5f5;border:.5px solid #e5e5e5;opacity:.4;cursor:default;}
-.slot.c-off{background:#ffe4e6;border:.5px solid #fda4af;cursor:default;}
-.slot.c-empty{background:#f5f5f5;opacity:.12;cursor:default;}
+.x-off{font-size:9px;color:#fda4af;font-weight:700;}
+.x-bk{font-size:9px;color:#d1d5db;font-weight:700;}
+.c-empty{background:transparent;}
+.c-off{background:#fff0f0;border:.5px solid #fecaca;}
+.c-booked{background:#f3f4f6;border:.5px solid #e5e7eb;}
+.c-mine{background:#16a34a;border-color:#15803d;cursor:pointer;}
+.c-avail{background:#dcfce7;border-color:#86efac;cursor:pointer;}
+.c-avail:hover{filter:brightness(.93);}
 .slot-tags{display:flex;flex-wrap:wrap;gap:1px;justify-content:center;align-items:center;}
 .stag{font-size:7px;font-weight:700;padding:0 2px;border-radius:2px;line-height:1.5;white-space:nowrap;}
 .stag-pm{background:#dbeafe;color:#1e40af;}
 .stag-py{background:#fef9c3;color:#854d0e;}
 .stag-te{background:#fce7f3;color:#9d174d;}
 .stag-ty{background:#d1fae5;color:#065f46;}
-
-/* TRAINER TABS */
-.t-tabs{display:flex;border-bottom:0.5px solid #e5e5e5;background:#fff;position:sticky;top:44px;z-index:40;}
-.t-tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:#666;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
-.t-tab.active{color:#c2410c;border-bottom-color:#c2410c;}
-
-/* CLIENT MGMT */
 .cm-wrap{padding:12px 14px;}
-.cm-search{width:100%;padding:8px 12px;border:0.5px solid #e5e5e5;border-radius:8px;font-size:13px;margin-bottom:12px;background:#fff;color:#1a1a1a;}
+.cm-search{width:100%;padding:8px 12px;border:0.5px solid #e5e5e5;border-radius:8px;font-size:13px;margin-bottom:12px;background:#fff;}
 .cm-search:focus{outline:none;border-color:#c2410c;}
-.cm-card{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .12s;}
+.cm-card{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;}
 .cm-card:hover{border-color:#c2410c;}
 .cm-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
-.cm-name{font-size:14px;font-weight:500;color:#1a1a1a;}
-.cm-ticket{font-size:13px;font-weight:700;}
-.cm-ticket.ok{color:#16a34a;}
-.cm-ticket.low{color:#f59e0b;}
-.cm-ticket.none{color:#e94560;}
+.cm-name{font-size:14px;font-weight:500;}
+.cm-tk-ok{color:#16a34a;font-size:13px;font-weight:700;}
+.cm-tk-low{color:#f59e0b;font-size:13px;font-weight:700;}
+.cm-tk-none{color:#e94560;font-size:13px;font-weight:700;}
 .cm-email{font-size:11px;color:#666;}
 .cm-add-btn{width:100%;padding:11px;background:#c2410c;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:12px;}
-.cm-add-btn:hover{opacity:.88;}
-
-/* CLIENT SELECT */
-#client-screen{display:none;}
-.cs-wrap{padding:20px 16px;}
-.cs-step{font-size:10px;font-weight:600;color:#666;letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px;}
-.cs-title{font-size:17px;font-weight:700;color:#1a1a1a;margin-bottom:16px;}
-.cs-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
-.cs-card{border:2px solid #e5e5e5;border-radius:12px;padding:14px 12px;cursor:pointer;transition:all .15s;background:#fff;}
-.cs-card:hover,.cs-card:active{border-color:#e94560;transform:translateY(-1px);}
-.cs-card.selected{border-color:#e94560;background:#fff1f2;}
-.cs-card-icon{font-size:20px;margin-bottom:6px;}
-.cs-card-name{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:2px;}
-.cs-card-sub{font-size:10px;color:#666;}
-.cs-card.selected .cs-card-name{color:#e94560;}
-.cs-locs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
-.cs-loc{padding:8px 16px;border-radius:99px;border:2px solid #e5e5e5;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#666;transition:all .15s;}
-.cs-loc.selected{background:#e94560;border-color:#e94560;color:#fff;}
-.cs-loc.unavail{opacity:.3;pointer-events:none;}
-.cs-bar{background:#f5f5f5;border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.cs-bar-info{font-size:11px;color:#666;}
-.cs-bar-info b{color:#1a1a1a;font-size:12px;}
-.go-btn{padding:10px 18px;background:#e94560;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
-.go-btn:disabled{opacity:.3;cursor:default;}
-#client-cal{display:none;}
-.ccal-header{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:0.5px solid #e5e5e5;background:#f5f5f5;}
-.back-btn{background:#fff;border:.5px solid #e5e5e5;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;color:#666;white-space:nowrap;}
+.mypage-wrap{padding:14px;}
+.my-email-inp{width:100%;padding:10px 12px;border:0.5px solid #e5e5e5;border-radius:8px;font-size:13px;margin-bottom:8px;}
+.my-email-inp:focus{outline:none;border-color:#16a34a;}
+.my-btn{width:100%;padding:10px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:16px;}
+.my-remain-card{background:#f0fdf4;border:0.5px solid #bbf7d0;border-radius:12px;padding:14px;margin-bottom:14px;text-align:center;}
+.my-remain-num{font-size:36px;font-weight:700;color:#16a34a;line-height:1;}
+.my-bk-card{background:#fff;border:0.5px solid #e5e5e5;border-radius:10px;padding:10px 12px;margin-bottom:6px;}
+.panel{position:fixed;right:0;top:0;bottom:0;width:min(300px,100vw);background:#fff;border-left:.5px solid #e5e5e5;padding:18px 16px;transform:translateX(110%);transition:transform .25s;z-index:200;overflow-y:auto;}
+.panel.open{transform:translateX(0);}
+.pcl{position:absolute;top:12px;right:12px;background:#f5f5f5;border:.5px solid #e5e5e5;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;color:#666;display:flex;align-items:center;justify-content:center;}
+.ptitle{font-size:14px;font-weight:700;margin-bottom:2px;padding-right:28px;}
+.psub{font-size:11px;color:#666;margin-bottom:14px;}
+.fgrp{margin-bottom:12px;}
+.flbl{font-size:11px;font-weight:600;color:#666;margin-bottom:4px;display:block;}
+.finp{width:100%;padding:8px 10px;border:.5px solid #e5e5e5;border-radius:8px;font-size:13px;}
+.finp:focus{outline:none;border-color:#c2410c;}
+.bp{width:100%;padding:10px;background:#e94560;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:4px;}
+.bd{width:100%;padding:9px;background:transparent;color:#e94560;border:1.5px solid #e94560;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;}
+.infor{display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid #e5e5e5;font-size:12px;gap:8px;}
+.infor:last-child{border-bottom:none;}
+.ik{color:#666;white-space:nowrap;flex-shrink:0;}
+.iv{font-weight:500;text-align:right;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:199;display:none;}
+.overlay.show{display:block;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:#1a1a2e;color:#fff;padding:9px 16px;border-radius:10px;font-size:12px;font-weight:500;transition:transform .25s;z-index:300;text-align:center;max-width:90vw;}
+.toast.show{transform:translateX(-50%) translateY(0);}
 .ctag{padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;}
 .tag-pilates{background:#dbeafe;color:#1e40af;}
 .tag-training{background:#fce7f3;color:#9d174d;}
 .tag-meguro{background:#dbeafe;color:#1e40af;}
 .tag-yokohama{background:#fef9c3;color:#854d0e;}
 .tag-ebisu{background:#fce7f3;color:#9d174d;}
-
-/* PANEL */
-.panel{position:fixed;right:0;top:0;bottom:0;width:min(300px,100vw);background:#fff;border-left:.5px solid #e5e5e5;padding:18px 16px;transform:translateX(110%);transition:transform .25s ease;z-index:200;overflow-y:auto;}
-.panel.open{transform:translateX(0);}
-.pcl{position:absolute;top:12px;right:12px;background:#f5f5f5;border:.5px solid #e5e5e5;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;color:#666;display:flex;align-items:center;justify-content:center;}
-.ptitle{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:2px;padding-right:28px;}
-.psub{font-size:11px;color:#666;margin-bottom:14px;}
-.fgrp{margin-bottom:12px;}
-.flbl{font-size:11px;font-weight:600;color:#666;margin-bottom:4px;display:block;}
-.finp{width:100%;padding:8px 10px;border:.5px solid #e5e5e5;border-radius:8px;font-size:13px;background:#fff;color:#1a1a1a;}
-.finp:focus{outline:none;border-color:#e94560;box-shadow:0 0 0 2px rgba(233,69,96,.1);}
-.bp{width:100%;padding:10px;background:#e94560;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:4px;}
-.bp:hover{opacity:.88;}
-.bd{width:100%;padding:9px;background:transparent;color:#e94560;border:1.5px solid #e94560;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;}
-.bd:hover{background:#fee2e2;}
-.infor{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:.5px solid #e5e5e5;font-size:12px;gap:8px;}
-.infor:last-child{border-bottom:none;}
-.ik{color:#666;white-space:nowrap;flex-shrink:0;}
-.iv{color:#1a1a1a;font-weight:500;text-align:right;}
-.mail-preview{background:#f5f5f5;border-radius:9px;padding:12px 14px;margin:10px 0;font-size:11px;color:#666;line-height:1.7;}
-.mail-preview h4{font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
-.mail-to{font-size:10px;background:#fff;border-radius:5px;padding:3px 8px;margin-bottom:8px;color:#666;}
-
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:199;display:none;}
-.overlay.show{display:block;}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:#1a1a2e;color:#fff;padding:9px 16px;border-radius:10px;font-size:12px;font-weight:500;transition:transform .25s;z-index:300;text-align:center;max-width:90vw;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-
 #trainer-screen{display:none;}
+#client-screen{display:none;}
+#topbar{display:none;}
 </style>
 </head>
 <body>
-
 <div id="loading" class="loading-overlay">読み込み中...</div>
 
-<!-- PASSWORD SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-logo">Trainer <span>Reserve</span></div>
+  <div class="login-sub">お選びください</div>
+  <div class="login-cards">
+    <div class="login-card lc-trainer" onclick="goTrainerPw()">
+      <div class="lc-icon">🏋️</div>
+      <div class="lc-name">トレーナー</div>
+      <div class="lc-sub">管理画面へ</div>
+    </div>
+    <div class="login-card lc-client" onclick="goClientMode()">
+      <div class="lc-icon">🙋</div>
+      <div class="lc-name">お客様</div>
+      <div class="lc-sub">予約・確認</div>
+    </div>
+  </div>
+</div>
+
+<div class="pw-screen" id="client-login-screen">
+  <div class="pw-box">
+    <div class="pw-logo">Trainer <span>Reserve</span></div>
+    <div class="pw-sub">メールアドレスでログイン</div>
+    <label class="flbl">メールアドレス</label>
+    <input class="pw-input" id="cl-email-inp" type="email" placeholder="yourmail@example.com">
+    <div class="pw-err" id="cl-email-err"></div>
+    <button class="pw-btn" style="background:#16a34a" onclick="doClientLogin()">入る</button>
+    <div class="pw-back" onclick="backToLogin()">← 戻る</div>
+  </div>
+</div>
+
 <div class="pw-screen" id="pw-screen">
   <div class="pw-box">
     <div class="pw-logo">Trainer <span>Reserve</span></div>
     <div class="pw-sub">トレーナー専用ログイン</div>
-    <label class="pw-label">パスワード</label>
+    <label class="flbl">パスワード</label>
     <input class="pw-input" id="pw-input" type="password" placeholder="パスワードを入力">
     <div class="pw-err" id="pw-err"></div>
     <button class="pw-btn" id="pw-btn">ログイン</button>
-    <div class="pw-bypass"><a id="client-link" style="cursor:pointer">お客様はこちら →</a></div>
+    <div class="pw-back" onclick="backToLogin()">← 戻る</div>
   </div>
 </div>
 
-<div class="topbar" id="topbar" style="display:none">
-  <div class="logo">Trainer <span class="reserve">Reserve</span></div>
-  <div class="mode-toggle" id="mode-toggle-btns">
-    <button class="mode-btn active" id="btn-trainer" onclick="setMode('trainer')">トレーナー</button>
-    <button class="mode-btn" id="btn-client" onclick="setMode('client')">お客様</button>
+<div class="topbar" id="topbar">
+  <div class="logo">Trainer <span>Reserve</span></div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span class="tbadge" id="topbar-badge"></span>
+    <button class="logout-btn" onclick="backToLogin()">ログアウト</button>
   </div>
 </div>
 
-<!-- TRAINER -->
 <div id="trainer-screen">
   <div class="t-tabs">
     <button class="t-tab active" id="ttab-cal" onclick="switchTTab('cal')">カレンダー</button>
     <button class="t-tab" id="ttab-clients" onclick="switchTTab('clients')">お客様管理</button>
   </div>
-
-  <!-- カレンダータブ -->
   <div id="ttab-cal-content">
-  <div class="mode-selector">
-    <button class="msel-btn mode-add" id="msel-add" onclick="toggleSelMode()">
-      <span class="msel-icon">＋</span>空き枠を追加
-      <span class="msel-hint">タップして選択モードへ</span>
-    </button>
-    <button class="msel-btn mode-off" id="msel-off" onclick="toggleOffMode()">
-      <span class="msel-icon">✕</span>対応不可を設定
-      <span class="msel-hint">タップして選択モードへ</span>
-    </button>
-  </div>
-  <div class="action-toolbar at-add" id="at-add">
-    <span class="at-count" id="sel-count">0枠選択中</span>
-    <div class="at-chips">
-      <span style="font-size:10px;color:#92400e;font-weight:600">追加→</span>
-      <button class="atc atc-pm" onclick="assignSel('pilates','meguro')">P・目黒</button>
-      <button class="atc atc-py" onclick="assignSel('pilates','yokohama')">P・横浜</button>
-      <button class="atc atc-te" onclick="assignSel('training','ebisu')">T・恵比寿</button>
-      <button class="atc atc-ty" onclick="assignSel('training','yokohama')">T・横浜</button>
-      <button class="atc atc-rm" onclick="removeSel()">削除</button>
+    <div class="mode-selector">
+      <button class="msel-btn mode-add" id="msel-add" onclick="toggleSelMode()"><span class="msel-icon">＋</span>空き枠を追加<span class="msel-hint">タップして選択</span></button>
+      <button class="msel-btn mode-off" id="msel-off" onclick="toggleOffMode()"><span class="msel-icon">✕</span>対応不可を設定<span class="msel-hint">タップして選択</span></button>
     </div>
-    <button class="at-done" onclick="cancelSel()">完了</button>
-  </div>
-  <div class="action-toolbar at-off" id="at-off">
-    <span class="at-count" id="off-count">0枠選択中</span>
-    <div class="at-chips">
-      <button class="atc atc-off" onclick="applyOff()">OFFにする</button>
-      <button class="atc atc-rm" onclick="cancelOff()">OFF解除</button>
+    <div class="action-toolbar at-add" id="at-add">
+      <span class="at-count" id="sel-count">0枠選択中</span>
+      <div class="at-chips">
+        <span style="font-size:10px;color:#92400e;font-weight:600">追加→</span>
+        <button class="atc atc-pm" onclick="assignSel('pilates','meguro')">P・目黒</button>
+        <button class="atc atc-py" onclick="assignSel('pilates','yokohama')">P・横浜</button>
+        <button class="atc atc-te" onclick="assignSel('training','ebisu')">T・恵比寿</button>
+        <button class="atc atc-ty" onclick="assignSel('training','yokohama')">T・横浜</button>
+        <button class="atc atc-rm" onclick="removeSel()">削除</button>
+      </div>
+      <button class="at-done" onclick="cancelSel()">完了</button>
     </div>
-    <button class="at-done" onclick="cancelOffMode()">完了</button>
+    <div class="action-toolbar at-off" id="at-off">
+      <span class="at-count" id="off-count">0枠選択中</span>
+      <div class="at-chips">
+        <button class="atc atc-off" onclick="applyOff()">OFFにする</button>
+        <button class="atc atc-rm" onclick="cancelOff()">OFF解除</button>
+      </div>
+      <button class="at-done" onclick="cancelOffMode()">完了</button>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-pill sp-avail"><div><div class="stat-num" id="sta">0</div><div class="stat-lbl">空き枠</div></div></div>
+      <div class="stat-pill sp-booked"><div><div class="stat-num" id="stb">0</div><div class="stat-lbl">予約済み</div></div></div>
+    </div>
+    <div class="legend-bar">
+      <div class="li"><div class="ld" style="background:#dcfce7;border:1px solid #86efac"></div>空き</div>
+      <div class="li"><div class="ld" style="background:#dbeafe;border:1px solid #93c5fd"></div>予約(目黒)</div>
+      <div class="li"><div class="ld" style="background:#fef9c3;border:1px solid #fde047"></div>予約(横浜)</div>
+      <div class="li"><div class="ld" style="background:#fce7f3;border:1px solid #f9a8d4"></div>予約(恵比寿)</div>
+      <div class="li"><div class="ld" style="background:#ffe4e6;border:1px solid #fda4af"></div>対応不可</div>
+    </div>
+    <div class="week-bar">
+      <button class="wbtn" onclick="changeWeek(-1)">‹</button>
+      <span class="wlbl" id="wlbl-t"></span>
+      <button class="wbtn" onclick="changeWeek(1)">›</button>
+    </div>
+    <div class="cal-outer"><div class="cal-inner">
+      <div class="cal-head" id="cal-head-t"></div>
+      <div class="cal-body" id="cal-body-t"></div>
+    </div></div>
   </div>
-  <div class="stats-bar">
-    <div class="stat-pill sp-avail"><div><div class="stat-num" id="sta">0</div><div class="stat-lbl">空き枠</div></div></div>
-    <div class="stat-pill sp-booked"><div><div class="stat-num" id="stb">0</div><div class="stat-lbl">予約済み</div></div></div>
-  </div>
-  <div class="legend-bar">
-    <div class="li"><div class="ld" style="background:#dcfce7;border:1px solid #86efac"></div>空き</div>
-    <div class="li"><div class="ld" style="background:#dbeafe;border:1px solid #93c5fd"></div>予約(目黒)</div>
-    <div class="li"><div class="ld" style="background:#fef9c3;border:1px solid #fde047"></div>予約(横浜)</div>
-    <div class="li"><div class="ld" style="background:#fce7f3;border:1px solid #f9a8d4"></div>予約(恵比寿)</div>
-    <div class="li"><div class="ld" style="background:#ffe4e6;border:1px solid #fda4af"></div>対応不可</div>
-  </div>
-  <div class="week-bar">
-    <button class="wbtn" onclick="changeWeek(-1)">‹</button>
-    <span class="wlbl" id="wlbl-t"></span>
-    <button class="wbtn" onclick="changeWeek(1)">›</button>
-  </div>
-  <div class="cal-outer"><div class="cal-inner">
-    <div class="cal-head" id="cal-head-t"></div>
-    <div class="cal-body" id="cal-body-t"></div>
-  </div></div>
-  </div><!-- end ttab-cal-content -->
-
-  <!-- お客様管理タブ -->
   <div id="ttab-clients-content" style="display:none">
     <div class="cm-wrap">
       <button class="cm-add-btn" onclick="openAddClient()">＋ お客様を新規登録</button>
@@ -312,20 +288,25 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
   </div>
 </div>
 
-<!-- CLIENT CAL (直接カレンダーを表示) -->
-<div id="client-cal">
-  <div class="ccal-header" style="justify-content:center;">
-    <span style="font-size:13px;font-weight:500;color:var(--color-text-secondary)">空き枠をタップして予約</span>
+<div id="client-screen">
+  <div class="t-tabs">
+    <button class="t-tab active" id="ctab-cal" onclick="switchCTab('cal')">予約する</button>
+    <button class="t-tab" id="ctab-my" onclick="switchCTab('my')">マイページ</button>
   </div>
-  <div class="week-bar">
-    <button class="wbtn" onclick="changeWeek(-1)">‹</button>
-    <span class="wlbl" id="wlbl-c"></span>
-    <button class="wbtn" onclick="changeWeek(1)">›</button>
+  <div id="ctab-cal-content">
+    <div class="week-bar">
+      <button class="wbtn" onclick="changeWeek(-1)">‹</button>
+      <span class="wlbl" id="wlbl-c"></span>
+      <button class="wbtn" onclick="changeWeek(1)">›</button>
+    </div>
+    <div class="cal-outer"><div class="cal-inner">
+      <div class="cal-head" id="cal-head-c"></div>
+      <div class="cal-body" id="cal-body-c"></div>
+    </div></div>
   </div>
-  <div class="cal-outer"><div class="cal-inner">
-    <div class="cal-head" id="cal-head-c"></div>
-    <div class="cal-body" id="cal-body-c"></div>
-  </div></div>
+  <div id="ctab-my-content" style="display:none">
+    <div class="mypage-wrap" id="mypage-content"></div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePanel()"></div>
@@ -333,818 +314,561 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL = 'https://lxcfkcmqnlueacxagemn.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Y2ZrY21xbmx1ZWFjeGFnZW1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMTg5MDksImV4cCI6MjA5Mzg5NDkwOX0._6BmtsxKMuOMbO3zOWQl-IEkcbcpRyzAZSWhk5-6Pgs';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SB_URL='https://lxcfkcmqnlueacxagemn.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Y2ZrY21xbmx1ZWFjeGFnZW1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMTg5MDksImV4cCI6MjA5Mzg5NDkwOX0._6BmtsxKMuOMbO3zOWQl-IEkcbcpRyzAZSWhk5-6Pgs';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+const TR_PW='masa1127';
+const TR_EMAIL='masa.nu.pe.27@gmail.com';
 
-const TRAINER_PW = 'masa1127';
-const TRAINER_EMAIL = 'masa.nu.pe.27@gmail.com';
-const RESEND_API_KEY = 're_ALAmmJA2_HAkKierL9yRaUhtEBJ6Jz6WJ';
+const TIMES=[];
+for(var h=10;h<=21;h++) TIMES.push(h+':00');
+const DJ=['日','月','火','水','木','金','土'];
+const LOCS={meguro:'目黒',yokohama:'横浜',ebisu:'恵比寿'};
+const MENUS={pilates:'ピラティス',training:'パーソナルトレーニング'};
+const ML={pilates:['meguro','yokohama'],training:['ebisu','yokohama']};
+const TC={'pilates-meguro':'stag-pm','pilates-yokohama':'stag-py','training-ebisu':'stag-te','training-yokohama':'stag-ty'};
+const TL={'pilates-meguro':'P・目黒','pilates-yokohama':'P・横浜','training-ebisu':'T・恵比寿','training-yokohama':'T・横浜'};
+const BKC={meguro:'t-bk-m',yokohama:'t-bk-y',ebisu:'t-bk-e'};
+const BLC={meguro:'bl-m',yokohama:'bl-y',ebisu:'bl-e'};
+const LTAG={meguro:'tag-meguro',yokohama:'tag-yokohama',ebisu:'tag-ebisu'};
+const MTAG={pilates:'tag-pilates',training:'tag-training'};
 
-async function sendEmail(to, subject, html){
-  try {
-    var res = await fetch('https://lxcfkcmqnlueacxagemn.supabase.co/functions/v1/send-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + SUPABASE_KEY
-      },
-      body: JSON.stringify({ to: to, subject: subject, html: html })
-    });
-    var data = await res.json();
-    console.log('メール送信結果:', data);
-    return data;
-  } catch(e) {
-    console.log('メール送信エラー:', e);
-  }
+var mode='',wkOff=0;
+var slotSets={},offSlots={},dayOffs={},bookings={};
+var myBookings=new Set(),myEmail=localStorage.getItem('myEmail')||'';
+var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),drag=false;
+var clients=[];
+
+function L(s){document.getElementById('loading').style.display=s?'flex':'none';}
+function isPast(d){var t=new Date();t.setHours(0,0,0,0);var x=new Date(d);x.setHours(0,0,0,0);return x<t;}
+function isToday(d){return d.toDateString()===new Date().toDateString();}
+function isTodayStr(iso){return new Date(iso).toDateString()===new Date().toDateString();}
+function localISO(d){var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+dd;}
+function ck(d,t){return localISO(d)+'_'+t;}
+function et(t){return (parseInt(t)+1)+':00';}
+function fmt(d){return (d.getMonth()+1)+'/'+d.getDate();}
+function wkDates(o){
+  var n=new Date(),dy=n.getDay(),m=new Date(n);
+  m.setDate(n.getDate()-(dy===0?6:dy-1)+o*7);
+  var a=[];for(var i=0;i<7;i++){var d=new Date(m);d.setDate(m.getDate()+i);a.push(d);}return a;
 }
 
-const TIMES = [];
-for(var h=10;h<=21;h++){TIMES.push(h+':00');if(h<21)TIMES.push(h+':30');}
-const DJ = ['日','月','火','水','木','金','土'];
-const LOCS = {meguro:'目黒',yokohama:'横浜',ebisu:'恵比寿'};
-const MENUS = {pilates:'ピラティス',training:'パーソナルトレーニング'};
-const ML = {pilates:['meguro','yokohama'],training:['ebisu','yokohama']};
-const TC = {'pilates-meguro':'stag-pm','pilates-yokohama':'stag-py','training-ebisu':'stag-te','training-yokohama':'stag-ty'};
-const TL = {'pilates-meguro':'P・目黒','pilates-yokohama':'P・横浜','training-ebisu':'T・恵比寿','training-yokohama':'T・横浜'};
-const BKC = {meguro:'t-bk-m',yokohama:'t-bk-y',ebisu:'t-bk-e'};
-const BLC = {meguro:'bl-m',yokohama:'bl-y',ebisu:'bl-e'};
-const LTAG = {meguro:'tag-meguro',yokohama:'tag-yokohama',ebisu:'tag-ebisu'};
-const MTAG = {pilates:'tag-pilates',training:'tag-training'};
-
-var mode = 'trainer', wkOff = 0;
-var slotSets = {}, offSlots = {}, dayOffs = {}, bookings = {};
-var myBookings = new Set(); // Supabaseから取得するので初期値は空
-var myEmail = localStorage.getItem('myEmail') || ''; // 自分のメールアドレスを保存
-var selMode = false, offMode = false;
-var selCells = new Set(), offCells = new Set();
-var drag = false;
-var cMenu = '', cLoc = '';
-
-function loading(show){ document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
-
-function isPastDate(date){
-  var today = new Date(); today.setHours(0,0,0,0);
-  var d = new Date(date); d.setHours(0,0,0,0);
-  return d < today;
+function goTrainerPw(){document.getElementById('login-screen').style.display='none';document.getElementById('pw-screen').style.display='flex';setTimeout(function(){document.getElementById('pw-input').focus();},100);}
+function goClientMode(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('client-login-screen').style.display='flex';
+  setTimeout(function(){document.getElementById('cl-email-inp').focus();},100);
 }
-function ck(d,t){ return d.toISOString().slice(0,10)+'_'+t; }
-function et(t){
-  var parts = t.split(':');
-  var h = parseInt(parts[0]), m = parseInt(parts[1]);
-  var e = h*60+m+60;
-  return Math.floor(e/60)+':'+(e%60===0?'00':'30');
-}
-function isToday(d){ return d.toDateString()===new Date().toDateString(); }
-function fmt(d){ return (d.getMonth()+1)+'/'+d.getDate(); }
-function wkDates(off){
-  var n=new Date(),dy=n.getDay(),mon=new Date(n);
-  mon.setDate(n.getDate()-(dy===0?6:dy-1)+off*7);
-  var arr=[];
-  for(var i=0;i<7;i++){ var d=new Date(mon); d.setDate(mon.getDate()+i); arr.push(d); }
-  return arr;
-}
-
-// ===== SUPABASE =====
-async function loadData(){
-  loading(true);
-  var dates = wkDates(wkOff);
-  var startIso = dates[0].toISOString().slice(0,10);
-  var endIso = dates[6].toISOString().slice(0,10);
-  var r1 = await sb.from('slots').select('*').gte('date_key',startIso).lte('date_key',endIso+'_z');
-  slotSets={}; offSlots={};
-  (r1.data||[]).forEach(function(row){
-    var k=row.date_key;
-    if(row.is_off){ offSlots[k]=true; }
-    else { if(!slotSets[k]) slotSets[k]=new Set(); slotSets[k].add(row.menu+'-'+row.loc); }
-  });
-  var r2 = await sb.from('bookings').select('*').gte('date_key',startIso).lte('date_key',endIso+'_z');
-  // SafariのlocalStorage対策：毎回読み直す
-  myEmail = localStorage.getItem('myEmail') || '';
-  // お客様側では他人の予約は date_key だけ保持（個人情報を隠す）
-  var rawBookings={};
-  (r2.data||[]).forEach(function(row){ rawBookings[row.date_key]=row; });
-
-  if(mode==='client'){
-    bookings={};
-    Object.keys(rawBookings).forEach(function(k){
-      // 自分の予約はそのまま、他人のは最低限の情報だけ
-      if(myEmail && rawBookings[k].email===myEmail){
-        bookings[k]=rawBookings[k];
-      } else {
-        bookings[k]={date_key:k, menu:rawBookings[k].menu, loc:rawBookings[k].loc, message:rawBookings[k].message};
-      }
-    });
-  } else {
-    bookings=rawBookings;
-  }
-  var r3 = await sb.from('day_offs').select('*').gte('date_iso',startIso).lte('date_iso',endIso);
-  dayOffs={};
-  (r3.data||[]).forEach(function(row){ dayOffs[row.date_iso]=true; });
-  // 自分のメールで予約した枠をSupabaseから取得
-  myBookings = new Set();
-  if(myEmail){
-    var r4 = await sb.from('bookings').select('date_key').eq('email', myEmail);
-    (r4.data||[]).forEach(function(row){ myBookings.add(row.date_key); });
-  }
-  loading(false);
-}
-
-async function saveSlot(dk,menu,loc){ await sb.from('slots').insert({date_key:dk,menu:menu,loc:loc,is_off:false}); }
-async function saveOffSlot(dk){ await sb.from('slots').delete().eq('date_key',dk); await sb.from('slots').insert({date_key:dk,menu:null,loc:null,is_off:true}); }
-async function deleteSlot(dk,menu,loc){ await sb.from('slots').delete().match({date_key:dk,menu:menu,loc:loc}); }
-async function deleteAllSlots(dk){ await sb.from('slots').delete().eq('date_key',dk); }
-async function saveDayOff(iso){ await sb.from('day_offs').upsert({date_iso:iso},{onConflict:'date_iso'}); await sb.from('slots').delete().like('date_key',iso+'%'); }
-async function deleteDayOff(iso){ await sb.from('day_offs').delete().eq('date_iso',iso); }
-async function saveBooking(dk,menu,loc,name,email,phone,message){
-  // 1時間枠 = このスロットと30分後のスロット両方を予約済みにする
-  var res = await sb.from('bookings').insert({date_key:dk,menu:menu,loc:loc,name:name,email:email,phone:phone,message:message});
-  if(!res.error){
-    // 30分後のスロットキーを計算してブロック用レコードを追加
-    var nextKey = getNextSlotKey(dk);
-    if(nextKey){
-      // 30分後は同じ予約情報でブロック（お客様名は同じ、blocked=trueで区別）
-      await sb.from('bookings').upsert({date_key:nextKey,menu:menu,loc:loc,name:name,email:email,phone:phone,message:'__blocked__'},{onConflict:'date_key'});
-    }
-  }
-  return !res.error;
-}
-async function deleteBooking(dk){
-  await sb.from('bookings').delete().eq('date_key',dk);
-  // 30分後のブロックも解除
-  var nextKey = getNextSlotKey(dk);
-  if(nextKey){
-    await sb.from('bookings').delete().match({date_key:nextKey,message:'__blocked__'});
-  }
-}
-
-function getNextSlotKey(dk){
-  // dk = "2026-05-09_10:00" → "2026-05-09_10:30"
-  var parts = dk.split('_');
-  if(parts.length < 2) return null;
-  var dateStr = parts[0];
-  var timeStr = parts[1];
-  var tp = timeStr.split(':');
-  var h = parseInt(tp[0]), m = parseInt(tp[1]);
-  var totalMins = h*60+m+30;
-  var nh = Math.floor(totalMins/60), nm = totalMins%60;
-  if(nh > 21) return null; // 21:30以降はなし
-  return dateStr+'_'+nh+':'+(nm===0?'00':'30');
-}
-
-// ===== CLIENT SELECT =====
-function selMenu(m){
-  cMenu=m; cLoc='';
-  document.querySelectorAll('.cs-card').forEach(function(c){c.classList.remove('selected');});
-  document.getElementById('card-'+m).classList.add('selected');
-  var info=document.getElementById('cs-info'), btn=document.getElementById('go-btn');
-  info.innerHTML='<b>'+MENUS[m]+'</b> の空き枠を探します';
-  btn.disabled=false;
-}
-async function goToCal(){
-  if(!cMenu) return;
-  document.getElementById('client-screen').style.display='none';
-  document.getElementById('client-cal').style.display='block';
-  var mt=document.getElementById('cch-m'); mt.textContent=MENUS[cMenu]; mt.className='ctag '+MTAG[cMenu];
-  await loadData();
-  renderC();
-}
-function backToSel(){
-  document.getElementById('client-cal').style.display='none';
+async function doClientLogin(){
+  var email=document.getElementById('cl-email-inp').value.trim();
+  if(!email||email.indexOf('@')<0){document.getElementById('cl-email-err').textContent='正しいメールアドレスを入力してください';return;}
+  L(true);
+  var r=await sb.from('clients').select('id').eq('email',email).maybeSingle();
+  L(false);
+  if(!r.data){document.getElementById('cl-email-err').textContent='登録されていないメールアドレスです';return;}
+  localStorage.setItem('myEmail',email);
+  myEmail=email;
+  document.getElementById('client-login-screen').style.display='none';
+  mode='client';
+  document.getElementById('topbar').style.display='flex';
+  document.getElementById('topbar-badge').textContent='お客様';
+  document.getElementById('topbar-badge').className='tbadge tbadge-c';
   document.getElementById('client-screen').style.display='block';
+  L(true);loadData().then(function(){renderC();L(false);});
+}
+function backToLogin(){
+  ['login-screen'].forEach(function(id){document.getElementById(id).style.display='flex';});
+  document.getElementById('pw-screen').style.display='none';
+  document.getElementById('client-login-screen').style.display='none';
+  document.getElementById('topbar').style.display='none';
+  document.getElementById('trainer-screen').style.display='none';
+  document.getElementById('client-screen').style.display='none';
+  document.getElementById('pw-input').value='';
+  document.getElementById('pw-err').textContent='';
+  mode='';cancelSel();cancelOffMode();
 }
 
-// ===== TRAINER MODES =====
-function toggleSelMode(){
-  if(offMode) cancelOffMode();
-  if(selMode){ cancelSel(); return; }
-  selMode=true;
-  document.getElementById('msel-add').classList.add('active');
-  document.getElementById('at-add').classList.add('active');
-  renderT();
+async function loadData(){
+  L(true);
+  var dates=wkDates(wkOff);
+  var s=localISO(dates[0]),e=localISO(dates[6]);
+  var r1=await sb.from('slots').select('*').gte('date_key',s).lte('date_key',e+'_z');
+  slotSets={};offSlots={};
+  (r1.data||[]).forEach(function(row){
+    if(row.is_off){offSlots[row.date_key]=true;}
+    else{if(!slotSets[row.date_key])slotSets[row.date_key]=new Set();slotSets[row.date_key].add(row.menu+'-'+row.loc);}
+  });
+  myEmail=localStorage.getItem('myEmail')||'';
+  if(mode==='client'){
+    var r2a=await sb.from('bookings').select('date_key').gte('date_key',s).lte('date_key',e+'_z');
+    bookings={};(r2a.data||[]).forEach(function(r){bookings[r.date_key]={date_key:r.date_key,_booked:true};});
+    myBookings=new Set();
+    if(myEmail){
+      var r2b=await sb.from('bookings').select('*').eq('email',myEmail).gte('date_key',s).lte('date_key',e+'_z');
+      (r2b.data||[]).forEach(function(r){bookings[r.date_key]=r;myBookings.add(r.date_key);});
+    }
+  } else {
+    var r2=await sb.from('bookings').select('*').gte('date_key',s).lte('date_key',e+'_z');
+    bookings={};(r2.data||[]).forEach(function(r){bookings[r.date_key]=r;});myBookings=new Set();
+  }
+  var r3=await sb.from('day_offs').select('*').gte('date_iso',s).lte('date_iso',e);
+  dayOffs={};(r3.data||[]).forEach(function(r){dayOffs[r.date_iso]=true;});
+  L(false);
 }
-function cancelSel(){
-  selMode=false; selCells=new Set();
-  document.getElementById('msel-add').classList.remove('active');
-  document.getElementById('at-add').classList.remove('active');
-  renderT();
+
+async function saveSlot(k,menu,loc){await sb.from('slots').insert({date_key:k,menu:menu,loc:loc,is_off:false});}
+async function saveOffSlot(k){await sb.from('slots').delete().eq('date_key',k);await sb.from('slots').insert({date_key:k,menu:null,loc:null,is_off:true});}
+async function deleteSlot(k,m,l){await sb.from('slots').delete().match({date_key:k,menu:m,loc:l});}
+async function deleteAllSlots(k){await sb.from('slots').delete().eq('date_key',k);}
+async function saveDayOff(iso){await sb.from('day_offs').upsert({date_iso:iso},{onConflict:'date_iso'});await sb.from('slots').delete().like('date_key',iso+'%');}
+async function deleteDayOff(iso){await sb.from('day_offs').delete().eq('date_iso',iso);}
+async function saveBooking(k,menu,loc,name,email,phone,msg){var r=await sb.from('bookings').insert({date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg});return !r.error;}
+async function deleteBooking(k){await sb.from('bookings').delete().eq('date_key',k);}
+
+async function sendMail(to,subject,html){
+  try{await fetch(SB_URL+'/functions/v1/send-email',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},body:JSON.stringify({to:to,subject:subject,html:html})});}
+  catch(e){console.log('mail err',e);}
 }
-function toggleOffMode(){
-  if(selMode) cancelSel();
-  if(offMode){ cancelOffMode(); return; }
-  offMode=true;
-  document.getElementById('msel-off').classList.add('active');
-  document.getElementById('at-off').classList.add('active');
-  renderT();
+function mailHtmlClient(name,ds,t,menu,loc){
+  return '<div style="font-family:sans-serif;max-width:500px;margin:0 auto"><div style="background:#c2410c;padding:20px 24px"><div style="font-size:18px;font-weight:bold;color:#fff">Trainer Reserve</div><div style="font-size:12px;color:rgba(255,255,255,.75)">ご予約確認</div></div><div style="padding:24px"><p style="font-size:14px;margin:0 0 16px">'+name+' 様</p><table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px;margin-bottom:20px"><tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr></table><p style="font-size:13px;color:#666;line-height:1.7;margin:0">当日はお気をつけてお越しください。</p></div><div style="border-top:1px solid #e5e5e5;padding:14px 24px"><p style="font-size:11px;color:#999;margin:0">このメールはTrainer Reserveより自動送信されています。</p></div></div>';
 }
-function cancelOffMode(){
-  offMode=false; offCells=new Set();
-  document.getElementById('msel-off').classList.remove('active');
-  document.getElementById('at-off').classList.remove('active');
-  renderT();
+function mailHtmlTrainer(name,ds,t,menu,loc,phone,msg){
+  return '<div style="font-family:sans-serif;max-width:500px;margin:0 auto"><div style="background:#1a1a2e;padding:20px 24px"><div style="font-size:18px;font-weight:bold;color:#fff">新規予約のお知らせ</div><div style="font-size:12px;color:rgba(255,255,255,.6)">Trainer Reserve</div></div><div style="padding:24px"><table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px"><tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">お客様</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+name+' 様</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">電話番号</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+(phone||'未入力')+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メッセージ</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+(msg||'なし')+'</td></tr></table></div></div>';
 }
-function updSC(){ document.getElementById('sel-count').textContent=selCells.size+'枠選択中'; }
-function updOC(){ document.getElementById('off-count').textContent=offCells.size+'枠選択中'; }
+function mailHtmlCancel(name,ds,t,menu,loc,sameDay){
+  return '<div style="font-family:sans-serif;max-width:500px;margin:0 auto"><div style="background:#64748b;padding:20px 24px"><div style="font-size:18px;font-weight:bold;color:#fff">Trainer Reserve</div><div style="font-size:12px;color:rgba(255,255,255,.75)">予約キャンセルのお知らせ</div></div><div style="padding:24px"><p style="font-size:14px;margin:0 0 16px">'+name+' 様</p><table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px;margin-bottom:16px"><tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr></table>'+(sameDay?'<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:12px;font-size:12px;color:#854d0e">当日キャンセルのため、回数券1回分が消化されます。</div>':'')+'</div></div>';
+}
+
+function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;document.getElementById('msel-add').classList.add('active');document.getElementById('at-add').classList.add('active');renderT();}
+function cancelSel(){selMode=false;selCells=new Set();document.getElementById('msel-add').classList.remove('active');document.getElementById('at-add').classList.remove('active');renderT();}
+function toggleOffMode(){if(selMode)cancelSel();if(offMode){cancelOffMode();return;}offMode=true;document.getElementById('msel-off').classList.add('active');document.getElementById('at-off').classList.add('active');renderT();}
+function cancelOffMode(){offMode=false;offCells=new Set();document.getElementById('msel-off').classList.remove('active');document.getElementById('at-off').classList.remove('active');renderT();}
+function updSC(){document.getElementById('sel-count').textContent=selCells.size+'枠選択中';}
+function updOC(){document.getElementById('off-count').textContent=offCells.size+'枠選択中';}
 
 async function assignSel(menu,loc){
-  if(!selCells.size){ showToast('⚠ 枠を選んでください'); return; }
-  var ml=menu+'-'+loc;
-  loading(true);
-  for(var k of selCells){ if(!slotSets[k]) slotSets[k]=new Set(); slotSets[k].add(ml); delete offSlots[k]; await saveSlot(k,menu,loc); }
-  loading(false);
-  renderT(); showToast('✓ '+selCells.size+'枠に追加しました');
+  if(!selCells.size){showToast('⚠ 枠を選んでください');return;}
+  var ml=menu+'-'+loc;L(true);
+  for(var k of selCells){if(!slotSets[k])slotSets[k]=new Set();slotSets[k].add(ml);delete offSlots[k];await saveSlot(k,menu,loc);}
+  L(false);renderT();showToast('✓ '+selCells.size+'枠に追加しました');
 }
-async function removeSel(){
-  loading(true);
-  for(var k of selCells){ await deleteAllSlots(k); delete slotSets[k]; }
-  loading(false);
-  renderT(); showToast('設定を削除しました');
-}
+async function removeSel(){L(true);for(var k of selCells){await deleteAllSlots(k);delete slotSets[k];}L(false);renderT();showToast('削除しました');}
 async function applyOff(){
-  if(!offCells.size){ showToast('⚠ 枠を選んでください'); return; }
-  loading(true);
-  for(var k of offCells){ await saveOffSlot(k); offSlots[k]=true; delete slotSets[k]; }
-  loading(false);
-  offCells=new Set(); updOC(); renderT(); showToast('✕ 対応不可にしました');
+  if(!offCells.size){showToast('⚠ 枠を選んでください');return;}L(true);
+  for(var k of offCells){await saveOffSlot(k);offSlots[k]=true;delete slotSets[k];}
+  L(false);offCells=new Set();updOC();renderT();showToast('✕ 対応不可にしました');
 }
 async function cancelOff(){
-  if(!offCells.size){ showToast('⚠ 枠を選んでください'); return; }
-  loading(true);
-  for(var k of offCells){ await sb.from('slots').delete().match({date_key:k,is_off:true}); delete offSlots[k]; }
-  loading(false);
-  offCells=new Set(); updOC(); renderT(); showToast('OFF解除しました');
+  if(!offCells.size){showToast('⚠ 枠を選んでください');return;}L(true);
+  for(var k of offCells){await sb.from('slots').delete().match({date_key:k,is_off:true});delete offSlots[k];}
+  L(false);offCells=new Set();updOC();renderT();showToast('OFF解除しました');
 }
 async function toggleDayOff(iso){
-  loading(true);
-  if(dayOffs[iso]){ await deleteDayOff(iso); delete dayOffs[iso]; showToast(iso.slice(5).replace('-','/')+' OFF解除'); }
-  else { await saveDayOff(iso); dayOffs[iso]=true; Object.keys(slotSets).forEach(function(k){ if(k.startsWith(iso)) delete slotSets[k]; }); Object.keys(offSlots).forEach(function(k){ if(k.startsWith(iso)) delete offSlots[k]; }); showToast(iso.slice(5).replace('-','/')+' まるごとOFF'); }
-  loading(false);
-  renderT();
+  L(true);
+  if(dayOffs[iso]){await deleteDayOff(iso);delete dayOffs[iso];showToast(iso.slice(5).replace('-','/')+' OFF解除');}
+  else{await saveDayOff(iso);dayOffs[iso]=true;Object.keys(slotSets).forEach(function(k){if(k.startsWith(iso))delete slotSets[k];});showToast(iso.slice(5).replace('-','/')+' まるごとOFF');}
+  L(false);renderT();
 }
 
 function mkTags(sets){
-  var w=document.createElement('div'); w.className='slot-tags';
-  var arr=[...sets].slice(0,3);
-  arr.forEach(function(ml){ var s=document.createElement('span'); s.className='stag '+(TC[ml]||''); s.textContent=TL[ml]||ml; w.appendChild(s); });
-  if(sets.size>3){ var m=document.createElement('span'); m.className='stag'; m.style.cssText='background:#f5f5f5;color:#666'; m.textContent='+'+(sets.size-3); w.appendChild(m); }
+  var w=document.createElement('div');w.className='slot-tags';
+  [...sets].slice(0,3).forEach(function(ml){var s=document.createElement('span');s.className='stag '+(TC[ml]||'');s.textContent=TL[ml]||ml;w.appendChild(s);});
+  if(sets.size>3){var m=document.createElement('span');m.className='stag';m.style.cssText='background:#f5f5f5;color:#666';m.textContent='+'+(sets.size-3);w.appendChild(m);}
   return w;
 }
 
 function renderT(){
   var dates=wkDates(wkOff);
   document.getElementById('wlbl-t').textContent=fmt(dates[0])+' – '+fmt(dates[6]);
-  var COL='30px repeat(7,1fr)';
+  var COL='36px repeat(7,1fr)';
   var head=document.getElementById('cal-head-t');
   head.style.gridTemplateColumns=COL;
-  var headHTML='<div></div>';
-  dates.forEach(function(d){
-    var iso=d.toISOString().slice(0,10), doff=!!dayOffs[iso], past=isPastDate(d);
-    headHTML+='<div class="cdh'+(doff?' day-off':'')+(offMode&&!past?' off-mode-hover':'')+'" id="hdr-'+iso+'" style="'+(past?'opacity:.35':'')+'">'+'<div class="cdn">'+DJ[d.getDay()]+'</div>'+'<div class="cdd'+(isToday(d)?' today':'')+'">'+d.getDate()+(doff?'✕':'')+'</div>'+'<div class="dob"></div></div>';
-  });
-  head.innerHTML=headHTML;
-  if(offMode){
-    dates.forEach(function(d){
-      var iso=d.toISOString().slice(0,10);
-      if(!isPastDate(d)){ var el=document.getElementById('hdr-'+iso); if(el) el.onclick=function(){ toggleDayOff(iso); }; }
-    });
-  }
+  head.innerHTML='<div></div>'+dates.map(function(d){
+    var iso=localISO(d),doff=!!dayOffs[iso],past=isPast(d);
+    var dy=d.getDay();
+    var dcls=(dy===6?' sat':dy===0?' sun':'');
+    return '<div class="cdh'+(doff?' day-off':'')+(offMode&&!past?' off-mode-hover':'')+'" id="hdr-'+iso+'" style="'+(past?'opacity:.35':'')+'">'
+      +'<div class="cdn'+dcls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+dcls+'">'+d.getDate()+(doff?'✕':'')+'</div><div class="dob"></div></div>';
+  }).join('');
+  if(offMode){dates.forEach(function(d){var iso=d.toISOString().slice(0,10);if(!isPast(d)){var el=document.getElementById('hdr-'+iso);if(el)el.onclick=function(){toggleDayOff(iso);}}});}
   var body=document.getElementById('cal-body-t');
-  body.style.gridTemplateColumns=COL; body.innerHTML='';
+  body.style.gridTemplateColumns=COL;body.innerHTML='';
   TIMES.forEach(function(t){
-    var parts=t.split(':'), m=parseInt(parts[1]);
-    var tl=document.createElement('div'); tl.className='tlbl'; tl.textContent=m===0?t:'·';
-    body.appendChild(tl);
+    var tl=document.createElement('div');tl.className='tlbl';tl.textContent=t;body.appendChild(tl);
     dates.forEach(function(date){
-      var k=ck(date,t), iso=date.toISOString().slice(0,10);
-      var sets=slotSets[k], hasSets=sets&&sets.size>0;
-      var isOff=!!offSlots[k], doff=!!dayOffs[iso], past=isPastDate(date);
-      var isSel=selCells.has(k), isOffSel=offCells.has(k);
-      var bk=bookings[k];
-      var cell=document.createElement('div'); cell.className='cell';
-      var slot=document.createElement('div'); slot.className='slot'; slot.dataset.k=k;
-      // __blocked__（30分後ブロック）は非表示
-      if(bk&&bk.message==='__blocked__'){
-        var emptySlot=document.createElement('div'); emptySlot.className='slot t-idle'; emptySlot.style.opacity='0';
-        cell.appendChild(emptySlot); body.appendChild(cell);
-      } else if(past){ slot.classList.add('t-idle'); slot.style.opacity='0.2'; slot.style.pointerEvents='none'; cell.appendChild(slot); body.appendChild(cell); }
-      else if(doff){ slot.classList.add('t-dayoff'); slot.innerHTML='<span class="x-off">✕</span>'; cell.appendChild(slot); body.appendChild(cell); }
+      var k=ck(date,t),iso=localISO(date);
+      var sets=slotSets[k],hasSets=sets&&sets.size>0;
+      var isOff=!!offSlots[k],doff=!!dayOffs[iso],past=isPast(date);
+      var isSel=selCells.has(k),isOffSel=offCells.has(k),bk=bookings[k];
+      var sc=document.createElement('div');sc.className='slot-cell';
+      var sl=document.createElement('div');sl.className='slot';
+      if(past){sl.className='slot t-idle';sl.style.opacity='.2';sl.style.pointerEvents='none';}
+      else if(doff){sl.className='slot t-dayoff';sl.innerHTML='<span class="x-off">✕</span>';}
       else if(bk){
-        slot.classList.add(BKC[bk.loc]||'t-bk-m');
-        slot.style.gridRow='span 2'; slot.style.height='auto';
-        var last=bk.name.split(/[\s\u3000]/)[0];
-        slot.innerHTML='<span style="font-size:7px;font-weight:700;overflow:hidden;max-width:100%;text-overflow:ellipsis" class="'+BLC[bk.loc]+'">'+LOCS[bk.loc]+'：'+last+'様<br><span style="font-weight:400">'+t+'〜'+et(t)+'</span></span>';
-        if(!selMode&&!offMode){ (function(dd,tt,kk){ slot.onclick=function(){ openBkDetail(dd,tt,kk); }; })(date,t,k); }
-        cell.appendChild(slot); body.appendChild(cell);
-      } else if(selMode&&isSel){ slot.classList.add('t-sel-add'); if(hasSets) slot.appendChild(mkTags(sets)); else slot.innerHTML='<span style="font-size:9px;color:#fff">✓</span>'; cell.appendChild(slot); body.appendChild(cell); }
-      else if(offMode&&isOffSel){ slot.classList.add('t-sel-off'); slot.innerHTML='<span style="font-size:9px;color:#fff">✕</span>'; cell.appendChild(slot); body.appendChild(cell); }
-      else if(isOff){ slot.classList.add('t-off'); slot.innerHTML='<span class="x-off">✕</span>'; if(!selMode&&!offMode){ (function(dd,tt,kk){ slot.onclick=function(){ openOffDetail(dd,tt,kk); }; })(date,t,k); } cell.appendChild(slot); body.appendChild(cell); }
-      else if(hasSets){ slot.classList.add(selMode?'t-avail-add':(offMode?'t-avail-off':'t-avail')); slot.appendChild(mkTags(sets)); if(!selMode&&!offMode){ (function(dd,tt,kk){ slot.onclick=function(){ openSlotDetail(dd,tt,kk); }; })(date,t,k); } cell.appendChild(slot); body.appendChild(cell); }
-      else {
-        slot.classList.add(selMode?'t-idle-add':(offMode?'t-idle-off':'t-idle')); if(selMode||offMode) slot.innerHTML='<span style="font-size:9px;opacity:.5">'+(selMode?'＋':'✕')+'</span>';
-        if(!past&&selMode&&!doff&&!bk){
-          (function(kk,sl){ sl.onmousedown=function(e){ e.preventDefault(); drag=true; if(selCells.has(kk)) selCells.delete(kk); else selCells.add(kk); updSC(); rSel(); }; sl.onmouseenter=function(){ if(drag&&!selCells.has(kk)){ selCells.add(kk); updSC(); sl.classList.add('t-sel-add'); } }; sl.ontouchstart=function(e){ e.preventDefault(); if(selCells.has(kk)) selCells.delete(kk); else selCells.add(kk); updSC(); rSel(); }; })(k,slot);
-        } else if(!past&&offMode&&!doff&&!bk){
-          (function(kk,sl){ sl.onmousedown=function(e){ e.preventDefault(); drag=true; if(offCells.has(kk)) offCells.delete(kk); else offCells.add(kk); updOC(); rOff(); }; sl.onmouseenter=function(){ if(drag&&!offCells.has(kk)){ offCells.add(kk); updOC(); sl.classList.add('t-sel-off'); } }; sl.ontouchstart=function(e){ e.preventDefault(); if(offCells.has(kk)) offCells.delete(kk); else offCells.add(kk); updOC(); rOff(); }; })(k,slot);
-        }
-        cell.appendChild(slot); body.appendChild(cell);
+        sl.className='slot '+(BKC[bk.loc]||'t-bk-m');
+        var last=bk.name?(bk.name.split(/[\s\u3000]/)[0]):'';
+        sl.innerHTML='<span style="font-size:7px;font-weight:700;overflow:hidden;max-width:100%;text-overflow:ellipsis" class="'+(BLC[bk.loc]||'')+'">'+LOCS[bk.loc]+'：'+last+'様</span>';
+        if(!selMode&&!offMode){(function(dd,tt,kk){sl.onclick=function(){openBkDetail(dd,tt,kk);};})(date,t,k);}
+      } else if(selMode&&isSel){sl.className='slot t-sel-add';if(hasSets)sl.appendChild(mkTags(sets));else sl.innerHTML='<span style="font-size:9px;color:#fff">✓</span>';}
+      else if(offMode&&isOffSel){sl.className='slot t-sel-off';sl.innerHTML='<span style="font-size:9px;color:#fff">✕</span>';}
+      else if(isOff){sl.className='slot t-off';sl.innerHTML='<span class="x-off">✕</span>';if(!selMode&&!offMode){(function(dd,tt,kk){sl.onclick=function(){openOffDetail(dd,tt,kk);};})(date,t,k);}}
+      else if(hasSets){sl.className='slot '+(selMode?'t-avail-add':(offMode?'t-avail-off':'t-avail'));sl.appendChild(mkTags(sets));if(!selMode&&!offMode){(function(dd,tt,kk){sl.onclick=function(){openSlotDetail(dd,tt,kk);};})(date,t,k);}}
+      else{sl.className='slot '+(selMode?'t-idle-add':(offMode?'t-idle-off':'t-idle'));if(selMode||offMode)sl.innerHTML='<span style="font-size:9px;opacity:.5">'+(selMode?'＋':'✕')+'</span>';}
+      if(!past&&selMode&&!doff&&!bk){
+        (function(kk,s){s.onmousedown=function(e){e.preventDefault();drag=true;if(selCells.has(kk))selCells.delete(kk);else selCells.add(kk);updSC();};s.onmouseenter=function(){if(drag&&!selCells.has(kk)){selCells.add(kk);updSC();s.className='slot t-sel-add';}};s.ontouchstart=function(e){e.preventDefault();if(selCells.has(kk))selCells.delete(kk);else selCells.add(kk);updSC();};})(k,sl);
+      } else if(!past&&offMode&&!doff&&!bk){
+        (function(kk,s){s.onmousedown=function(e){e.preventDefault();drag=true;if(offCells.has(kk))offCells.delete(kk);else offCells.add(kk);updOC();};s.onmouseenter=function(){if(drag&&!offCells.has(kk)){offCells.add(kk);updOC();s.className='slot t-sel-off';}};s.ontouchstart=function(e){e.preventDefault();if(offCells.has(kk))offCells.delete(kk);else offCells.add(kk);updOC();};})(k,sl);
       }
+      sc.appendChild(sl);body.appendChild(sc);
     });
   });
   updStats();
 }
-
-// 次の30分スロットのキーを取得
-function nextHalfKey(dateIso, t){
-  var tp=t.split(':'), h=parseInt(tp[0]), m=parseInt(tp[1]);
-  var tot=h*60+m+30;
-  var nh=Math.floor(tot/60), nm=tot%60;
-  return dateIso+'_'+nh+':'+(nm===0?'00':'30');
-}
-// 1時間分（このスロット＋次の30分）が両方空きかチェック
-function isFullHourFree(dateIso, t){
-  var k2=nextHalfKey(dateIso,t);
-  var bk2=bookings[k2];
-  var off2=!!offSlots[k2];
-  return !bk2&&!off2;
-}
-document.addEventListener('mouseup', function(){ drag=false; });
+document.addEventListener('mouseup',function(){drag=false;});
 
 function renderC(){
   var dates=wkDates(wkOff);
   document.getElementById('wlbl-c').textContent=fmt(dates[0])+' – '+fmt(dates[6]);
-  var COL='30px repeat(7,1fr)';
+  var COL='36px repeat(7,1fr)';
   var head=document.getElementById('cal-head-c');
   head.style.gridTemplateColumns=COL;
-  var hHTML='<div></div>';
-  dates.forEach(function(d){ hHTML+='<div class="cdh'+(dayOffs[d.toISOString().slice(0,10)]?' day-off':'')+'"><div class="cdn">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+'">'+d.getDate()+'</div><div class="dob"></div></div>'; });
-  head.innerHTML=hHTML;
+  head.innerHTML='<div></div>'+dates.map(function(d){
+    var dy=d.getDay();
+    var dcls=(dy===6?' sat':dy===0?' sun':'');
+    return '<div class="cdh'+(dayOffs[localISO(d)]?' day-off':'')+'">'
+      +'<div class="cdn'+dcls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+dcls+'">'+d.getDate()+'</div><div class="dob"></div></div>';
+  }).join('');
   var body=document.getElementById('cal-body-c');
-  body.style.gridTemplateColumns=COL; body.innerHTML='';
-
+  body.style.gridTemplateColumns=COL;body.innerHTML='';
   TIMES.forEach(function(t){
-    var parts=t.split(':'), m=parseInt(parts[1]);
-    var tl=document.createElement('div'); tl.className='tlbl'; tl.textContent=m===0?t:'·';
-    body.appendChild(tl);
-
+    var tl=document.createElement('div');tl.className='tlbl';tl.textContent=t;body.appendChild(tl);
     dates.forEach(function(date){
-      var k=ck(date,t), iso=date.toISOString().slice(0,10);
-      var doff=!!dayOffs[iso], isOff=!!offSlots[k];
-      var sets=slotSets[k];
-      var bk=bookings[k], mine=(myBookings.has(k) || (myEmail && bk && bk.email===myEmail)), past=isPastDate(date);
-      var cell=document.createElement('div'); cell.className='cell';
-      var slot=document.createElement('div'); slot.className='slot';
-
-      // __blocked__スロット（1時間枠の後半30分）は非表示
-      if(bk&&bk.message==='__blocked__'){
-        slot.classList.add('c-empty'); slot.style.opacity='0';
-        cell.appendChild(slot); body.appendChild(cell);
-        return;
-      }
-
-      // 自分の予約（前半スロット）
-      if(mine){
-        slot.classList.add('c-mine'); slot.style.gridRow='span 2';
-        slot.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済<br>'+t+'〜'+et(t)+'</span>';
-        (function(dd,tt,kk){ slot.onclick=function(){ openMyBk(dd,tt,kk); }; })(date,t,k);
-        cell.appendChild(slot); body.appendChild(cell);
-        return;
-      }
-
-      // 予約済み（他の人）
-      if(bk){
-        slot.classList.add('c-booked'); slot.style.gridRow='span 2';
-        slot.innerHTML='<span style="font-size:8px;opacity:.5">✕</span>';
-        cell.appendChild(slot); body.appendChild(cell);
-        return;
-      }
-
-      // 空き枠チェック：次の30分も空きかどうか
-      var fullHourFree = isFullHourFree(iso, t);
-
-      // 予約可能な全メニュー・場所の組み合わせを取得
+      var k=ck(date,t),iso=localISO(date);
+      var doff=!!dayOffs[iso],isOff=!!offSlots[k],sets=slotSets[k];
+      var bk=bookings[k],mine=myBookings.has(k),past=isPast(date);
       var availMls=[];
-      if(sets&&!bk&&!past&&!doff&&!isOff&&fullHourFree){
-        sets.forEach(function(ml){ availMls.push(ml); });
-      }
-
-      if(doff||isOff){
-        slot.classList.add('c-off'); slot.innerHTML='<span style="font-size:9px;color:#f43f5e;font-weight:700">✕</span>';
-      } else if(past){
-        slot.classList.add('c-empty');
-      } else if(availMls.length>0){
-        // 1時間分空き → span 2で大きく表示
-        slot.classList.add('c-avail'); slot.style.gridRow='span 2'; slot.style.height='auto';
-        slot.innerHTML='<span style="font-size:8px;font-weight:600">予約する<br><span style="font-weight:400;opacity:.7">'+t+'〜'+et(t)+'</span></span>';
-        (function(dd,tt,kk,mls){ slot.onclick=function(){ openMenuPicker(dd,tt,kk,mls); }; })(date,t,k,availMls);
-      } else if(sets&&sets.size>0&&!fullHourFree){
-        // 空きはあるが1時間分取れない → ✕
-        slot.classList.add('c-off'); slot.innerHTML='<span style="font-size:9px;color:#f43f5e;font-weight:700">✕</span>';
-      } else {
-        slot.classList.add('c-empty');
-      }
-      cell.appendChild(slot); body.appendChild(cell);
+      if(sets&&!bk&&!past&&!doff&&!isOff)sets.forEach(function(ml){availMls.push(ml);});
+      var sc=document.createElement('div');sc.className='slot-cell';
+      var sl=document.createElement('div');sl.className='slot';
+      if(doff||isOff){sl.className='slot c-off';sl.innerHTML='<span style="font-size:9px;color:#fca5a5;font-weight:700">✕</span>';}
+      else if(past){sl.className='slot c-empty';}
+      else if(mine){sl.className='slot c-mine';sl.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>';(function(dd,tt,kk){sl.onclick=function(){openMyBk(dd,tt,kk);};})(date,t,k);}
+      else if(bk&&bk._booked){sl.className='slot c-booked';sl.innerHTML='<span class="x-bk">✕</span>';}
+      else if(availMls.length>0){sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,availMls);}
+      else{sl.className='slot c-empty';}
+      sc.appendChild(sl);body.appendChild(sc);
     });
   });
 }
 
-// メニュー選択ポップアップ（緑枠タップ時）
 function openMenuPicker(date,t,k,availMls){
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
-  // 利用可能なメニューを抽出
-  var availMenus={};
-  availMls.forEach(function(ml){
-    var parts=ml.split('-'), menu=parts[0], loc=parts[1];
-    if(!availMenus[menu]) availMenus[menu]=[];
-    availMenus[menu].push(loc);
-  });
-  var menuBtns='';
+  var aM={};availMls.forEach(function(ml){var p=ml.split('-');if(!aM[p[0]])aM[p[0]]=[];aM[p[0]].push(p[1]);});
+  var btns='';
   ['pilates','training'].forEach(function(menu){
-    var locs=availMenus[menu];
-    if(locs&&locs.length>0){
-      menuBtns+='<button onclick="openLocPickerFromMenu(\''+date.toISOString().slice(0,10)+'\',\''+t+'\',\''+menu+'\',\''+k+'\')" style="width:100%;padding:14px;margin-bottom:10px;border-radius:10px;border:2px solid #e5e5e5;background:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;">'
-        +'<span style="font-size:20px">'+(menu==='pilates'?'🧘':'💪')+'</span>'
-        +'<div><div style="color:#1a1a1a">'+MENUS[menu]+'</div><div style="font-size:11px;color:#666;font-weight:400;margin-top:2px">'+locs.map(function(l){return LOCS[l];}).join(' / ')+'</div></div>'
-        +'</button>';
-    } else {
-      menuBtns+='<div style="width:100%;padding:14px;margin-bottom:10px;border-radius:10px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:14px;color:#9ca3af;display:flex;align-items:center;gap:10px;">'
-        +'<span style="font-size:20px;opacity:.4">'+(menu==='pilates'?'🧘':'💪')+'</span>'
-        +'<div><div>'+MENUS[menu]+'</div><div style="font-size:11px;margin-top:2px">この時間は予約不可</div></div>'
-        +'</div>';
-    }
+    var locs=aM[menu];
+    if(locs&&locs.length>0){btns+='<button onclick="openLocPicker(\''+localISO(date)+'\',\''+t+'\',\''+menu+'\',\''+k+'\')" style="width:100%;padding:14px;margin-bottom:10px;border-radius:10px;border:2px solid #e5e5e5;background:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;"><span style="font-size:20px">'+(menu==='pilates'?'🧘':'💪')+'</span><div><div>'+MENUS[menu]+'</div><div style="font-size:11px;color:#666;font-weight:400;margin-top:2px">'+locs.map(function(l){return LOCS[l];}).join(' / ')+'</div></div></button>';}
   });
-  document.getElementById('pc').innerHTML=
-    '<button class="pcl" onclick="closePanel()">×</button>'
-    +'<div class="ptitle">メニューを選んでください</div>'
-    +'<div class="psub">'+ds+'　'+t+'〜'+et(t)+'（1時間）</div>'
-    +'<div style="margin-top:12px">'+menuBtns+'</div>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">メニューを選んでください</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'（1時間）</div><div style="margin-top:12px">'+btns+'</div>';
   openPanel();
 }
-
-function openLocPickerFromMenu(iso,t,menu,k){
+function openLocPicker(iso,t,menu,k){
   var date=new Date(iso);
   var sets=slotSets[ck(date,t)]||new Set();
-  var availLocs=[];
-  (ML[menu]||[]).forEach(function(loc){
-    if(sets.has(menu+'-'+loc)) availLocs.push(loc);
-  });
+  var aL=[];(ML[menu]||[]).forEach(function(loc){if(sets.has(menu+'-'+loc))aL.push(loc);});
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
-  var locBtns='';
+  var btns='';
   (ML[menu]||[]).forEach(function(loc){
-    var avail=availLocs.indexOf(loc)>=0;
+    var avail=aL.indexOf(loc)>=0;
     var bg={meguro:'#dbeafe',yokohama:'#fef9c3',ebisu:'#fce7f3'}[loc];
     var tc={meguro:'#1e40af',yokohama:'#854d0e',ebisu:'#9d174d'}[loc];
-    if(avail){
-      locBtns+='<button onclick="selectLocAndBook(\''+iso+'\',\''+t+'\',\''+menu+'\',\''+loc+'\',\''+k+'\')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:2px solid '+tc+';background:'+bg+';color:'+tc+';font-size:14px;font-weight:700;cursor:pointer;text-align:left;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">→ 予約する</span></button>';
-    } else {
-      locBtns+='<div style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:1.5px solid #e5e5e5;background:#f5f5f5;color:#9ca3af;font-size:14px;font-weight:700;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">予約不可</span></div>';
-    }
+    if(avail){btns+='<button onclick="doBook(\''+iso+'\',\''+t+'\',\''+menu+'\',\''+loc+'\',\''+k+'\')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:2px solid '+tc+';background:'+bg+';color:'+tc+';font-size:14px;font-weight:700;cursor:pointer;text-align:left;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">→ 予約する</span></button>';}
+    else{btns+='<div style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:1.5px solid #e5e5e5;background:#f5f5f5;color:#9ca3af;font-size:14px;font-weight:700;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">予約不可</span></div>';}
   });
-  // 戻る用にグローバル変数に保存
-  window._backToMenuArgs = [date, t, k, Array.from(sets)];
-  document.getElementById('pc').innerHTML=
-    '<button class="pcl" onclick="closePanel()">×</button>'
-    +'<button onclick="goBackToMenu()" style="background:none;border:none;color:#666;font-size:12px;cursor:pointer;padding:0 0 8px 0">← 戻る</button>'
-    +'<div class="ptitle">場所を選んでください</div>'
-    +'<div class="psub">'+MENUS[menu]+'　'+ds+'　'+t+'〜'+et(t)+'</div>'
-    +'<div style="margin-top:12px">'+locBtns+'</div>';
+  window._backArgs=[date,t,k,Array.from(sets)];
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><button onclick="goBackMenu()" style="background:none;border:none;color:#666;font-size:12px;cursor:pointer;padding:0 0 8px 0">← 戻る</button><div class="ptitle">場所を選んでください</div><div class="psub">'+MENUS[menu]+'　'+ds+'　'+t+'〜'+et(t)+'</div><div style="margin-top:12px">'+btns+'</div>';
 }
+function goBackMenu(){var a=window._backArgs;if(a)openMenuPicker(a[0],a[1],a[2],a[3]);}
+function doBook(iso,t,menu,loc,k){closePanel();openCPanel(new Date(iso),t,menu+'-'+loc,k);}
 
-function goBackToMenu(){
-  var args = window._backToMenuArgs;
-  if(args) openMenuPicker(args[0], args[1], args[2], args[3]);
-}
-
-function openLocPicker(date,t,k,availLocs){} // 旧関数（互換のため残す）
-
-function selectLocAndBook(iso,t,menu,loc,k){
-  closePanel();
-  // openCPanelを直接呼ぶ
-  var dateObj=new Date(iso);
-  openCPanel(dateObj,t,menu+'-'+loc,k);
-}
-
-// ===== PANELS =====
 function openSlotDetail(date,t,k){
   var sets=slotSets[k]||new Set();
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
-  var rows='';
-  sets.forEach(function(ml){ rows+='<div class="infor"><span class="stag '+(TC[ml]||'')+'" style="font-size:10px;padding:2px 7px">'+(TL[ml]||ml)+'</span><div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:#16a34a">空き</span><button onclick="rmMlPanel(\''+k+'\',\''+ml+'\')" style="font-size:9px;padding:2px 6px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer">削除</button></div></div>'; });
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">空き枠の詳細</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div>'+rows+'<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px"><button class="bp" onclick="addToSlotPanel(\''+k+'\')">この枠に追加設定 →</button><button class="bd" onclick="rmAllPanel(\''+k+'\')">全設定を削除</button></div>';
+  var rows='';sets.forEach(function(ml){rows+='<div class="infor"><span class="stag '+(TC[ml]||'')+'" style="font-size:10px;padding:2px 7px">'+(TL[ml]||ml)+'</span><div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:#16a34a">空き</span><button onclick="rmMl(\''+k+'\',\''+ml+'\')" style="font-size:9px;padding:2px 6px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer">削除</button></div></div>';});
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">空き枠の詳細</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div>'+rows+'<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px"><button class="bp" style="background:#16a34a" onclick="openTrainerBook(\''+localISO(date)+'\',\''+t+'\',\''+k+'\')">📋 お客様の予約を入れる</button><button class="bp" onclick="addToSel(\''+k+'\')">この枠に追加設定 →</button><button class="bd" onclick="rmAll(\''+k+'\')">全設定を削除</button></div>';
   openPanel();
 }
-async function rmMlPanel(k,ml){ var parts=ml.split('-'); loading(true); await deleteSlot(k,parts[0],parts[1]); loading(false); if(slotSets[k]) slotSets[k].delete(ml); if(slotSets[k]&&!slotSets[k].size) delete slotSets[k]; closePanel(); renderT(); showToast('削除しました'); }
-async function rmAllPanel(k){ loading(true); await deleteAllSlots(k); loading(false); delete slotSets[k]; closePanel(); renderT(); showToast('全設定を削除しました'); }
-function addToSlotPanel(k){ closePanel(); if(!selMode) toggleSelMode(); selCells.add(k); updSC(); rSel(); }
+async function openTrainerBook(iso,t,k){
+  L(true);
+  var cr=await sb.from('clients').select('*').order('name');
+  L(false);
+  var clientList=cr.data||[];
+  var sets=slotSets[k]||new Set();
+  var mlOpts='';[...sets].forEach(function(ml){mlOpts+='<option value="'+ml+'">'+TL[ml]+'</option>';});
+  var clientOpts='<option value="">-- お客様を選択 --</option>';
+  clientList.forEach(function(c){clientOpts+='<option value="'+c.email+'">'+c.name+'（'+c.email+'）</option>';});
+  var date=new Date(iso+'T00:00:00');
+  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約を入れる</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div class="fgrp"><label class="flbl">お客様 <span style="color:#e94560">*</span></label><select class="finp" id="tb-client">'+clientOpts+'</select></div><div class="fgrp"><label class="flbl">メニュー・場所 <span style="color:#e94560">*</span></label><select class="finp" id="tb-ml">'+mlOpts+'</select></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="tb-phone" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メモ</label><input class="finp" id="tb-msg" placeholder="任意"></div><button class="bp" style="background:#1a1a2e" onclick="confirmTrainerBook(\''+iso+'\',\''+t+'\',\''+k+'\')">予約を確定する</button>';
+  openPanel();
+}
+async function confirmTrainerBook(iso,t,k){
+  var email=document.getElementById('tb-client').value;
+  var ml=document.getElementById('tb-ml').value;
+  var phone=document.getElementById('tb-phone').value;
+  var msg=document.getElementById('tb-msg').value;
+  if(!email){showToast('⚠ お客様を選択してください');return;}
+  if(!ml){showToast('⚠ メニューを選択してください');return;}
+  var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
+  if(!cr.data){showToast('⚠ お客様が見つかりません');return;}
+  var name=cr.data.name;
+  var p=ml.split('-'),menu=p[0],loc=p[1];
+  L(true);
+  var ok=await saveBooking(k,menu,loc,name,email,phone,msg);
+  if(!ok){L(false);showToast('⚠ 予約に失敗しました');return;}
+  bookings[k]={date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg};
+  await sb.from('clients').update({used_tickets:(cr.data.used_tickets||0)+1}).eq('email',email);
+  await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:1,note:'トレーナーによる予約入力'});
+  var date=new Date(iso+'T00:00:00');
+  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日';
+  await Promise.all([
+    sendMail(email,'【予約確認】Trainer Reserve — '+ds+' '+t+'〜'+et(t),mailHtmlClient(name,ds,t,menu,loc)),
+    sendMail(TR_EMAIL,'【新規予約】'+name+'様 — '+ds+' '+t+'〜'+et(t),mailHtmlTrainer(name,ds,t,menu,loc,phone,msg))
+  ]);
+  L(false);closePanel();await loadData();renderT();showToast('✅ '+name+'様の予約を入れました');
+}var p=ml.split('-');L(true);await deleteSlot(k,p[0],p[1]);L(false);if(slotSets[k])slotSets[k].delete(ml);if(slotSets[k]&&!slotSets[k].size)delete slotSets[k];closePanel();renderT();showToast('削除しました');}
+async function rmAll(k){L(true);await deleteAllSlots(k);L(false);delete slotSets[k];closePanel();renderT();showToast('全設定を削除しました');}
+function addToSel(k){closePanel();if(!selMode)toggleSelMode();selCells.add(k);updSC();}
 
 function openBkDetail(date,t,k){
   var bk=bookings[k];
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var bg={meguro:'#dbeafe',yokohama:'#fef9c3',ebisu:'#fce7f3'}[bk.loc];
   var tc={meguro:'#1e40af',yokohama:'#854d0e',ebisu:'#9d174d'}[bk.loc];
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約詳細</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div style="background:'+bg+';border-radius:9px;padding:11px 13px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:'+tc+'">'+LOCS[bk.loc]+'：'+bk.name+'様</div><div style="font-size:11px;color:#666;margin-top:3px">'+MENUS[bk.menu]+'　'+t+'〜'+et(t)+'</div></div><div class="infor"><span class="ik">電話番号</span><span class="iv">'+(bk.phone||'未入力')+'</span></div><div class="infor"><span class="ik">メール</span><span class="iv">'+(bk.email||'未入力')+'</span></div><div class="infor"><span class="ik">メッセージ</span><span class="iv">'+(bk.message||'なし')+'</span></div><button class="bd" onclick="tCancelBk(\''+k+'\')">この予約をキャンセルする</button>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約詳細</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div style="background:'+bg+';border-radius:9px;padding:11px 13px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:'+tc+'">'+LOCS[bk.loc]+'：'+bk.name+'様</div><div style="font-size:11px;color:#666;margin-top:3px">'+MENUS[bk.menu]+'　'+t+'〜'+et(t)+'</div></div><div class="infor"><span class="ik">電話番号</span><span class="iv">'+(bk.phone||'未入力')+'</span></div><div class="infor"><span class="ik">メール</span><span class="iv">'+(bk.email||'未入力')+'</span></div><div class="infor"><span class="ik">メッセージ</span><span class="iv">'+(bk.message||'なし')+'</span></div><button class="bd" style="border-color:#f43f5e;color:#be123c" onclick="tCancel(\''+k+'\',\''+date.toISOString().slice(0,10)+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">この予約をキャンセルする</button>';
   openPanel();
 }
-async function tCancelBk(k){ loading(true); await deleteBooking(k); delete bookings[k]; myBookings.delete(k); await loadData(); loading(false); closePanel(); renderT(); showToast('予約をキャンセルしました'); }
+async function tCancel(k,iso,t,menu,loc,name,email){
+  var sd=isTodayStr(iso);
+  L(true);await deleteBooking(k);L(false);
+  delete bookings[k];myBookings.delete(k);
+  var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日';
+  await sendMail(email,'【キャンセル】Trainer Reserve — '+ds+' '+t,mailHtmlCancel(name,ds,t,menu,loc,sd));
+  closePanel();await loadData();renderT();showToast('予約をキャンセルしました');
+}
 
 function openOffDetail(date,t,k){
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">対応不可の枠</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div style="background:#ffe4e6;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#9f1239">✕ 対応不可に設定されています</div><button class="bd" onclick="cancelOffSinglePanel(\''+k+'\')">対応不可を解除する</button>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">対応不可の枠</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div style="background:#ffe4e6;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#9f1239">✕ 対応不可に設定されています</div><button class="bd" onclick="cancelOffSingle(\''+k+'\')">対応不可を解除する</button>';
   openPanel();
 }
-async function cancelOffSinglePanel(k){ loading(true); await sb.from('slots').delete().match({date_key:k,is_off:true}); loading(false); delete offSlots[k]; closePanel(); renderT(); showToast('対応不可を解除しました'); }
+async function cancelOffSingle(k){L(true);await sb.from('slots').delete().match({date_key:k,is_off:true});L(false);delete offSlots[k];closePanel();renderT();showToast('対応不可を解除しました');}
 
 function openCPanel(date,t,ml,k){
-  var parts=ml.split('-'), menu=parts[0], loc=parts[1];
+  var p=ml.split('-'),menu=p[0],loc=p[1];
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var iso=date.toISOString().slice(0,10);
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約する</div><div class="psub">'+ds+'</div><div style="display:flex;gap:5px;margin-bottom:12px"><span class="ctag '+(MTAG[menu]||'')+'">'+MENUS[menu]+'</span><span class="ctag '+(LTAG[loc]||'')+'">'+LOCS[loc]+'</span></div><div style="background:#f5f5f5;border-radius:7px;padding:8px 11px;margin-bottom:14px;font-size:12px;color:#666">🕐 '+t+'〜'+et(t)+'（1時間）</div><div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="fn" placeholder="山田 太郎"></div><div class="fgrp"><label class="flbl">メールアドレス <span style="color:#e94560">*</span></label><input class="finp" id="fe" type="email" placeholder="yourmail@example.com"></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="fp" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メッセージ（任意）</label><textarea class="finp" id="fm" rows="2" placeholder="気になることなど"></textarea></div><button class="bp" onclick="confirmBk(\''+iso+'\',\''+t+'\',\''+ml+'\',\''+k+'\')">予約を確定する</button>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約する</div><div class="psub">'+ds+'</div><div style="display:flex;gap:5px;margin-bottom:12px"><span class="ctag '+(MTAG[menu]||'')+'">'+MENUS[menu]+'</span><span class="ctag '+(LTAG[loc]||'')+'">'+LOCS[loc]+'</span></div><div style="background:#f5f5f5;border-radius:7px;padding:8px 11px;margin-bottom:14px;font-size:12px;color:#666">🕐 '+t+'〜'+et(t)+'（1時間）</div><div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="fn" placeholder="山田 太郎"></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="fp" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メッセージ（任意）</label><textarea class="finp" id="fm" rows="2" placeholder="気になることなど"></textarea></div><button class="bp" onclick="confirmBk(\''+iso+'\',\''+t+'\',\''+ml+'\',\''+k+'\')">予約を確定する</button>';
   openPanel();
 }
-
 async function confirmBk(iso,t,ml,k){
   var name=document.getElementById('fn').value.trim();
-  var email=document.getElementById('fe').value.trim();
-  if(!name){ showToast('⚠ お名前を入力してください'); return; }
-  if(!email||email.indexOf('@')<0){ showToast('⚠ メールアドレスを入力してください'); return; }
-  var parts=ml.split('-'), menu=parts[0], loc=parts[1];
-  var phone=document.getElementById('fp').value;
-  var msg=document.getElementById('fm').value;
-  loading(true);
+  var email=myEmail;
+  if(!name){showToast('⚠ お名前を入力してください');return;}
+  if(!email){showToast('⚠ メールアドレスが取得できません');return;}
+  var p=ml.split('-'),menu=p[0],loc=p[1];
+  var phone=document.getElementById('fp').value,msg=document.getElementById('fm').value;
+  L(true);
   var ok=await saveBooking(k,menu,loc,name,email,phone,msg);
-  if(!ok){ loading(false); showToast('⚠ 予約に失敗しました。もう一度お試しください。'); return; }
+  if(!ok){L(false);showToast('⚠ 予約に失敗しました');return;}
   bookings[k]={date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg,created_at:new Date().toISOString()};
-  myEmail = email;
-  localStorage.setItem('myEmail', email);
-  myBookings.add(k);
+  myEmail=email;localStorage.setItem('myEmail',email);myBookings.add(k);
+  // clientsテーブルにメアドが登録されていれば自動消化
+  var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
+  if(cr.data){
+    await sb.from('clients').update({used_tickets:(cr.data.used_tickets||0)+1}).eq('email',email);
+    await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:1,note:'予約自動消化'});
+  }
   var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日';
-
-  // お客様へのメール送信
-  var clientHtml = '<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:0">'
-    + '<div style="background:#c2410c;padding:20px 24px">'
-    + '<div style="font-size:18px;font-weight:bold;color:#fff">Trainer Reserve</div>'
-    + '<div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px">ご予約確認</div>'
-    + '</div>'
-    + '<div style="padding:24px">'
-    + '<p style="font-size:14px;margin:0 0 16px">'+name+' 様</p>'
-    + '<p style="font-size:14px;margin:0 0 20px">以下の内容でご予約を承りました。</p>'
-    + '<table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px;margin-bottom:20px">'
-    + '<tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr>'
-    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr>'
-    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr>'
-    + '</table>'
-    + '<p style="font-size:13px;color:#666;line-height:1.7;margin:0">当日はお気をつけてお越しください。<br>ご不明な点はご連絡ください。</p>'
-    + '</div>'
-    + '<div style="border-top:1px solid #e5e5e5;padding:14px 24px">'
-    + '<p style="font-size:11px;color:#999;margin:0">このメールはTrainer Reserveより自動送信されています。</p>'
-    + '</div>'
-    + '</div>';
-
-  var trainerHtml = '<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:0">'
-    + '<div style="background:#1a1a2e;padding:20px 24px">'
-    + '<div style="font-size:18px;font-weight:bold;color:#fff">新規予約のお知らせ</div>'
-    + '<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px">Trainer Reserve</div>'
-    + '</div>'
-    + '<div style="padding:24px">'
-    + '<table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px">'
-    + '<tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr>'
-    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr>'
-    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr>'
-    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">お客様</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+name+' 様</td></tr>'
-    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">電話番号</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+(phone||'未入力')+'</td></tr>'
-    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メッセージ</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+(msg||'なし')+'</td></tr>'
-    + '</table>'
-    + '</div>'
-    + '</div>';
-
   await Promise.all([
-    sendEmail(email, '【予約確認】Trainer Reserve — '+ds+' '+t+'〜'+et(t), clientHtml),
-    sendEmail(TRAINER_EMAIL, '【新規予約】'+name+'様 — '+ds+' '+t+'〜'+et(t), trainerHtml)
+    sendMail(email,'【予約確認】Trainer Reserve — '+ds+' '+t+'〜'+et(t),mailHtmlClient(name,ds,t,menu,loc)),
+    sendMail(TR_EMAIL,'【新規予約】'+name+'様 — '+ds+' '+t+'〜'+et(t),mailHtmlTrainer(name,ds,t,menu,loc,phone,msg))
   ]);
-
-  loading(false);
-  // お客様側のみメール送信完了画面を表示
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closeMailPreview()">×</button>'
-    +'<div class="ptitle">✅ 予約が確定しました！</div>'
-    +'<div class="psub">確認メールをお送りしました</div>'
-    +'<div style="background:#dcfce7;border-radius:9px;padding:14px;margin-bottom:14px">'
-    +'<div style="font-size:13px;font-weight:700;color:#15803d;margin-bottom:8px">📧 '+email+' にメールを送りました</div>'
-    +'</div>'
-    +'<div class="infor"><span class="ik">日時</span><span class="iv">'+ds+'　'+t+'〜'+et(t)+'</span></div>'
-    +'<div class="infor"><span class="ik">メニュー</span><span class="iv">'+MENUS[menu]+'</span></div>'
-    +'<div class="infor"><span class="ik">場所</span><span class="iv">'+LOCS[loc]+'</span></div>'
-    +'<button class="bp" onclick="closeMailPreview()">閉じる</button>';
+  L(false);
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closeBk()">×</button><div class="ptitle">✅ 予約が確定しました！</div><div class="psub">確認メールをお送りしました</div><div style="background:#dcfce7;border-radius:9px;padding:14px;margin-bottom:14px"><div style="font-size:12px;color:#166534">📧 '+email+' にメールを送りました</div></div><div class="infor"><span class="ik">日時</span><span class="iv">'+ds+'　'+t+'〜'+et(t)+'</span></div><div class="infor"><span class="ik">メニュー</span><span class="iv">'+MENUS[menu]+'</span></div><div class="infor"><span class="ik">場所</span><span class="iv">'+LOCS[loc]+'</span></div><button class="bp" onclick="closeBk()">閉じる</button>';
   showToast('✅ '+name+'様の予約が完了しました！');
 }
-function closeMailPreview(){ closePanel(); if(mode==='client') renderC(); else renderT(); }
+function closeBk(){closePanel();renderC();}
 
 function openMyBk(date,t,k){
   var bk=bookings[k];
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">あなたの予約</div><div class="psub">'+ds+'</div><div style="background:#dcfce7;border-radius:9px;padding:12px 14px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#15803d;margin-bottom:4px">✅ 予約確定済み</div><div style="font-size:12px;color:#166534">🕐 '+t+'〜'+et(t)+'（1時間）</div></div><div class="infor"><span class="ik">メニュー</span><span class="iv">'+MENUS[bk.menu]+'</span></div><div class="infor"><span class="ik">場所</span><span class="iv">'+LOCS[bk.loc]+'</span></div><div class="infor"><span class="ik">お名前</span><span class="iv">'+bk.name+'</span></div><button class="bd" onclick="cancelMyBkPanel(\''+k+'\')">この予約をキャンセルする</button>';
+  var iso=localISO(date);
+  var sd=isTodayStr(iso);
+  var cancelBtn='<button class="bd" style="border-color:#f43f5e;color:#be123c;margin-top:8px" onclick="clientCancel(\''+k+'\',\''+iso+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">キャンセルする'+(sd?' (当日 → 1回消化)':'')+'</button>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">あなたの予約</div><div class="psub">'+ds+'</div><div style="background:#dcfce7;border-radius:9px;padding:12px 14px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#15803d;margin-bottom:4px">✅ 予約確定済み</div><div style="font-size:12px;color:#166534">🕐 '+t+'〜'+et(t)+'（1時間）</div></div><div class="infor"><span class="ik">メニュー</span><span class="iv">'+MENUS[bk.menu]+'</span></div><div class="infor"><span class="ik">場所</span><span class="iv">'+LOCS[bk.loc]+'</span></div>'+(sd?'<div style="background:#fef9c3;border:0.5px solid #fde047;border-radius:8px;padding:10px 12px;margin:10px 0;font-size:11px;color:#854d0e">⚠ 当日キャンセルは回数券1回分の消化となります</div>':'')+cancelBtn;
   openPanel();
 }
-async function cancelMyBkPanel(k){ loading(true); await deleteBooking(k); loading(false); delete bookings[k]; myBookings.delete(k); closePanel(); renderC(); showToast('予約をキャンセルしました'); }
+async function clientCancel(k,iso,t,menu,loc,name,email){
+  var sd=isTodayStr(iso);
+  if(sd){
+    if(!confirm('当日キャンセルのため、回数券1回分が消化されます。\nキャンセルしてよろしいですか？'))return;
+  } else {
+    if(!confirm('この予約をキャンセルしてよろしいですか？'))return;
+  }
+  }
+  L(true);await deleteBooking(k);L(false);
+  delete bookings[k];myBookings.delete(k);
+  var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日';
+  await Promise.all([
+    sendMail(email,'【キャンセル】Trainer Reserve — '+ds+' '+t,mailHtmlCancel(name,ds,t,menu,loc,sd)),
+    sendMail(TR_EMAIL,'【キャンセル】'+name+'様 — '+ds+' '+t+(sd?' (当日)':''),mailHtmlCancel(name,ds,t,menu,loc,sd))
+  ]);
+  closePanel();renderC();showToast('予約をキャンセルしました'+(sd?' (1回消化)':''));
+}
 
-// ===== お客様管理 =====
-var clients = [];
+function switchCTab(tab){
+  document.getElementById('ctab-cal').classList.toggle('active',tab==='cal');
+  document.getElementById('ctab-my').classList.toggle('active',tab==='my');
+  document.getElementById('ctab-cal-content').style.display=tab==='cal'?'block':'none';
+  document.getElementById('ctab-my-content').style.display=tab==='my'?'block':'none';
+  if(tab==='my')renderMyPage();
+}
+async function renderMyPage(){
+  var wrap=document.getElementById('mypage-content');
+  var saved=localStorage.getItem('myEmail')||'';
+  if(!saved){
+    wrap.innerHTML='<div style="font-size:13px;color:#666;margin-bottom:12px">メールアドレスを入力してください</div><input class="my-email-inp" id="my-email-inp" type="email" placeholder="yourmail@example.com"><button class="my-btn" onclick="loadMyPageData()">確認する</button>';
+    return;
+  }
+  await showMyPageData(saved,wrap);
+}
+async function loadMyPageData(){
+  var email=document.getElementById('my-email-inp').value.trim();
+  if(!email||email.indexOf('@')<0){showToast('⚠ メールアドレスを入力してください');return;}
+  myEmail=email;localStorage.setItem('myEmail',email);
+  await showMyPageData(email,document.getElementById('mypage-content'));
+}
+async function showMyPageData(email,wrap){
+  L(true);
+  var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
+  var br=await sb.from('bookings').select('*').eq('email',email).order('date_key',{ascending:false}).limit(10);
+  L(false);
+  var html='';
+  if(cr.data){
+    var c=cr.data,remain=(c.total_tickets||0)-(c.used_tickets||0);
+    var tcol=remain>3?'#16a34a':remain>0?'#f59e0b':'#e94560';
+    html+='<div style="font-size:16px;font-weight:700;margin-bottom:2px">'+c.name+' さん</div>';
+    html+='<div style="font-size:11px;color:#666;margin-bottom:12px">'+email+'</div>';
+    html+='<div class="my-remain-card"><div style="font-size:11px;color:#666;margin-bottom:6px">残り回数</div><div class="my-remain-num" style="color:'+tcol+'">'+remain+'<span style="font-size:18px;font-weight:400">回</span></div><div style="font-size:11px;color:#666;margin-top:4px">合計'+c.total_tickets+'回 / '+c.used_tickets+'回消化</div></div>';
+  } else {
+    html+='<div style="font-size:11px;color:#666;margin-bottom:12px">'+email+'</div>';
+  }
+  html+='<div style="font-size:12px;font-weight:700;margin-bottom:8px">予約履歴</div>';
+  if(br.data&&br.data.length>0){
+    br.data.forEach(function(bk){
+      var parts=bk.date_key.split('_'),iso=parts[0],t=parts[1]||'';
+      var ds=iso.slice(5).replace('-','/');
+      html+='<div class="my-bk-card"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500">'+ds+' '+t+'〜'+et(t)+'</div><span class="ctag '+(MTAG[bk.menu]||'')+'">'+MENUS[bk.menu]+'</span></div><div style="font-size:11px;color:#666;margin-top:3px">'+LOCS[bk.loc]+'</div></div>';
+    });
+  } else {
+    html+='<div style="font-size:13px;color:#999;text-align:center;padding:20px">予約履歴がありません</div>';
+  }
+  html+='<button onclick="changeEmail()" style="width:100%;padding:8px;background:none;border:0.5px solid #e5e5e5;border-radius:8px;font-size:12px;color:#666;cursor:pointer;margin-top:12px">別のメールアドレスで確認</button>';
+  wrap.innerHTML=html;
+}
+function changeEmail(){localStorage.removeItem('myEmail');myEmail='';renderMyPage();}
 
 function switchTTab(tab){
-  document.getElementById('ttab-cal').classList.toggle('active', tab==='cal');
-  document.getElementById('ttab-clients').classList.toggle('active', tab==='clients');
-  document.getElementById('ttab-cal-content').style.display = tab==='cal' ? 'block' : 'none';
-  document.getElementById('ttab-clients-content').style.display = tab==='clients' ? 'block' : 'none';
-  if(tab==='clients'){ loadClients(); }
+  document.getElementById('ttab-cal').classList.toggle('active',tab==='cal');
+  document.getElementById('ttab-clients').classList.toggle('active',tab==='clients');
+  document.getElementById('ttab-cal-content').style.display=tab==='cal'?'block':'none';
+  document.getElementById('ttab-clients-content').style.display=tab==='clients'?'block':'none';
+  if(tab==='clients')loadClients();
 }
-
-async function loadClients(){
-  var res = await sb.from('clients').select('*').order('name');
-  clients = res.data || [];
-  renderClients();
-}
-
+async function loadClients(){var r=await sb.from('clients').select('*').order('name');clients=r.data||[];renderClients();}
 function renderClients(){
-  var q = (document.getElementById('cm-search').value||'').toLowerCase();
-  var list = document.getElementById('cm-list');
-  var filtered = clients.filter(function(c){ return !q || c.name.toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q); });
-  if(!filtered.length){ list.innerHTML='<div style="text-align:center;color:#666;font-size:13px;padding:20px">お客様が見つかりません</div>'; return; }
-  list.innerHTML = filtered.map(function(c){
-    var remain = (c.total_tickets||0) - (c.used_tickets||0);
-    var tcls = remain > 3 ? 'ok' : remain > 0 ? 'low' : 'none';
-    var tlbl = remain > 0 ? '残り'+remain+'回' : '残り0回';
-    return '<div class="cm-card" onclick="openClientDetail(\''+c.email+'\')">'
-      +'<div class="cm-card-top"><span class="cm-name">'+c.name+'</span><span class="cm-ticket '+tcls+'">'+tlbl+'</span></div>'
-      +'<div class="cm-email">'+c.email+'</div>'
-      +(c.notes ? '<div style="font-size:11px;color:#666;margin-top:3px">'+c.notes+'</div>' : '')
-      +'</div>';
+  var q=(document.getElementById('cm-search').value||'').toLowerCase();
+  var list=document.getElementById('cm-list');
+  var f=clients.filter(function(c){return !q||c.name.toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q);});
+  if(!f.length){list.innerHTML='<div style="text-align:center;color:#666;font-size:13px;padding:20px">お客様が見つかりません</div>';return;}
+  list.innerHTML=f.map(function(c){
+    var r=(c.total_tickets||0)-(c.used_tickets||0);
+    var tcls=r>3?'cm-tk-ok':r>0?'cm-tk-low':'cm-tk-none';
+    return '<div class="cm-card" onclick="openClientDetail(\''+c.email+'\')"><div class="cm-card-top"><span class="cm-name">'+c.name+'</span><span class="'+tcls+'">残り'+r+'回</span></div><div class="cm-email">'+c.email+'</div>'+(c.notes?'<div style="font-size:11px;color:#666;margin-top:3px">'+c.notes+'</div>':'')+'</div>';
   }).join('');
 }
-
 function openAddClient(){
-  document.getElementById('pc').innerHTML=
-    '<button class="pcl" onclick="closePanel()">×</button>'
-    +'<div class="ptitle">お客様を新規登録</div>'
-    +'<div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="cl-name" placeholder="山田 花子"></div>'
-    +'<div class="fgrp"><label class="flbl">メールアドレス <span style="color:#e94560">*</span></label><input class="finp" id="cl-email" type="email" placeholder="hanako@example.com"></div>'
-    +'<div class="fgrp"><label class="flbl">回数券</label>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">'
-    +'<button onclick="setInitTicket(1)" id="tkt-1" style="padding:7px 14px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:12px;cursor:pointer">単発(1回)</button>'
-    +'<button onclick="setInitTicket(8)" id="tkt-8" style="padding:7px 14px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:12px;cursor:pointer">8回券</button>'
-    +'<button onclick="setInitTicket(16)" id="tkt-16" style="padding:7px 14px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:12px;cursor:pointer">16回券</button>'
-    +'</div></div>'
-    +'<div style="display:flex;gap:8px">'
-    +'<div class="fgrp" style="flex:1"><label class="flbl">購入済み回数</label><input class="finp" id="cl-total" type="number" min="0" value="0" placeholder="0"></div>'
-    +'<div class="fgrp" style="flex:1"><label class="flbl">消化済み回数</label><input class="finp" id="cl-used" type="number" min="0" value="0" placeholder="0"></div>'
-    +'</div>'
-    +'<div style="font-size:11px;color:#666;margin:-8px 0 12px">※途中から登録する場合は消化済み回数も入力してください</div>'
-    +'<div class="fgrp"><label class="flbl">メモ</label><input class="finp" id="cl-notes" placeholder="任意のメモ"></div>'
-    +'<button class="bp" onclick="saveNewClient()">登録する</button>';
-  _initTicket = 0;
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">お客様を新規登録</div><div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="cl-name" placeholder="山田 花子"></div><div class="fgrp"><label class="flbl">メールアドレス <span style="color:#e94560">*</span></label><input class="finp" id="cl-email" type="email" placeholder="hanako@example.com"></div><div class="fgrp"><label class="flbl">回数券</label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"><button id="tkt-1" onclick="setTkt(1)" style="padding:7px 14px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:12px;cursor:pointer">単発(1回)</button><button id="tkt-8" onclick="setTkt(8)" style="padding:7px 14px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:12px;cursor:pointer">8回券</button><button id="tkt-16" onclick="setTkt(16)" style="padding:7px 14px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:12px;cursor:pointer">16回券</button></div></div><div style="display:flex;gap:8px"><div class="fgrp" style="flex:1"><label class="flbl">購入済み</label><input class="finp" id="cl-total" type="number" min="0" value="0"></div><div class="fgrp" style="flex:1"><label class="flbl">消化済み</label><input class="finp" id="cl-used" type="number" min="0" value="0"></div></div><div style="font-size:11px;color:#999;margin:-8px 0 12px">途中登録の場合は消化済みも入力</div><div class="fgrp"><label class="flbl">メモ</label><input class="finp" id="cl-notes" placeholder="任意のメモ"></div><button class="bp" onclick="saveNewClient()">登録する</button>';
   openPanel();
 }
-
-var _initTicket = 0;
-function setInitTicket(n){
-  _initTicket = n;
-  ['1','8','16'].forEach(function(v){
-    var el=document.getElementById('tkt-'+v);
-    if(el){ el.style.borderColor='#e5e5e5'; el.style.background='#f5f5f5'; el.style.color='#1a1a1a'; }
-  });
-  var key = n===1?'1':n===8?'8':'16';
-  var el=document.getElementById('tkt-'+key);
-  if(el){ el.style.borderColor='#c2410c'; el.style.background='#fff1f2'; el.style.color='#c2410c'; }
-  // 購入済み回数を自動セット
-  var totalEl=document.getElementById('cl-total');
-  if(totalEl) totalEl.value=n;
-}
-
+function setTkt(n){['1','8','16'].forEach(function(v){var el=document.getElementById('tkt-'+v);if(el){el.style.borderColor='#e5e5e5';el.style.background='#f5f5f5';el.style.color='#1a1a1a';}});var el=document.getElementById('tkt-'+n);if(el){el.style.borderColor='#c2410c';el.style.background='#fff1f2';el.style.color='#c2410c';}var t=document.getElementById('cl-total');if(t)t.value=n;}
 async function saveNewClient(){
   var name=document.getElementById('cl-name').value.trim();
   var email=document.getElementById('cl-email').value.trim();
-  if(!name||!email){ showToast('⚠ 名前とメールは必須です'); return; }
+  if(!name||!email){showToast('⚠ 名前とメールは必須です');return;}
   var total=parseInt(document.getElementById('cl-total').value)||0;
   var used=parseInt(document.getElementById('cl-used').value)||0;
   var notes=document.getElementById('cl-notes').value.trim();
-  loading(true);
-  var res=await sb.from('clients').insert({name:name,email:email,total_tickets:total,used_tickets:used,notes:notes});
-  if(!res.error && total>0){
-    await sb.from('ticket_logs').insert({client_email:email,type:'purchase',amount:total,note:'初回登録'});
-  }
-  if(!res.error && used>0){
-    await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:used,note:'登録時消化分'});
-  }
-  loading(false);
-  if(res.error){ showToast('⚠ 登録失敗：'+res.error.message); return; }
-  closePanel(); await loadClients(); showToast('✅ 登録しました！');
+  L(true);var r=await sb.from('clients').insert({name:name,email:email,total_tickets:total,used_tickets:used,notes:notes});L(false);
+  if(r.error){showToast('⚠ 登録失敗：'+r.error.message);return;}
+  closePanel();await loadClients();showToast('✅ 登録しました！');
 }
-
 function openClientDetail(email){
-  var c = clients.find(function(x){ return x.email===email; });
-  if(!c) return;
-  var remain = (c.total_tickets||0)-(c.used_tickets||0);
-  var tcls = remain>3?'#16a34a':remain>0?'#f59e0b':'#e94560';
-  document.getElementById('pc').innerHTML=
-    '<button class="pcl" onclick="closePanel()">×</button>'
-    +'<div class="ptitle">'+c.name+'</div>'
-    +'<div class="psub">'+c.email+'</div>'
-    +'<div style="background:#f5f5f5;border-radius:10px;padding:14px;margin:12px 0;text-align:center">'
-    +'<div style="font-size:11px;color:#666;margin-bottom:4px">残り回数</div>'
-    +'<div style="font-size:32px;font-weight:700;color:'+tcls+'">'+remain+'<span style="font-size:16px;font-weight:400">回</span></div>'
-    +'<div style="font-size:11px;color:#666;margin-top:2px">合計'+c.total_tickets+'回購入 / '+c.used_tickets+'回消化</div>'
-    +'</div>'
-    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">回数券を追加・差し込む</div>'
-    +'<div style="display:flex;gap:6px;margin-bottom:14px">'
-    +'<button onclick="addTickets(\''+email+'\',1,\'単発\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;font-weight:500;cursor:pointer">＋単発</button>'
-    +'<button onclick="addTickets(\''+email+'\',8,\'8回券\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;font-weight:500;cursor:pointer">＋8回</button>'
-    +'<button onclick="addTickets(\''+email+'\',16,\'16回券\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;font-weight:500;cursor:pointer">＋16回</button>'
-    +'</div>'
-    +'<div style="display:flex;gap:6px;margin-bottom:14px">'
-    +'<input type="number" id="custom-tickets" min="1" max="99" placeholder="任意の回数" class="finp" style="flex:1">'
-    +'<button onclick="addCustomTickets(\''+email+'\')" style="padding:9px 14px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;font-weight:500;cursor:pointer">追加</button>'
-    +'</div>'
-    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">手動消化</div>'
-    +'<button onclick="consumeTicket(\''+email+'\')" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #f43f5e;background:#fff1f2;color:#be123c;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:6px">1回消化する（当日キャンセル等）</button>'
-    +(c.notes?'<div class="infor"><span class="ik">メモ</span><span class="iv">'+c.notes+'</span></div>':'');
+  var c=clients.find(function(x){return x.email===email;});if(!c)return;
+  var r=(c.total_tickets||0)-(c.used_tickets||0);
+  var tcol=r>3?'#16a34a':r>0?'#f59e0b':'#e94560';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">'+c.name+'</div><div class="psub">'+c.email+'</div><div style="background:#f5f5f5;border-radius:10px;padding:14px;margin:12px 0;text-align:center"><div style="font-size:11px;color:#666;margin-bottom:4px">残り回数</div><div style="font-size:32px;font-weight:700;color:'+tcol+'">'+r+'<span style="font-size:16px;font-weight:400">回</span></div><div style="font-size:11px;color:#666;margin-top:2px">合計'+c.total_tickets+'回 / '+c.used_tickets+'回消化</div></div><div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">回数券を追加・差し込む</div><div style="display:flex;gap:6px;margin-bottom:10px"><button onclick="addTix(\''+email+'\',1,\'単発\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;cursor:pointer">＋単発</button><button onclick="addTix(\''+email+'\',8,\'8回券\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;cursor:pointer">＋8回</button><button onclick="addTix(\''+email+'\',16,\'16回券\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;cursor:pointer">＋16回</button></div><div style="display:flex;gap:6px;margin-bottom:14px"><input type="number" id="custom-tix" min="1" max="99" placeholder="任意の回数" class="finp" style="flex:1"><button onclick="addCustomTix(\''+email+'\')" style="padding:9px 14px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;cursor:pointer">追加</button></div><button onclick="consumeTix(\''+email+'\')" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #f43f5e;background:#fff1f2;color:#be123c;font-size:13px;cursor:pointer;margin-bottom:6px">1回消化する（当日キャンセル等）</button>'+(c.notes?'<div class="infor"><span class="ik">メモ</span><span class="iv">'+c.notes+'</span></div>':'');
   openPanel();
 }
-
-async function addTickets(email, amount, label){
-  loading(true);
-  await sb.from('clients').update({total_tickets: clients.find(function(c){return c.email===email;}).total_tickets+amount}).eq('email',email);
+async function addTix(email,amount,label){
+  var c=clients.find(function(x){return x.email===email;});L(true);
+  await sb.from('clients').update({total_tickets:(c.total_tickets||0)+amount}).eq('email',email);
   await sb.from('ticket_logs').insert({client_email:email,type:'purchase',amount:amount,note:label+'追加'});
-  loading(false);
-  closePanel(); await loadClients(); showToast('✅ '+label+'を追加しました');
+  L(false);closePanel();await loadClients();showToast('✅ '+label+'を追加しました');
 }
-
-async function addCustomTickets(email){
-  var n=parseInt(document.getElementById('custom-tickets').value);
-  if(!n||n<1){ showToast('⚠ 回数を入力してください'); return; }
-  await addTickets(email, n, n+'回');
-}
-
-async function consumeTicket(email){
+async function addCustomTix(email){var n=parseInt(document.getElementById('custom-tix').value);if(!n||n<1){showToast('⚠ 回数を入力してください');return;}await addTix(email,n,n+'回');}
+async function consumeTix(email){
   var c=clients.find(function(x){return x.email===email;});
-  if(!c||(c.used_tickets||0)>=(c.total_tickets||0)){ showToast('⚠ 残り回数がありません'); return; }
-  loading(true);
-  await sb.from('clients').update({used_tickets:(c.used_tickets||0)+1}).eq('email',email);
-  await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:1,note:'手動消化'});
-  loading(false);
-  closePanel(); await loadClients(); showToast('1回消化しました');
+  if(!c||(c.used_tickets||0)>=(c.total_tickets||0)){showToast('⚠ 残り回数がありません');return;}
+  L(true);await sb.from('clients').update({used_tickets:(c.used_tickets||0)+1}).eq('email',email);await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:1,note:'手動消化'});L(false);
+  closePanel();await loadClients();showToast('1回消化しました');
 }
 
 function updStats(){
-  var ds=wkDates(wkOff).map(function(d){ return d.toISOString().slice(0,10); });
+  var ds=wkDates(wkOff).map(function(d){return d.toISOString().slice(0,10);});
   var a=0,b=0;
-  Object.keys(slotSets).forEach(function(k){ if(ds.some(function(d){ return k.startsWith(d); })&&!bookings[k]) a+=slotSets[k].size; });
-  Object.keys(bookings).forEach(function(k){ if(ds.some(function(d){ return k.startsWith(d); })) b++; });
-  document.getElementById('sta').textContent=a;
-  document.getElementById('stb').textContent=b;
+  Object.keys(slotSets).forEach(function(k){if(ds.some(function(d){return k.startsWith(d);})&&!bookings[k])a+=slotSets[k].size;});
+  Object.keys(bookings).forEach(function(k){if(ds.some(function(d){return k.startsWith(d);}))b++;});
+  document.getElementById('sta').textContent=a;document.getElementById('stb').textContent=b;
 }
+async function changeWeek(d){wkOff+=d;await loadData();if(mode==='trainer')renderT();else renderC();}
+function openPanel(){document.getElementById('panel').classList.add('open');document.getElementById('overlay').classList.add('show');}
+function closePanel(){document.getElementById('panel').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
 
-async function changeWeek(d){ wkOff+=d; await loadData(); if(mode==='trainer') renderT(); else renderC(); }
-
-async function setMode(m){
-  mode=m;
-  document.getElementById('btn-trainer').classList.toggle('active',m==='trainer');
-  document.getElementById('btn-client').classList.toggle('active',m==='client');
-  document.getElementById('trainer-screen').style.display=m==='trainer'?'block':'none';
-  document.getElementById('client-cal').style.display=m==='client'?'block':'none';
-  if(m==='trainer'){ cancelSel(); cancelOffMode(); await loadData(); renderT(); }
-  else { await loadData(); cMenu=''; cLoc=''; renderC(); }
-  loading(false);
-}
-
-function openPanel(){ document.getElementById('panel').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
-function closePanel(){ document.getElementById('panel').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-function showToast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },3000); }
-
-// ===== 起動 =====
-window.onload = function(){
-  document.getElementById('pw-btn').onclick = function(){
-    var val = document.getElementById('pw-input').value.trim();
-    if(val === TRAINER_PW){
+window.onload=function(){
+  document.getElementById('pw-btn').onclick=function(){
+    var val=document.getElementById('pw-input').value.trim();
+    if(val===TR_PW){
       document.getElementById('pw-screen').style.display='none';
       document.getElementById('topbar').style.display='flex';
-      document.getElementById('btn-trainer').style.display='';
-      document.getElementById('btn-client').style.display='';
-      loading(true);
-      loadData().then(function(){ setMode('trainer'); });
+      document.getElementById('topbar-badge').textContent='トレーナー';
+      document.getElementById('topbar-badge').className='tbadge tbadge-t';
+      document.getElementById('trainer-screen').style.display='block';
+      mode='trainer';L(true);loadData().then(function(){renderT();L(false);});
     } else {
       document.getElementById('pw-err').textContent='パスワードが違います';
-      document.getElementById('pw-input').value='';
-      document.getElementById('pw-input').focus();
+      document.getElementById('pw-input').value='';document.getElementById('pw-input').focus();
     }
   };
-  document.getElementById('pw-input').onkeydown = function(e){
-    if(e.key==='Enter') document.getElementById('pw-btn').onclick();
-  };
-  document.getElementById('client-link').onclick = function(){
-    document.getElementById('pw-screen').style.display='none';
-    document.getElementById('topbar').style.display='flex';
-    document.getElementById('btn-trainer').style.display='none';
-    document.getElementById('btn-client').style.display='';
-    loading(true);
-    loadData().then(function(){ setMode('client'); });
-  };
+  document.getElementById('pw-input').onkeydown=function(e){if(e.key==='Enter')document.getElementById('pw-btn').onclick();};
+  var clInp=document.getElementById('cl-email-inp');
+  if(clInp){
+    clInp.onkeydown=function(e){if(e.key==='Enter')doClientLogin();};
+    var saved=localStorage.getItem('myEmail');
+    if(saved)clInp.value=saved;
+  }
 };
 </script>
 </body>
