@@ -133,6 +133,27 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .stag-te{background:#fce7f3;color:#9d174d;}
 .stag-ty{background:#d1fae5;color:#065f46;}
 
+/* TRAINER TABS */
+.t-tabs{display:flex;border-bottom:0.5px solid #e5e5e5;background:#fff;position:sticky;top:44px;z-index:40;}
+.t-tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:#666;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.t-tab.active{color:#c2410c;border-bottom-color:#c2410c;}
+
+/* CLIENT MGMT */
+.cm-wrap{padding:12px 14px;}
+.cm-search{width:100%;padding:8px 12px;border:0.5px solid #e5e5e5;border-radius:8px;font-size:13px;margin-bottom:12px;background:#fff;color:#1a1a1a;}
+.cm-search:focus{outline:none;border-color:#c2410c;}
+.cm-card{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .12s;}
+.cm-card:hover{border-color:#c2410c;}
+.cm-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.cm-name{font-size:14px;font-weight:500;color:#1a1a1a;}
+.cm-ticket{font-size:13px;font-weight:700;}
+.cm-ticket.ok{color:#16a34a;}
+.cm-ticket.low{color:#f59e0b;}
+.cm-ticket.none{color:#e94560;}
+.cm-email{font-size:11px;color:#666;}
+.cm-add-btn{width:100%;padding:11px;background:#c2410c;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:12px;}
+.cm-add-btn:hover{opacity:.88;}
+
 /* CLIENT SELECT */
 #client-screen{display:none;}
 .cs-wrap{padding:20px 16px;}
@@ -222,6 +243,13 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 
 <!-- TRAINER -->
 <div id="trainer-screen">
+  <div class="t-tabs">
+    <button class="t-tab active" id="ttab-cal" onclick="switchTTab('cal')">カレンダー</button>
+    <button class="t-tab" id="ttab-clients" onclick="switchTTab('clients')">お客様管理</button>
+  </div>
+
+  <!-- カレンダータブ -->
+  <div id="ttab-cal-content">
   <div class="mode-selector">
     <button class="msel-btn mode-add" id="msel-add" onclick="toggleSelMode()">
       <span class="msel-icon">＋</span>空き枠を追加
@@ -272,43 +300,22 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
     <div class="cal-head" id="cal-head-t"></div>
     <div class="cal-body" id="cal-body-t"></div>
   </div></div>
-</div>
+  </div><!-- end ttab-cal-content -->
 
-<!-- CLIENT SELECT -->
-<div id="client-screen">
-  <div class="cs-wrap">
-    <div class="cs-step">Step 1</div>
-    <div class="cs-title">メニューを選んでください</div>
-    <div class="cs-cards">
-      <div class="cs-card" id="card-pilates" onclick="selMenu('pilates')">
-        <div class="cs-card-icon">🧘</div>
-        <div class="cs-card-name">ピラティス</div>
-        <div class="cs-card-sub">目黒 / 横浜</div>
-      </div>
-      <div class="cs-card" id="card-training" onclick="selMenu('training')">
-        <div class="cs-card-icon">💪</div>
-        <div class="cs-card-name">パーソナルトレーニング</div>
-        <div class="cs-card-sub">恵比寿 / 横浜</div>
-      </div>
-    </div>
-    <div id="loc-step" style="display:none">
-      <div class="cs-step">Step 2</div>
-      <div class="cs-title">場所を選んでください</div>
-      <div class="cs-locs" id="loc-chips"></div>
-    </div>
-    <div class="cs-bar">
-      <div class="cs-bar-info" id="cs-info">メニューと場所を選んでください</div>
-      <button class="go-btn" id="go-btn" onclick="goToCal()" disabled>空きを見る →</button>
+  <!-- お客様管理タブ -->
+  <div id="ttab-clients-content" style="display:none">
+    <div class="cm-wrap">
+      <button class="cm-add-btn" onclick="openAddClient()">＋ お客様を新規登録</button>
+      <input class="cm-search" id="cm-search" placeholder="名前・メアドで検索..." oninput="renderClients()">
+      <div id="cm-list"></div>
     </div>
   </div>
 </div>
 
-<!-- CLIENT CAL -->
+<!-- CLIENT CAL (直接カレンダーを表示) -->
 <div id="client-cal">
-  <div class="ccal-header">
-    <button class="back-btn" onclick="backToSel()">← 選び直す</button>
-    <span class="ctag" id="cch-m"></span>
-    <span class="ctag" id="cch-l"></span>
+  <div class="ccal-header" style="justify-content:center;">
+    <span style="font-size:13px;font-weight:500;color:var(--color-text-secondary)">空き枠をタップして予約</span>
   </div>
   <div class="week-bar">
     <button class="wbtn" onclick="changeWeek(-1)">‹</button>
@@ -332,22 +339,17 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const TRAINER_PW = 'masa1127';
 const TRAINER_EMAIL = 'masa.nu.pe.27@gmail.com';
-const RESEND_API_KEY = 're_UBS9FP9Z_Fi7pgHjow93nM8S39V6QyHLh';
+const RESEND_API_KEY = 're_ALAmmJA2_HAkKierL9yRaUhtEBJ6Jz6WJ';
 
 async function sendEmail(to, subject, html){
   try {
-    var res = await fetch('https://api.resend.com/emails', {
+    var res = await fetch('https://lxcfkcmqnlueacxagemn.supabase.co/functions/v1/send-email', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + RESEND_API_KEY,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_KEY
       },
-      body: JSON.stringify({
-        from: 'Trainer Reserve <onboarding@resend.dev>',
-        to: [to],
-        subject: subject,
-        html: html
-      })
+      body: JSON.stringify({ to: to, subject: subject, html: html })
     });
     var data = await res.json();
     console.log('メール送信結果:', data);
@@ -417,8 +419,25 @@ async function loadData(){
     else { if(!slotSets[k]) slotSets[k]=new Set(); slotSets[k].add(row.menu+'-'+row.loc); }
   });
   var r2 = await sb.from('bookings').select('*').gte('date_key',startIso).lte('date_key',endIso+'_z');
-  bookings={};
-  (r2.data||[]).forEach(function(row){ bookings[row.date_key]=row; });
+  // SafariのlocalStorage対策：毎回読み直す
+  myEmail = localStorage.getItem('myEmail') || '';
+  // お客様側では他人の予約は date_key だけ保持（個人情報を隠す）
+  var rawBookings={};
+  (r2.data||[]).forEach(function(row){ rawBookings[row.date_key]=row; });
+
+  if(mode==='client'){
+    bookings={};
+    Object.keys(rawBookings).forEach(function(k){
+      // 自分の予約はそのまま、他人のは最低限の情報だけ
+      if(myEmail && rawBookings[k].email===myEmail){
+        bookings[k]=rawBookings[k];
+      } else {
+        bookings[k]={date_key:k, menu:rawBookings[k].menu, loc:rawBookings[k].loc, message:rawBookings[k].message};
+      }
+    });
+  } else {
+    bookings=rawBookings;
+  }
   var r3 = await sb.from('day_offs').select('*').gte('date_iso',startIso).lte('date_iso',endIso);
   dayOffs={};
   (r3.data||[]).forEach(function(row){ dayOffs[row.date_iso]=true; });
@@ -438,46 +457,55 @@ async function deleteAllSlots(dk){ await sb.from('slots').delete().eq('date_key'
 async function saveDayOff(iso){ await sb.from('day_offs').upsert({date_iso:iso},{onConflict:'date_iso'}); await sb.from('slots').delete().like('date_key',iso+'%'); }
 async function deleteDayOff(iso){ await sb.from('day_offs').delete().eq('date_iso',iso); }
 async function saveBooking(dk,menu,loc,name,email,phone,message){
+  // 1時間枠 = このスロットと30分後のスロット両方を予約済みにする
   var res = await sb.from('bookings').insert({date_key:dk,menu:menu,loc:loc,name:name,email:email,phone:phone,message:message});
+  if(!res.error){
+    // 30分後のスロットキーを計算してブロック用レコードを追加
+    var nextKey = getNextSlotKey(dk);
+    if(nextKey){
+      // 30分後は同じ予約情報でブロック（お客様名は同じ、blocked=trueで区別）
+      await sb.from('bookings').upsert({date_key:nextKey,menu:menu,loc:loc,name:name,email:email,phone:phone,message:'__blocked__'},{onConflict:'date_key'});
+    }
+  }
   return !res.error;
 }
-async function deleteBooking(dk){ await sb.from('bookings').delete().eq('date_key',dk); }
+async function deleteBooking(dk){
+  await sb.from('bookings').delete().eq('date_key',dk);
+  // 30分後のブロックも解除
+  var nextKey = getNextSlotKey(dk);
+  if(nextKey){
+    await sb.from('bookings').delete().match({date_key:nextKey,message:'__blocked__'});
+  }
+}
+
+function getNextSlotKey(dk){
+  // dk = "2026-05-09_10:00" → "2026-05-09_10:30"
+  var parts = dk.split('_');
+  if(parts.length < 2) return null;
+  var dateStr = parts[0];
+  var timeStr = parts[1];
+  var tp = timeStr.split(':');
+  var h = parseInt(tp[0]), m = parseInt(tp[1]);
+  var totalMins = h*60+m+30;
+  var nh = Math.floor(totalMins/60), nm = totalMins%60;
+  if(nh > 21) return null; // 21:30以降はなし
+  return dateStr+'_'+nh+':'+(nm===0?'00':'30');
+}
 
 // ===== CLIENT SELECT =====
 function selMenu(m){
   cMenu=m; cLoc='';
   document.querySelectorAll('.cs-card').forEach(function(c){c.classList.remove('selected');});
   document.getElementById('card-'+m).classList.add('selected');
-  document.getElementById('loc-step').style.display='block';
-  var chips=document.getElementById('loc-chips'); chips.innerHTML='';
-  ['meguro','yokohama','ebisu'].forEach(function(l){
-    var ok=(ML[m]||[]).indexOf(l)>=0;
-    var d=document.createElement('div');
-    d.className='cs-loc'+(ok?'':' unavail');
-    d.textContent=LOCS[l];
-    if(ok) d.onclick=function(){ selLoc(l); };
-    chips.appendChild(d);
-  });
-  updCS();
-}
-function selLoc(l){
-  cLoc=l;
-  document.querySelectorAll('.cs-loc').forEach(function(c){c.classList.remove('selected');});
-  document.querySelectorAll('.cs-loc').forEach(function(c){ if(c.textContent===LOCS[l]) c.classList.add('selected'); });
-  updCS();
-}
-function updCS(){
   var info=document.getElementById('cs-info'), btn=document.getElementById('go-btn');
-  if(cMenu&&cLoc){ info.innerHTML='<b>'+MENUS[cMenu]+'・'+LOCS[cLoc]+'</b> で空き枠を探します'; btn.disabled=false; }
-  else if(cMenu){ info.textContent=MENUS[cMenu]+' — 場所を選んでください'; btn.disabled=true; }
-  else { info.textContent='メニューと場所を選んでください'; btn.disabled=true; }
+  info.innerHTML='<b>'+MENUS[m]+'</b> の空き枠を探します';
+  btn.disabled=false;
 }
 async function goToCal(){
-  if(!cMenu||!cLoc) return;
+  if(!cMenu) return;
   document.getElementById('client-screen').style.display='none';
   document.getElementById('client-cal').style.display='block';
   var mt=document.getElementById('cch-m'); mt.textContent=MENUS[cMenu]; mt.className='ctag '+MTAG[cMenu];
-  var lt=document.getElementById('cch-l'); lt.textContent=LOCS[cLoc]; lt.className='ctag '+LTAG[cLoc];
   await loadData();
   renderC();
 }
@@ -594,37 +622,57 @@ function renderT(){
       var bk=bookings[k];
       var cell=document.createElement('div'); cell.className='cell';
       var slot=document.createElement('div'); slot.className='slot'; slot.dataset.k=k;
-      if(past){ slot.classList.add('t-idle'); slot.style.opacity='0.2'; slot.style.pointerEvents='none'; }
-      else if(doff){ slot.classList.add('t-dayoff'); slot.innerHTML='<span class="x-off">✕</span>'; }
+      // __blocked__（30分後ブロック）は非表示
+      if(bk&&bk.message==='__blocked__'){
+        var emptySlot=document.createElement('div'); emptySlot.className='slot t-idle'; emptySlot.style.opacity='0';
+        cell.appendChild(emptySlot); body.appendChild(cell);
+      } else if(past){ slot.classList.add('t-idle'); slot.style.opacity='0.2'; slot.style.pointerEvents='none'; cell.appendChild(slot); body.appendChild(cell); }
+      else if(doff){ slot.classList.add('t-dayoff'); slot.innerHTML='<span class="x-off">✕</span>'; cell.appendChild(slot); body.appendChild(cell); }
       else if(bk){
         slot.classList.add(BKC[bk.loc]||'t-bk-m');
+        slot.style.gridRow='span 2'; slot.style.height='auto';
         var last=bk.name.split(/[\s\u3000]/)[0];
-        slot.innerHTML='<span style="font-size:7px;font-weight:700;overflow:hidden;max-width:100%;text-overflow:ellipsis" class="'+BLC[bk.loc]+'">'+LOCS[bk.loc]+'：'+last+'様</span>';
+        slot.innerHTML='<span style="font-size:7px;font-weight:700;overflow:hidden;max-width:100%;text-overflow:ellipsis" class="'+BLC[bk.loc]+'">'+LOCS[bk.loc]+'：'+last+'様<br><span style="font-weight:400">'+t+'〜'+et(t)+'</span></span>';
         if(!selMode&&!offMode){ (function(dd,tt,kk){ slot.onclick=function(){ openBkDetail(dd,tt,kk); }; })(date,t,k); }
-      } else if(selMode&&isSel){ slot.classList.add('t-sel-add'); if(hasSets) slot.appendChild(mkTags(sets)); else slot.innerHTML='<span style="font-size:9px;color:#fff">✓</span>'; }
-      else if(offMode&&isOffSel){ slot.classList.add('t-sel-off'); slot.innerHTML='<span style="font-size:9px;color:#fff">✕</span>'; }
-      else if(isOff){ slot.classList.add('t-off'); slot.innerHTML='<span class="x-off">✕</span>'; if(!selMode&&!offMode){ (function(dd,tt,kk){ slot.onclick=function(){ openOffDetail(dd,tt,kk); }; })(date,t,k); } }
-      else if(hasSets){ slot.classList.add(selMode?'t-avail-add':(offMode?'t-avail-off':'t-avail')); slot.appendChild(mkTags(sets)); if(!selMode&&!offMode){ (function(dd,tt,kk){ slot.onclick=function(){ openSlotDetail(dd,tt,kk); }; })(date,t,k); } }
-      else { slot.classList.add(selMode?'t-idle-add':(offMode?'t-idle-off':'t-idle')); if(selMode||offMode) slot.innerHTML='<span style="font-size:9px;opacity:.5">'+(selMode?'＋':'✕')+'</span>'; }
-      if(!past&&selMode&&!doff&&!bk){
-        (function(kk,sl){ sl.onmousedown=function(e){ e.preventDefault(); drag=true; if(selCells.has(kk)) selCells.delete(kk); else selCells.add(kk); updSC(); rSel(); }; sl.onmouseenter=function(){ if(drag&&!selCells.has(kk)){ selCells.add(kk); updSC(); sl.classList.add('t-sel-add'); } }; sl.ontouchstart=function(e){ e.preventDefault(); if(selCells.has(kk)) selCells.delete(kk); else selCells.add(kk); updSC(); rSel(); }; })(k,slot);
-      } else if(!past&&offMode&&!doff&&!bk){
-        (function(kk,sl){ sl.onmousedown=function(e){ e.preventDefault(); drag=true; if(offCells.has(kk)) offCells.delete(kk); else offCells.add(kk); updOC(); rOff(); }; sl.onmouseenter=function(){ if(drag&&!offCells.has(kk)){ offCells.add(kk); updOC(); sl.classList.add('t-sel-off'); } }; sl.ontouchstart=function(e){ e.preventDefault(); if(offCells.has(kk)) offCells.delete(kk); else offCells.add(kk); updOC(); rOff(); }; })(k,slot);
+        cell.appendChild(slot); body.appendChild(cell);
+      } else if(selMode&&isSel){ slot.classList.add('t-sel-add'); if(hasSets) slot.appendChild(mkTags(sets)); else slot.innerHTML='<span style="font-size:9px;color:#fff">✓</span>'; cell.appendChild(slot); body.appendChild(cell); }
+      else if(offMode&&isOffSel){ slot.classList.add('t-sel-off'); slot.innerHTML='<span style="font-size:9px;color:#fff">✕</span>'; cell.appendChild(slot); body.appendChild(cell); }
+      else if(isOff){ slot.classList.add('t-off'); slot.innerHTML='<span class="x-off">✕</span>'; if(!selMode&&!offMode){ (function(dd,tt,kk){ slot.onclick=function(){ openOffDetail(dd,tt,kk); }; })(date,t,k); } cell.appendChild(slot); body.appendChild(cell); }
+      else if(hasSets){ slot.classList.add(selMode?'t-avail-add':(offMode?'t-avail-off':'t-avail')); slot.appendChild(mkTags(sets)); if(!selMode&&!offMode){ (function(dd,tt,kk){ slot.onclick=function(){ openSlotDetail(dd,tt,kk); }; })(date,t,k); } cell.appendChild(slot); body.appendChild(cell); }
+      else {
+        slot.classList.add(selMode?'t-idle-add':(offMode?'t-idle-off':'t-idle')); if(selMode||offMode) slot.innerHTML='<span style="font-size:9px;opacity:.5">'+(selMode?'＋':'✕')+'</span>';
+        if(!past&&selMode&&!doff&&!bk){
+          (function(kk,sl){ sl.onmousedown=function(e){ e.preventDefault(); drag=true; if(selCells.has(kk)) selCells.delete(kk); else selCells.add(kk); updSC(); rSel(); }; sl.onmouseenter=function(){ if(drag&&!selCells.has(kk)){ selCells.add(kk); updSC(); sl.classList.add('t-sel-add'); } }; sl.ontouchstart=function(e){ e.preventDefault(); if(selCells.has(kk)) selCells.delete(kk); else selCells.add(kk); updSC(); rSel(); }; })(k,slot);
+        } else if(!past&&offMode&&!doff&&!bk){
+          (function(kk,sl){ sl.onmousedown=function(e){ e.preventDefault(); drag=true; if(offCells.has(kk)) offCells.delete(kk); else offCells.add(kk); updOC(); rOff(); }; sl.onmouseenter=function(){ if(drag&&!offCells.has(kk)){ offCells.add(kk); updOC(); sl.classList.add('t-sel-off'); } }; sl.ontouchstart=function(e){ e.preventDefault(); if(offCells.has(kk)) offCells.delete(kk); else offCells.add(kk); updOC(); rOff(); }; })(k,slot);
+        }
+        cell.appendChild(slot); body.appendChild(cell);
       }
-      cell.appendChild(slot); body.appendChild(cell);
     });
   });
   updStats();
 }
 
-function rSel(){ document.querySelectorAll('.slot[data-k]').forEach(function(el){ if(selCells.has(el.dataset.k)) el.classList.add('t-sel-add'); else el.classList.remove('t-sel-add'); }); }
-function rOff(){ document.querySelectorAll('.slot[data-k]').forEach(function(el){ if(offCells.has(el.dataset.k)) el.classList.add('t-sel-off'); else el.classList.remove('t-sel-off'); }); }
+// 次の30分スロットのキーを取得
+function nextHalfKey(dateIso, t){
+  var tp=t.split(':'), h=parseInt(tp[0]), m=parseInt(tp[1]);
+  var tot=h*60+m+30;
+  var nh=Math.floor(tot/60), nm=tot%60;
+  return dateIso+'_'+nh+':'+(nm===0?'00':'30');
+}
+// 1時間分（このスロット＋次の30分）が両方空きかチェック
+function isFullHourFree(dateIso, t){
+  var k2=nextHalfKey(dateIso,t);
+  var bk2=bookings[k2];
+  var off2=!!offSlots[k2];
+  return !bk2&&!off2;
+}
 document.addEventListener('mouseup', function(){ drag=false; });
 
 function renderC(){
   var dates=wkDates(wkOff);
   document.getElementById('wlbl-c').textContent=fmt(dates[0])+' – '+fmt(dates[6]);
-  var ml=cMenu+'-'+cLoc, COL='30px repeat(7,1fr)';
+  var COL='30px repeat(7,1fr)';
   var head=document.getElementById('cal-head-c');
   head.style.gridTemplateColumns=COL;
   var hHTML='<div></div>';
@@ -632,26 +680,147 @@ function renderC(){
   head.innerHTML=hHTML;
   var body=document.getElementById('cal-body-c');
   body.style.gridTemplateColumns=COL; body.innerHTML='';
+
   TIMES.forEach(function(t){
     var parts=t.split(':'), m=parseInt(parts[1]);
     var tl=document.createElement('div'); tl.className='tlbl'; tl.textContent=m===0?t:'·';
     body.appendChild(tl);
+
     dates.forEach(function(date){
       var k=ck(date,t), iso=date.toISOString().slice(0,10);
       var doff=!!dayOffs[iso], isOff=!!offSlots[k];
-      var sets=slotSets[k], hasML=sets&&sets.has(ml);
-      var bk=bookings[k], mine=myBookings.has(k), past=isPastDate(date);
+      var sets=slotSets[k];
+      var bk=bookings[k], mine=(myBookings.has(k) || (myEmail && bk && bk.email===myEmail)), past=isPastDate(date);
       var cell=document.createElement('div'); cell.className='cell';
       var slot=document.createElement('div'); slot.className='slot';
-      if(doff||isOff){ slot.classList.add('c-off'); slot.innerHTML='<span style="font-size:9px;color:#f43f5e;font-weight:700">✕</span>'; }
-      else if(past){ slot.classList.add('c-empty'); }
-      else if(mine){ slot.classList.add('c-mine'); slot.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>'; (function(dd,tt,kk){ slot.onclick=function(){ openMyBk(dd,tt,kk); }; })(date,t,k); }
-      else if(bk){ slot.classList.add('c-booked'); slot.innerHTML='<span style="font-size:8px;opacity:.5">✕</span>'; }
-      else if(!hasML){ slot.classList.add('c-empty'); }
-      else { slot.classList.add('c-avail'); slot.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>'; (function(dd,tt,kk){ slot.onclick=function(){ openCPanel(dd,tt,ml,kk); }; })(date,t,k); }
+
+      // __blocked__スロット（1時間枠の後半30分）は非表示
+      if(bk&&bk.message==='__blocked__'){
+        slot.classList.add('c-empty'); slot.style.opacity='0';
+        cell.appendChild(slot); body.appendChild(cell);
+        return;
+      }
+
+      // 自分の予約（前半スロット）
+      if(mine){
+        slot.classList.add('c-mine'); slot.style.gridRow='span 2';
+        slot.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済<br>'+t+'〜'+et(t)+'</span>';
+        (function(dd,tt,kk){ slot.onclick=function(){ openMyBk(dd,tt,kk); }; })(date,t,k);
+        cell.appendChild(slot); body.appendChild(cell);
+        return;
+      }
+
+      // 予約済み（他の人）
+      if(bk){
+        slot.classList.add('c-booked'); slot.style.gridRow='span 2';
+        slot.innerHTML='<span style="font-size:8px;opacity:.5">✕</span>';
+        cell.appendChild(slot); body.appendChild(cell);
+        return;
+      }
+
+      // 空き枠チェック：次の30分も空きかどうか
+      var fullHourFree = isFullHourFree(iso, t);
+
+      // 予約可能な全メニュー・場所の組み合わせを取得
+      var availMls=[];
+      if(sets&&!bk&&!past&&!doff&&!isOff&&fullHourFree){
+        sets.forEach(function(ml){ availMls.push(ml); });
+      }
+
+      if(doff||isOff){
+        slot.classList.add('c-off'); slot.innerHTML='<span style="font-size:9px;color:#f43f5e;font-weight:700">✕</span>';
+      } else if(past){
+        slot.classList.add('c-empty');
+      } else if(availMls.length>0){
+        // 1時間分空き → span 2で大きく表示
+        slot.classList.add('c-avail'); slot.style.gridRow='span 2'; slot.style.height='auto';
+        slot.innerHTML='<span style="font-size:8px;font-weight:600">予約する<br><span style="font-weight:400;opacity:.7">'+t+'〜'+et(t)+'</span></span>';
+        (function(dd,tt,kk,mls){ slot.onclick=function(){ openMenuPicker(dd,tt,kk,mls); }; })(date,t,k,availMls);
+      } else if(sets&&sets.size>0&&!fullHourFree){
+        // 空きはあるが1時間分取れない → ✕
+        slot.classList.add('c-off'); slot.innerHTML='<span style="font-size:9px;color:#f43f5e;font-weight:700">✕</span>';
+      } else {
+        slot.classList.add('c-empty');
+      }
       cell.appendChild(slot); body.appendChild(cell);
     });
   });
+}
+
+// メニュー選択ポップアップ（緑枠タップ時）
+function openMenuPicker(date,t,k,availMls){
+  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
+  // 利用可能なメニューを抽出
+  var availMenus={};
+  availMls.forEach(function(ml){
+    var parts=ml.split('-'), menu=parts[0], loc=parts[1];
+    if(!availMenus[menu]) availMenus[menu]=[];
+    availMenus[menu].push(loc);
+  });
+  var menuBtns='';
+  ['pilates','training'].forEach(function(menu){
+    var locs=availMenus[menu];
+    if(locs&&locs.length>0){
+      menuBtns+='<button onclick="openLocPickerFromMenu(\''+date.toISOString().slice(0,10)+'\',\''+t+'\',\''+menu+'\',\''+k+'\')" style="width:100%;padding:14px;margin-bottom:10px;border-radius:10px;border:2px solid #e5e5e5;background:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;">'
+        +'<span style="font-size:20px">'+(menu==='pilates'?'🧘':'💪')+'</span>'
+        +'<div><div style="color:#1a1a1a">'+MENUS[menu]+'</div><div style="font-size:11px;color:#666;font-weight:400;margin-top:2px">'+locs.map(function(l){return LOCS[l];}).join(' / ')+'</div></div>'
+        +'</button>';
+    } else {
+      menuBtns+='<div style="width:100%;padding:14px;margin-bottom:10px;border-radius:10px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:14px;color:#9ca3af;display:flex;align-items:center;gap:10px;">'
+        +'<span style="font-size:20px;opacity:.4">'+(menu==='pilates'?'🧘':'💪')+'</span>'
+        +'<div><div>'+MENUS[menu]+'</div><div style="font-size:11px;margin-top:2px">この時間は予約不可</div></div>'
+        +'</div>';
+    }
+  });
+  document.getElementById('pc').innerHTML=
+    '<button class="pcl" onclick="closePanel()">×</button>'
+    +'<div class="ptitle">メニューを選んでください</div>'
+    +'<div class="psub">'+ds+'　'+t+'〜'+et(t)+'（1時間）</div>'
+    +'<div style="margin-top:12px">'+menuBtns+'</div>';
+  openPanel();
+}
+
+function openLocPickerFromMenu(iso,t,menu,k){
+  var date=new Date(iso);
+  var sets=slotSets[ck(date,t)]||new Set();
+  var availLocs=[];
+  (ML[menu]||[]).forEach(function(loc){
+    if(sets.has(menu+'-'+loc)) availLocs.push(loc);
+  });
+  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
+  var locBtns='';
+  (ML[menu]||[]).forEach(function(loc){
+    var avail=availLocs.indexOf(loc)>=0;
+    var bg={meguro:'#dbeafe',yokohama:'#fef9c3',ebisu:'#fce7f3'}[loc];
+    var tc={meguro:'#1e40af',yokohama:'#854d0e',ebisu:'#9d174d'}[loc];
+    if(avail){
+      locBtns+='<button onclick="selectLocAndBook(\''+iso+'\',\''+t+'\',\''+menu+'\',\''+loc+'\',\''+k+'\')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:2px solid '+tc+';background:'+bg+';color:'+tc+';font-size:14px;font-weight:700;cursor:pointer;text-align:left;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">→ 予約する</span></button>';
+    } else {
+      locBtns+='<div style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:1.5px solid #e5e5e5;background:#f5f5f5;color:#9ca3af;font-size:14px;font-weight:700;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">予約不可</span></div>';
+    }
+  });
+  // 戻る用にグローバル変数に保存
+  window._backToMenuArgs = [date, t, k, Array.from(sets)];
+  document.getElementById('pc').innerHTML=
+    '<button class="pcl" onclick="closePanel()">×</button>'
+    +'<button onclick="goBackToMenu()" style="background:none;border:none;color:#666;font-size:12px;cursor:pointer;padding:0 0 8px 0">← 戻る</button>'
+    +'<div class="ptitle">場所を選んでください</div>'
+    +'<div class="psub">'+MENUS[menu]+'　'+ds+'　'+t+'〜'+et(t)+'</div>'
+    +'<div style="margin-top:12px">'+locBtns+'</div>';
+}
+
+function goBackToMenu(){
+  var args = window._backToMenuArgs;
+  if(args) openMenuPicker(args[0], args[1], args[2], args[3]);
+}
+
+function openLocPicker(date,t,k,availLocs){} // 旧関数（互換のため残す）
+
+function selectLocAndBook(iso,t,menu,loc,k){
+  closePanel();
+  // openCPanelを直接呼ぶ
+  var dateObj=new Date(iso);
+  openCPanel(dateObj,t,menu+'-'+loc,k);
 }
 
 // ===== PANELS =====
@@ -710,30 +879,42 @@ async function confirmBk(iso,t,ml,k){
   var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日';
 
   // お客様へのメール送信
-  var clientHtml = '<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:20px">'
-    + '<h2 style="color:#c2410c">Trainer Reserve — ご予約確認</h2>'
-    + '<p>'+name+' 様、ご予約ありがとうございます。</p>'
-    + '<table style="width:100%;border-collapse:collapse;margin:16px 0">'
-    + '<tr><td style="padding:8px;background:#f5f5f5;font-weight:bold">日時</td><td style="padding:8px">'+ds+'　'+t+'〜'+et(t)+'（1時間）</td></tr>'
-    + '<tr><td style="padding:8px;background:#f5f5f5;font-weight:bold">メニュー</td><td style="padding:8px">'+MENUS[menu]+'</td></tr>'
-    + '<tr><td style="padding:8px;background:#f5f5f5;font-weight:bold">場所</td><td style="padding:8px">'+LOCS[loc]+'</td></tr>'
-    + '<tr><td style="padding:8px;background:#f5f5f5;font-weight:bold">担当</td><td style="padding:8px">鈴木雅哉トレーナー</td></tr>'
+  var clientHtml = '<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:0">'
+    + '<div style="background:#c2410c;padding:20px 24px">'
+    + '<div style="font-size:18px;font-weight:bold;color:#fff">Trainer Reserve</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px">ご予約確認</div>'
+    + '</div>'
+    + '<div style="padding:24px">'
+    + '<p style="font-size:14px;margin:0 0 16px">'+name+' 様</p>'
+    + '<p style="font-size:14px;margin:0 0 20px">以下の内容でご予約を承りました。</p>'
+    + '<table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px;margin-bottom:20px">'
+    + '<tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr>'
+    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr>'
+    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr>'
     + '</table>'
-    + '<p>当日はお気をつけてお越しください。<br>ご不明な点はトレーナーまでご連絡ください。</p>'
-    + '<p style="color:#999;font-size:12px">このメールはTrainer Reserveより自動送信されています。</p>'
+    + '<p style="font-size:13px;color:#666;line-height:1.7;margin:0">当日はお気をつけてお越しください。<br>ご不明な点はご連絡ください。</p>'
+    + '</div>'
+    + '<div style="border-top:1px solid #e5e5e5;padding:14px 24px">'
+    + '<p style="font-size:11px;color:#999;margin:0">このメールはTrainer Reserveより自動送信されています。</p>'
+    + '</div>'
     + '</div>';
 
-  // トレーナーへの通知メール
-  var trainerHtml = '<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:20px">'
-    + '<h2 style="color:#c2410c">Trainer Reserve — 新規予約通知</h2>'
-    + '<table style="width:100%;border-collapse:collapse;margin:16px 0">'
-    + '<tr><td style="padding:8px;background:#f5f5f5;font-weight:bold">日時</td><td style="padding:8px">'+ds+'　'+t+'〜'+et(t)+'</td></tr>'
-    + '<tr><td style="padding:8px;background:#f5f5f5;font-weight:bold">メニュー</td><td style="padding:8px">'+MENUS[menu]+'</td></tr>'
-    + '<tr><td style="padding:8px;background:#f5f5f5;font-weight:bold">場所</td><td style="padding:8px">'+LOCS[loc]+'</td></tr>'
-    + '<tr><td style="padding:8px;background:#f5f5f5;font-weight:bold">お客様</td><td style="padding:8px">'+name+' 様</td></tr>'
-    + '<tr><td style="padding:8px;background:#f5f5f5;font-weight:bold">電話番号</td><td style="padding:8px">'+(phone||'未入力')+'</td></tr>'
-    + '<tr><td style="padding:8px;background:#f5f5f5;font-weight:bold">メッセージ</td><td style="padding:8px">'+(msg||'なし')+'</td></tr>'
-    + '</table></div>';
+  var trainerHtml = '<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:0">'
+    + '<div style="background:#1a1a2e;padding:20px 24px">'
+    + '<div style="font-size:18px;font-weight:bold;color:#fff">新規予約のお知らせ</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px">Trainer Reserve</div>'
+    + '</div>'
+    + '<div style="padding:24px">'
+    + '<table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px">'
+    + '<tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr>'
+    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr>'
+    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr>'
+    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">お客様</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+name+' 様</td></tr>'
+    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">電話番号</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+(phone||'未入力')+'</td></tr>'
+    + '<tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メッセージ</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+(msg||'なし')+'</td></tr>'
+    + '</table>'
+    + '</div>'
+    + '</div>';
 
   await Promise.all([
     sendEmail(email, '【予約確認】Trainer Reserve — '+ds+' '+t+'〜'+et(t), clientHtml),
@@ -764,6 +945,152 @@ function openMyBk(date,t,k){
 }
 async function cancelMyBkPanel(k){ loading(true); await deleteBooking(k); loading(false); delete bookings[k]; myBookings.delete(k); closePanel(); renderC(); showToast('予約をキャンセルしました'); }
 
+// ===== お客様管理 =====
+var clients = [];
+
+function switchTTab(tab){
+  document.getElementById('ttab-cal').classList.toggle('active', tab==='cal');
+  document.getElementById('ttab-clients').classList.toggle('active', tab==='clients');
+  document.getElementById('ttab-cal-content').style.display = tab==='cal' ? 'block' : 'none';
+  document.getElementById('ttab-clients-content').style.display = tab==='clients' ? 'block' : 'none';
+  if(tab==='clients'){ loadClients(); }
+}
+
+async function loadClients(){
+  var res = await sb.from('clients').select('*').order('name');
+  clients = res.data || [];
+  renderClients();
+}
+
+function renderClients(){
+  var q = (document.getElementById('cm-search').value||'').toLowerCase();
+  var list = document.getElementById('cm-list');
+  var filtered = clients.filter(function(c){ return !q || c.name.toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q); });
+  if(!filtered.length){ list.innerHTML='<div style="text-align:center;color:#666;font-size:13px;padding:20px">お客様が見つかりません</div>'; return; }
+  list.innerHTML = filtered.map(function(c){
+    var remain = (c.total_tickets||0) - (c.used_tickets||0);
+    var tcls = remain > 3 ? 'ok' : remain > 0 ? 'low' : 'none';
+    var tlbl = remain > 0 ? '残り'+remain+'回' : '残り0回';
+    return '<div class="cm-card" onclick="openClientDetail(\''+c.email+'\')">'
+      +'<div class="cm-card-top"><span class="cm-name">'+c.name+'</span><span class="cm-ticket '+tcls+'">'+tlbl+'</span></div>'
+      +'<div class="cm-email">'+c.email+'</div>'
+      +(c.notes ? '<div style="font-size:11px;color:#666;margin-top:3px">'+c.notes+'</div>' : '')
+      +'</div>';
+  }).join('');
+}
+
+function openAddClient(){
+  document.getElementById('pc').innerHTML=
+    '<button class="pcl" onclick="closePanel()">×</button>'
+    +'<div class="ptitle">お客様を新規登録</div>'
+    +'<div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="cl-name" placeholder="山田 花子"></div>'
+    +'<div class="fgrp"><label class="flbl">メールアドレス <span style="color:#e94560">*</span></label><input class="finp" id="cl-email" type="email" placeholder="hanako@example.com"></div>'
+    +'<div class="fgrp"><label class="flbl">回数券</label>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">'
+    +'<button onclick="setInitTicket(1)" id="tkt-1" style="padding:7px 14px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:12px;cursor:pointer">単発(1回)</button>'
+    +'<button onclick="setInitTicket(8)" id="tkt-8" style="padding:7px 14px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:12px;cursor:pointer">8回券</button>'
+    +'<button onclick="setInitTicket(16)" id="tkt-16" style="padding:7px 14px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;font-size:12px;cursor:pointer">16回券</button>'
+    +'</div></div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<div class="fgrp" style="flex:1"><label class="flbl">購入済み回数</label><input class="finp" id="cl-total" type="number" min="0" value="0" placeholder="0"></div>'
+    +'<div class="fgrp" style="flex:1"><label class="flbl">消化済み回数</label><input class="finp" id="cl-used" type="number" min="0" value="0" placeholder="0"></div>'
+    +'</div>'
+    +'<div style="font-size:11px;color:#666;margin:-8px 0 12px">※途中から登録する場合は消化済み回数も入力してください</div>'
+    +'<div class="fgrp"><label class="flbl">メモ</label><input class="finp" id="cl-notes" placeholder="任意のメモ"></div>'
+    +'<button class="bp" onclick="saveNewClient()">登録する</button>';
+  _initTicket = 0;
+  openPanel();
+}
+
+var _initTicket = 0;
+function setInitTicket(n){
+  _initTicket = n;
+  ['1','8','16'].forEach(function(v){
+    var el=document.getElementById('tkt-'+v);
+    if(el){ el.style.borderColor='#e5e5e5'; el.style.background='#f5f5f5'; el.style.color='#1a1a1a'; }
+  });
+  var key = n===1?'1':n===8?'8':'16';
+  var el=document.getElementById('tkt-'+key);
+  if(el){ el.style.borderColor='#c2410c'; el.style.background='#fff1f2'; el.style.color='#c2410c'; }
+  // 購入済み回数を自動セット
+  var totalEl=document.getElementById('cl-total');
+  if(totalEl) totalEl.value=n;
+}
+
+async function saveNewClient(){
+  var name=document.getElementById('cl-name').value.trim();
+  var email=document.getElementById('cl-email').value.trim();
+  if(!name||!email){ showToast('⚠ 名前とメールは必須です'); return; }
+  var total=parseInt(document.getElementById('cl-total').value)||0;
+  var used=parseInt(document.getElementById('cl-used').value)||0;
+  var notes=document.getElementById('cl-notes').value.trim();
+  loading(true);
+  var res=await sb.from('clients').insert({name:name,email:email,total_tickets:total,used_tickets:used,notes:notes});
+  if(!res.error && total>0){
+    await sb.from('ticket_logs').insert({client_email:email,type:'purchase',amount:total,note:'初回登録'});
+  }
+  if(!res.error && used>0){
+    await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:used,note:'登録時消化分'});
+  }
+  loading(false);
+  if(res.error){ showToast('⚠ 登録失敗：'+res.error.message); return; }
+  closePanel(); await loadClients(); showToast('✅ 登録しました！');
+}
+
+function openClientDetail(email){
+  var c = clients.find(function(x){ return x.email===email; });
+  if(!c) return;
+  var remain = (c.total_tickets||0)-(c.used_tickets||0);
+  var tcls = remain>3?'#16a34a':remain>0?'#f59e0b':'#e94560';
+  document.getElementById('pc').innerHTML=
+    '<button class="pcl" onclick="closePanel()">×</button>'
+    +'<div class="ptitle">'+c.name+'</div>'
+    +'<div class="psub">'+c.email+'</div>'
+    +'<div style="background:#f5f5f5;border-radius:10px;padding:14px;margin:12px 0;text-align:center">'
+    +'<div style="font-size:11px;color:#666;margin-bottom:4px">残り回数</div>'
+    +'<div style="font-size:32px;font-weight:700;color:'+tcls+'">'+remain+'<span style="font-size:16px;font-weight:400">回</span></div>'
+    +'<div style="font-size:11px;color:#666;margin-top:2px">合計'+c.total_tickets+'回購入 / '+c.used_tickets+'回消化</div>'
+    +'</div>'
+    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">回数券を追加・差し込む</div>'
+    +'<div style="display:flex;gap:6px;margin-bottom:14px">'
+    +'<button onclick="addTickets(\''+email+'\',1,\'単発\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;font-weight:500;cursor:pointer">＋単発</button>'
+    +'<button onclick="addTickets(\''+email+'\',8,\'8回券\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;font-weight:500;cursor:pointer">＋8回</button>'
+    +'<button onclick="addTickets(\''+email+'\',16,\'16回券\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;font-weight:500;cursor:pointer">＋16回</button>'
+    +'</div>'
+    +'<div style="display:flex;gap:6px;margin-bottom:14px">'
+    +'<input type="number" id="custom-tickets" min="1" max="99" placeholder="任意の回数" class="finp" style="flex:1">'
+    +'<button onclick="addCustomTickets(\''+email+'\')" style="padding:9px 14px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;font-weight:500;cursor:pointer">追加</button>'
+    +'</div>'
+    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">手動消化</div>'
+    +'<button onclick="consumeTicket(\''+email+'\')" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #f43f5e;background:#fff1f2;color:#be123c;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:6px">1回消化する（当日キャンセル等）</button>'
+    +(c.notes?'<div class="infor"><span class="ik">メモ</span><span class="iv">'+c.notes+'</span></div>':'');
+  openPanel();
+}
+
+async function addTickets(email, amount, label){
+  loading(true);
+  await sb.from('clients').update({total_tickets: clients.find(function(c){return c.email===email;}).total_tickets+amount}).eq('email',email);
+  await sb.from('ticket_logs').insert({client_email:email,type:'purchase',amount:amount,note:label+'追加'});
+  loading(false);
+  closePanel(); await loadClients(); showToast('✅ '+label+'を追加しました');
+}
+
+async function addCustomTickets(email){
+  var n=parseInt(document.getElementById('custom-tickets').value);
+  if(!n||n<1){ showToast('⚠ 回数を入力してください'); return; }
+  await addTickets(email, n, n+'回');
+}
+
+async function consumeTicket(email){
+  var c=clients.find(function(x){return x.email===email;});
+  if(!c||(c.used_tickets||0)>=(c.total_tickets||0)){ showToast('⚠ 残り回数がありません'); return; }
+  loading(true);
+  await sb.from('clients').update({used_tickets:(c.used_tickets||0)+1}).eq('email',email);
+  await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:1,note:'手動消化'});
+  loading(false);
+  closePanel(); await loadClients(); showToast('1回消化しました');
+}
+
 function updStats(){
   var ds=wkDates(wkOff).map(function(d){ return d.toISOString().slice(0,10); });
   var a=0,b=0;
@@ -780,10 +1107,9 @@ async function setMode(m){
   document.getElementById('btn-trainer').classList.toggle('active',m==='trainer');
   document.getElementById('btn-client').classList.toggle('active',m==='client');
   document.getElementById('trainer-screen').style.display=m==='trainer'?'block':'none';
-  document.getElementById('client-screen').style.display=m==='client'?'block':'none';
-  document.getElementById('client-cal').style.display='none';
+  document.getElementById('client-cal').style.display=m==='client'?'block':'none';
   if(m==='trainer'){ cancelSel(); cancelOffMode(); await loadData(); renderT(); }
-  else { await loadData(); cMenu=''; cLoc=''; document.getElementById('loc-step').style.display='none'; document.querySelectorAll('.cs-card').forEach(function(c){ c.classList.remove('selected'); }); updCS(); }
+  else { await loadData(); cMenu=''; cLoc=''; renderC(); }
   loading(false);
 }
 
