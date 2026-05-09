@@ -636,7 +636,8 @@ async function confirmTrainerBook(iso,t,k){
     sendMail(TR_EMAIL,'【新規予約】'+name+'様 — '+ds+' '+t+'〜'+et(t),mailHtmlTrainer(name,ds,t,menu,loc,phone,msg))
   ]);
   L(false);closePanel();await loadData();renderT();showToast('✅ '+name+'様の予約を入れました');
-}var p=ml.split('-');L(true);await deleteSlot(k,p[0],p[1]);L(false);if(slotSets[k])slotSets[k].delete(ml);if(slotSets[k]&&!slotSets[k].size)delete slotSets[k];closePanel();renderT();showToast('削除しました');}
+}
+async function rmMl(k,ml){var p=ml.split('-');L(true);await deleteSlot(k,p[0],p[1]);L(false);if(slotSets[k])slotSets[k].delete(ml);if(slotSets[k]&&!slotSets[k].size)delete slotSets[k];closePanel();renderT();showToast('削除しました');}
 async function rmAll(k){L(true);await deleteAllSlots(k);L(false);delete slotSets[k];closePanel();renderT();showToast('全設定を削除しました');}
 function addToSel(k){closePanel();if(!selMode)toggleSelMode();selCells.add(k);updSC();}
 
