@@ -196,6 +196,18 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
   </div>
 </div>
 
+<div class="pw-screen" id="client-login-screen">
+  <div class="pw-box">
+    <div class="pw-logo">Trainer <span>Reserve</span></div>
+    <div class="pw-sub">メールアドレスでログイン</div>
+    <label class="flbl">メールアドレス</label>
+    <input class="pw-input" id="cl-email-inp" type="email" placeholder="yourmail@example.com">
+    <div class="pw-err" id="cl-email-err"></div>
+    <button class="pw-btn" style="background:#16a34a" onclick="doClientLogin()">入る</button>
+    <div class="pw-back" onclick="backToLogin()">← 戻る</div>
+  </div>
+</div>
+
 <div class="pw-screen" id="pw-screen">
   <div class="pw-box">
     <div class="pw-logo">Trainer <span>Reserve</span></div>
@@ -331,7 +343,8 @@ function L(s){document.getElementById('loading').style.display=s?'flex':'none';}
 function isPast(d){var t=new Date();t.setHours(0,0,0,0);var x=new Date(d);x.setHours(0,0,0,0);return x<t;}
 function isToday(d){return d.toDateString()===new Date().toDateString();}
 function isTodayStr(iso){return new Date(iso).toDateString()===new Date().toDateString();}
-function ck(d,t){return d.toISOString().slice(0,10)+'_'+t;}
+function localISO(d){var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+dd;}
+function ck(d,t){return localISO(d)+'_'+t;}
 function et(t){return (parseInt(t)+1)+':00';}
 function fmt(d){return (d.getMonth()+1)+'/'+d.getDate();}
 function wkDates(o){
@@ -343,6 +356,19 @@ function wkDates(o){
 function goTrainerPw(){document.getElementById('login-screen').style.display='none';document.getElementById('pw-screen').style.display='flex';setTimeout(function(){document.getElementById('pw-input').focus();},100);}
 function goClientMode(){
   document.getElementById('login-screen').style.display='none';
+  document.getElementById('client-login-screen').style.display='flex';
+  setTimeout(function(){document.getElementById('cl-email-inp').focus();},100);
+}
+async function doClientLogin(){
+  var email=document.getElementById('cl-email-inp').value.trim();
+  if(!email||email.indexOf('@')<0){document.getElementById('cl-email-err').textContent='正しいメールアドレスを入力してください';return;}
+  L(true);
+  var r=await sb.from('clients').select('id').eq('email',email).maybeSingle();
+  L(false);
+  if(!r.data){document.getElementById('cl-email-err').textContent='登録されていないメールアドレスです';return;}
+  localStorage.setItem('myEmail',email);
+  myEmail=email;
+  document.getElementById('client-login-screen').style.display='none';
   mode='client';
   document.getElementById('topbar').style.display='flex';
   document.getElementById('topbar-badge').textContent='お客様';
@@ -353,6 +379,7 @@ function goClientMode(){
 function backToLogin(){
   ['login-screen'].forEach(function(id){document.getElementById(id).style.display='flex';});
   document.getElementById('pw-screen').style.display='none';
+  document.getElementById('client-login-screen').style.display='none';
   document.getElementById('topbar').style.display='none';
   document.getElementById('trainer-screen').style.display='none';
   document.getElementById('client-screen').style.display='none';
@@ -364,7 +391,7 @@ function backToLogin(){
 async function loadData(){
   L(true);
   var dates=wkDates(wkOff);
-  var s=dates[0].toISOString().slice(0,10),e=dates[6].toISOString().slice(0,10);
+  var s=localISO(dates[0]),e=localISO(dates[6]);
   var r1=await sb.from('slots').select('*').gte('date_key',s).lte('date_key',e+'_z');
   slotSets={};offSlots={};
   (r1.data||[]).forEach(function(row){
@@ -457,7 +484,7 @@ function renderT(){
   var head=document.getElementById('cal-head-t');
   head.style.gridTemplateColumns=COL;
   head.innerHTML='<div></div>'+dates.map(function(d){
-    var iso=d.toISOString().slice(0,10),doff=!!dayOffs[iso],past=isPast(d);
+    var iso=localISO(d),doff=!!dayOffs[iso],past=isPast(d);
     var dy=d.getDay();
     var dcls=(dy===6?' sat':dy===0?' sun':'');
     return '<div class="cdh'+(doff?' day-off':'')+(offMode&&!past?' off-mode-hover':'')+'" id="hdr-'+iso+'" style="'+(past?'opacity:.35':'')+'">'
@@ -469,7 +496,7 @@ function renderT(){
   TIMES.forEach(function(t){
     var tl=document.createElement('div');tl.className='tlbl';tl.textContent=t;body.appendChild(tl);
     dates.forEach(function(date){
-      var k=ck(date,t),iso=date.toISOString().slice(0,10);
+      var k=ck(date,t),iso=localISO(date);
       var sets=slotSets[k],hasSets=sets&&sets.size>0;
       var isOff=!!offSlots[k],doff=!!dayOffs[iso],past=isPast(date);
       var isSel=selCells.has(k),isOffSel=offCells.has(k),bk=bookings[k];
@@ -508,7 +535,7 @@ function renderC(){
   head.innerHTML='<div></div>'+dates.map(function(d){
     var dy=d.getDay();
     var dcls=(dy===6?' sat':dy===0?' sun':'');
-    return '<div class="cdh'+(dayOffs[d.toISOString().slice(0,10)]?' day-off':'')+'">'
+    return '<div class="cdh'+(dayOffs[localISO(d)]?' day-off':'')+'">'
       +'<div class="cdn'+dcls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+dcls+'">'+d.getDate()+'</div><div class="dob"></div></div>';
   }).join('');
   var body=document.getElementById('cal-body-c');
@@ -516,7 +543,7 @@ function renderC(){
   TIMES.forEach(function(t){
     var tl=document.createElement('div');tl.className='tlbl';tl.textContent=t;body.appendChild(tl);
     dates.forEach(function(date){
-      var k=ck(date,t),iso=date.toISOString().slice(0,10);
+      var k=ck(date,t),iso=localISO(date);
       var doff=!!dayOffs[iso],isOff=!!offSlots[k],sets=slotSets[k];
       var bk=bookings[k],mine=myBookings.has(k),past=isPast(date);
       var availMls=[];
@@ -540,7 +567,7 @@ function openMenuPicker(date,t,k,availMls){
   var btns='';
   ['pilates','training'].forEach(function(menu){
     var locs=aM[menu];
-    if(locs&&locs.length>0){btns+='<button onclick="openLocPicker(\''+date.toISOString().slice(0,10)+'\',\''+t+'\',\''+menu+'\',\''+k+'\')" style="width:100%;padding:14px;margin-bottom:10px;border-radius:10px;border:2px solid #e5e5e5;background:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;"><span style="font-size:20px">'+(menu==='pilates'?'🧘':'💪')+'</span><div><div>'+MENUS[menu]+'</div><div style="font-size:11px;color:#666;font-weight:400;margin-top:2px">'+locs.map(function(l){return LOCS[l];}).join(' / ')+'</div></div></button>';}
+    if(locs&&locs.length>0){btns+='<button onclick="openLocPicker(\''+localISO(date)+'\',\''+t+'\',\''+menu+'\',\''+k+'\')" style="width:100%;padding:14px;margin-bottom:10px;border-radius:10px;border:2px solid #e5e5e5;background:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;"><span style="font-size:20px">'+(menu==='pilates'?'🧘':'💪')+'</span><div><div>'+MENUS[menu]+'</div><div style="font-size:11px;color:#666;font-weight:400;margin-top:2px">'+locs.map(function(l){return LOCS[l];}).join(' / ')+'</div></div></button>';}
   });
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">メニューを選んでください</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'（1時間）</div><div style="margin-top:12px">'+btns+'</div>';
   openPanel();
@@ -568,10 +595,48 @@ function openSlotDetail(date,t,k){
   var sets=slotSets[k]||new Set();
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var rows='';sets.forEach(function(ml){rows+='<div class="infor"><span class="stag '+(TC[ml]||'')+'" style="font-size:10px;padding:2px 7px">'+(TL[ml]||ml)+'</span><div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:#16a34a">空き</span><button onclick="rmMl(\''+k+'\',\''+ml+'\')" style="font-size:9px;padding:2px 6px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer">削除</button></div></div>';});
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">空き枠の詳細</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div>'+rows+'<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px"><button class="bp" onclick="addToSel(\''+k+'\')">この枠に追加設定 →</button><button class="bd" onclick="rmAll(\''+k+'\')">全設定を削除</button></div>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">空き枠の詳細</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div>'+rows+'<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px"><button class="bp" style="background:#16a34a" onclick="openTrainerBook(\''+localISO(date)+'\',\''+t+'\',\''+k+'\')">📋 お客様の予約を入れる</button><button class="bp" onclick="addToSel(\''+k+'\')">この枠に追加設定 →</button><button class="bd" onclick="rmAll(\''+k+'\')">全設定を削除</button></div>';
   openPanel();
 }
-async function rmMl(k,ml){var p=ml.split('-');L(true);await deleteSlot(k,p[0],p[1]);L(false);if(slotSets[k])slotSets[k].delete(ml);if(slotSets[k]&&!slotSets[k].size)delete slotSets[k];closePanel();renderT();showToast('削除しました');}
+async function openTrainerBook(iso,t,k){
+  L(true);
+  var cr=await sb.from('clients').select('*').order('name');
+  L(false);
+  var clientList=cr.data||[];
+  var sets=slotSets[k]||new Set();
+  var mlOpts='';[...sets].forEach(function(ml){mlOpts+='<option value="'+ml+'">'+TL[ml]+'</option>';});
+  var clientOpts='<option value="">-- お客様を選択 --</option>';
+  clientList.forEach(function(c){clientOpts+='<option value="'+c.email+'">'+c.name+'（'+c.email+'）</option>';});
+  var date=new Date(iso+'T00:00:00');
+  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約を入れる</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div class="fgrp"><label class="flbl">お客様 <span style="color:#e94560">*</span></label><select class="finp" id="tb-client">'+clientOpts+'</select></div><div class="fgrp"><label class="flbl">メニュー・場所 <span style="color:#e94560">*</span></label><select class="finp" id="tb-ml">'+mlOpts+'</select></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="tb-phone" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メモ</label><input class="finp" id="tb-msg" placeholder="任意"></div><button class="bp" style="background:#1a1a2e" onclick="confirmTrainerBook(\''+iso+'\',\''+t+'\',\''+k+'\')">予約を確定する</button>';
+  openPanel();
+}
+async function confirmTrainerBook(iso,t,k){
+  var email=document.getElementById('tb-client').value;
+  var ml=document.getElementById('tb-ml').value;
+  var phone=document.getElementById('tb-phone').value;
+  var msg=document.getElementById('tb-msg').value;
+  if(!email){showToast('⚠ お客様を選択してください');return;}
+  if(!ml){showToast('⚠ メニューを選択してください');return;}
+  var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
+  if(!cr.data){showToast('⚠ お客様が見つかりません');return;}
+  var name=cr.data.name;
+  var p=ml.split('-'),menu=p[0],loc=p[1];
+  L(true);
+  var ok=await saveBooking(k,menu,loc,name,email,phone,msg);
+  if(!ok){L(false);showToast('⚠ 予約に失敗しました');return;}
+  bookings[k]={date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg};
+  await sb.from('clients').update({used_tickets:(cr.data.used_tickets||0)+1}).eq('email',email);
+  await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:1,note:'トレーナーによる予約入力'});
+  var date=new Date(iso+'T00:00:00');
+  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日';
+  await Promise.all([
+    sendMail(email,'【予約確認】Trainer Reserve — '+ds+' '+t+'〜'+et(t),mailHtmlClient(name,ds,t,menu,loc)),
+    sendMail(TR_EMAIL,'【新規予約】'+name+'様 — '+ds+' '+t+'〜'+et(t),mailHtmlTrainer(name,ds,t,menu,loc,phone,msg))
+  ]);
+  L(false);closePanel();await loadData();renderT();showToast('✅ '+name+'様の予約を入れました');
+}var p=ml.split('-');L(true);await deleteSlot(k,p[0],p[1]);L(false);if(slotSets[k])slotSets[k].delete(ml);if(slotSets[k]&&!slotSets[k].size)delete slotSets[k];closePanel();renderT();showToast('削除しました');}
 async function rmAll(k){L(true);await deleteAllSlots(k);L(false);delete slotSets[k];closePanel();renderT();showToast('全設定を削除しました');}
 function addToSel(k){closePanel();if(!selMode)toggleSelMode();selCells.add(k);updSC();}
 
@@ -603,14 +668,14 @@ function openCPanel(date,t,ml,k){
   var p=ml.split('-'),menu=p[0],loc=p[1];
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var iso=date.toISOString().slice(0,10);
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約する</div><div class="psub">'+ds+'</div><div style="display:flex;gap:5px;margin-bottom:12px"><span class="ctag '+(MTAG[menu]||'')+'">'+MENUS[menu]+'</span><span class="ctag '+(LTAG[loc]||'')+'">'+LOCS[loc]+'</span></div><div style="background:#f5f5f5;border-radius:7px;padding:8px 11px;margin-bottom:14px;font-size:12px;color:#666">🕐 '+t+'〜'+et(t)+'（1時間）</div><div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="fn" placeholder="山田 太郎"></div><div class="fgrp"><label class="flbl">メールアドレス <span style="color:#e94560">*</span></label><input class="finp" id="fe" type="email" placeholder="yourmail@example.com"></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="fp" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メッセージ（任意）</label><textarea class="finp" id="fm" rows="2" placeholder="気になることなど"></textarea></div><button class="bp" onclick="confirmBk(\''+iso+'\',\''+t+'\',\''+ml+'\',\''+k+'\')">予約を確定する</button>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約する</div><div class="psub">'+ds+'</div><div style="display:flex;gap:5px;margin-bottom:12px"><span class="ctag '+(MTAG[menu]||'')+'">'+MENUS[menu]+'</span><span class="ctag '+(LTAG[loc]||'')+'">'+LOCS[loc]+'</span></div><div style="background:#f5f5f5;border-radius:7px;padding:8px 11px;margin-bottom:14px;font-size:12px;color:#666">🕐 '+t+'〜'+et(t)+'（1時間）</div><div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="fn" placeholder="山田 太郎"></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="fp" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メッセージ（任意）</label><textarea class="finp" id="fm" rows="2" placeholder="気になることなど"></textarea></div><button class="bp" onclick="confirmBk(\''+iso+'\',\''+t+'\',\''+ml+'\',\''+k+'\')">予約を確定する</button>';
   openPanel();
 }
 async function confirmBk(iso,t,ml,k){
   var name=document.getElementById('fn').value.trim();
-  var email=document.getElementById('fe').value.trim();
+  var email=myEmail;
   if(!name){showToast('⚠ お名前を入力してください');return;}
-  if(!email||email.indexOf('@')<0){showToast('⚠ メールアドレスを入力してください');return;}
+  if(!email){showToast('⚠ メールアドレスが取得できません');return;}
   var p=ml.split('-'),menu=p[0],loc=p[1];
   var phone=document.getElementById('fp').value,msg=document.getElementById('fm').value;
   L(true);
@@ -638,16 +703,20 @@ function closeBk(){closePanel();renderC();}
 function openMyBk(date,t,k){
   var bk=bookings[k];
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
-  var iso=date.toISOString().slice(0,10);
+  var iso=localISO(date);
   var sd=isTodayStr(iso);
-  var cancelBtn=sd
-    ?'<button class="bd" style="border-color:#f43f5e;color:#be123c;margin-top:8px" onclick="clientCancel(\''+k+'\',\''+iso+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">キャンセルする（当日 → 1回消化）</button>'
-    :'<button class="bd" onclick="clientCancel(\''+k+'\',\''+iso+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">この予約をキャンセルする</button>';
+  var cancelBtn='<button class="bd" style="border-color:#f43f5e;color:#be123c;margin-top:8px" onclick="clientCancel(\''+k+'\',\''+iso+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">キャンセルする'+(sd?' (当日 → 1回消化)':'')+'</button>';
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">あなたの予約</div><div class="psub">'+ds+'</div><div style="background:#dcfce7;border-radius:9px;padding:12px 14px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#15803d;margin-bottom:4px">✅ 予約確定済み</div><div style="font-size:12px;color:#166534">🕐 '+t+'〜'+et(t)+'（1時間）</div></div><div class="infor"><span class="ik">メニュー</span><span class="iv">'+MENUS[bk.menu]+'</span></div><div class="infor"><span class="ik">場所</span><span class="iv">'+LOCS[bk.loc]+'</span></div>'+(sd?'<div style="background:#fef9c3;border:0.5px solid #fde047;border-radius:8px;padding:10px 12px;margin:10px 0;font-size:11px;color:#854d0e">⚠ 当日キャンセルは回数券1回分の消化となります</div>':'')+cancelBtn;
   openPanel();
 }
 async function clientCancel(k,iso,t,menu,loc,name,email){
   var sd=isTodayStr(iso);
+  if(sd){
+    if(!confirm('当日キャンセルのため、回数券1回分が消化されます。\nキャンセルしてよろしいですか？'))return;
+  } else {
+    if(!confirm('この予約をキャンセルしてよろしいですか？'))return;
+  }
+  }
   L(true);await deleteBooking(k);L(false);
   delete bookings[k];myBookings.delete(k);
   var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日';
@@ -685,11 +754,15 @@ async function showMyPageData(email,wrap){
   var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
   var br=await sb.from('bookings').select('*').eq('email',email).order('date_key',{ascending:false}).limit(10);
   L(false);
-  var html='<div style="font-size:11px;color:#666;margin-bottom:4px">'+email+'</div>';
+  var html='';
   if(cr.data){
     var c=cr.data,remain=(c.total_tickets||0)-(c.used_tickets||0);
     var tcol=remain>3?'#16a34a':remain>0?'#f59e0b':'#e94560';
+    html+='<div style="font-size:16px;font-weight:700;margin-bottom:2px">'+c.name+' さん</div>';
+    html+='<div style="font-size:11px;color:#666;margin-bottom:12px">'+email+'</div>';
     html+='<div class="my-remain-card"><div style="font-size:11px;color:#666;margin-bottom:6px">残り回数</div><div class="my-remain-num" style="color:'+tcol+'">'+remain+'<span style="font-size:18px;font-weight:400">回</span></div><div style="font-size:11px;color:#666;margin-top:4px">合計'+c.total_tickets+'回 / '+c.used_tickets+'回消化</div></div>';
+  } else {
+    html+='<div style="font-size:11px;color:#666;margin-bottom:12px">'+email+'</div>';
   }
   html+='<div style="font-size:12px;font-weight:700;margin-bottom:8px">予約履歴</div>';
   if(br.data&&br.data.length>0){
@@ -790,6 +863,12 @@ window.onload=function(){
     }
   };
   document.getElementById('pw-input').onkeydown=function(e){if(e.key==='Enter')document.getElementById('pw-btn').onclick();};
+  var clInp=document.getElementById('cl-email-inp');
+  if(clInp){
+    clInp.onkeydown=function(e){if(e.key==='Enter')doClientLogin();};
+    var saved=localStorage.getItem('myEmail');
+    if(saved)clInp.value=saved;
+  }
 };
 </script>
 </body>
