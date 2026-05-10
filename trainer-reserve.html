@@ -488,9 +488,16 @@ function updOC(){document.getElementById('off-count').textContent=offCells.size+
 
 async function assignSel(menu,loc){
   if(!selCells.size){showToast('⚠ 枠を選んでください');return;}
-  var ml=menu+'-'+loc;L(true);
-  for(var k of selCells){if(!slotSets[k])slotSets[k]=new Set();slotSets[k].add(ml);delete offSlots[k];await saveSlot(k,menu,loc);}
-  L(false);renderT();showToast('✓ '+selCells.size+'枠に追加しました');
+  var ml=menu+'-'+loc;
+  var allHave=[...selCells].every(function(k){return slotSets[k]&&slotSets[k].has(ml);});
+  L(true);
+  if(allHave){
+    for(var k of selCells){if(slotSets[k]){slotSets[k].delete(ml);if(!slotSets[k].size)delete slotSets[k];}await deleteSlot(k,menu,loc);}
+    L(false);renderT();showToast('取り消しました');
+  } else {
+    for(var k of selCells){if(!slotSets[k])slotSets[k]=new Set();slotSets[k].add(ml);delete offSlots[k];await saveSlot(k,menu,loc);}
+    L(false);renderT();showToast('✓ '+selCells.size+'枠に追加しました');
+  }
 }
 async function removeSel(){L(true);for(var k of selCells){await deleteAllSlots(k);delete slotSets[k];}L(false);renderT();showToast('削除しました');}
 async function applyOff(){
