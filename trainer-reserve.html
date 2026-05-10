@@ -174,6 +174,27 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 #trainer-screen{display:none;}
 #client-screen{display:none;}
 #topbar{display:none;}
+.rp-wrap{padding:12px 14px;}
+.rp-month-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.rp-month-lbl{font-size:15px;font-weight:700;}
+.rp-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.rp-card{background:#f5f5f5;border-radius:10px;padding:14px;text-align:center;}
+.rp-card-num{font-size:28px;font-weight:700;line-height:1;margin-bottom:4px;color:#1a1a1a;}
+.rp-card-lbl{font-size:11px;color:#666;}
+.rp-section-ttl{font-size:12px;font-weight:700;color:#666;margin-bottom:10px;}
+.rp-bars{margin-bottom:18px;}
+.rp-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.rp-bar-lbl{font-size:11px;font-weight:600;width:68px;flex-shrink:0;color:#444;}
+.rp-bar-track{flex:1;background:#efefef;border-radius:4px;height:14px;overflow:hidden;}
+.rp-bar-fill{height:100%;border-radius:4px;transition:width .4s;}
+.rp-bar-num{font-size:11px;font-weight:700;width:24px;text-align:right;flex-shrink:0;color:#1a1a1a;}
+.rp-rank-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:.5px solid #e5e5e5;}
+.rp-rank-row:last-child{border-bottom:none;}
+.rp-rank-num{font-size:12px;font-weight:700;color:#bbb;width:18px;text-align:center;flex-shrink:0;}
+.rp-rank-num.top{color:#f59e0b;}
+.rp-rank-name{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rp-rank-cnt{font-size:12px;font-weight:700;color:#1a1a1a;flex-shrink:0;margin-right:6px;}
+.rp-remain{font-size:11px;font-weight:700;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -232,6 +253,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
   <div class="t-tabs">
     <button class="t-tab active" id="ttab-cal" onclick="switchTTab('cal')">カレンダー</button>
     <button class="t-tab" id="ttab-clients" onclick="switchTTab('clients')">お客様管理</button>
+    <button class="t-tab" id="ttab-report" onclick="switchTTab('report')">レポート</button>
   </div>
   <div id="ttab-cal-content">
     <div class="mode-selector">
@@ -286,6 +308,23 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
       <div id="cm-list"></div>
     </div>
   </div>
+  <div id="ttab-report-content" style="display:none">
+    <div class="rp-wrap">
+      <div class="rp-month-bar">
+        <button class="wbtn" onclick="changeRpMonth(-1)">‹</button>
+        <span class="rp-month-lbl" id="rp-month-lbl"></span>
+        <button class="wbtn" onclick="changeRpMonth(1)">›</button>
+      </div>
+      <div class="rp-summary">
+        <div class="rp-card"><div class="rp-card-num" id="rp-total">—</div><div class="rp-card-lbl">総セッション数</div></div>
+        <div class="rp-card"><div class="rp-card-num" id="rp-clients">—</div><div class="rp-card-lbl">お客様数</div></div>
+      </div>
+      <div class="rp-section-ttl">場所・メニュー別セッション数</div>
+      <div id="rp-bars" class="rp-bars"></div>
+      <div class="rp-section-ttl">お客様別セッション数（今月）</div>
+      <div id="rp-ranking"></div>
+    </div>
+  </div>
 </div>
 
 <div id="client-screen">
@@ -333,7 +372,7 @@ const BLC={meguro:'bl-m',yokohama:'bl-y',ebisu:'bl-e'};
 const LTAG={meguro:'tag-meguro',yokohama:'tag-yokohama',ebisu:'tag-ebisu'};
 const MTAG={pilates:'tag-pilates',training:'tag-training'};
 
-var mode='',wkOff=0;
+var mode='',wkOff=0,rpOff=0;
 var slotSets={},offSlots={},dayOffs={},bookings={};
 var myBookings=new Set(),myEmail=localStorage.getItem('myEmail')||'';
 var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),drag=false;
@@ -783,12 +822,68 @@ async function showMyPageData(email,wrap){
 function changeEmail(){localStorage.removeItem('myEmail');myEmail='';renderMyPage();}
 
 function switchTTab(tab){
-  document.getElementById('ttab-cal').classList.toggle('active',tab==='cal');
-  document.getElementById('ttab-clients').classList.toggle('active',tab==='clients');
-  document.getElementById('ttab-cal-content').style.display=tab==='cal'?'block':'none';
-  document.getElementById('ttab-clients-content').style.display=tab==='clients'?'block':'none';
+  ['cal','clients','report'].forEach(function(id){
+    document.getElementById('ttab-'+id).classList.toggle('active',tab===id);
+    document.getElementById('ttab-'+id+'-content').style.display=tab===id?'block':'none';
+  });
   if(tab==='clients')loadClients();
+  if(tab==='report')loadReport();
 }
+var rpData={bookings:[],clients:[]};
+function rpRange(off){
+  var n=new Date(),y=n.getFullYear(),m=n.getMonth()+off;
+  while(m<0){m+=12;y--;}while(m>11){m-=12;y++;}
+  var s=y+'-'+String(m+1).padStart(2,'0')+'-01';
+  var e=y+'-'+String(m+1).padStart(2,'0')+'-'+String(new Date(y,m+1,0).getDate()).padStart(2,'0');
+  return{y:y,m:m,start:s,end:e,label:y+'年'+(m+1)+'月'};
+}
+async function loadReport(){
+  var rng=rpRange(rpOff);
+  document.getElementById('rp-month-lbl').textContent=rng.label;
+  L(true);
+  var r1=await sb.from('bookings').select('*').gte('date_key',rng.start).lte('date_key',rng.end+'_z');
+  var r2=await sb.from('clients').select('*');
+  L(false);
+  rpData={bookings:r1.data||[],clients:r2.data||[]};
+  renderReport();
+}
+async function changeRpMonth(d){rpOff+=d;await loadReport();}
+function renderReport(){
+  var bks=rpData.bookings,cls=rpData.clients;
+  var totalSessions=bks.length;
+  var uniqueClients=new Set(bks.map(function(b){return b.email;})).size;
+  document.getElementById('rp-total').textContent=totalSessions;
+  document.getElementById('rp-clients').textContent=uniqueClients;
+  var keys=['pilates-meguro','pilates-yokohama','training-ebisu','training-yokohama'];
+  var labels={'pilates-meguro':'P・目黒','pilates-yokohama':'P・横浜','training-ebisu':'T・恵比寿','training-yokohama':'T・横浜'};
+  var colors={'pilates-meguro':'#93c5fd','pilates-yokohama':'#fde047','training-ebisu':'#f9a8d4','training-yokohama':'#6ee7b7'};
+  var counts={};keys.forEach(function(k){counts[k]=0;});
+  bks.forEach(function(b){var key=b.menu+'-'+b.loc;if(counts[key]!==undefined)counts[key]++;});
+  var maxC=Math.max.apply(null,keys.map(function(k){return counts[k];}));if(maxC===0)maxC=1;
+  var barHtml='';
+  keys.forEach(function(k){
+    var pct=Math.round(counts[k]/maxC*100);
+    barHtml+='<div class="rp-bar-row"><div class="rp-bar-lbl">'+labels[k]+'</div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:'+pct+'%;background:'+colors[k]+'"></div></div><div class="rp-bar-num">'+counts[k]+'</div></div>';
+  });
+  document.getElementById('rp-bars').innerHTML=barHtml;
+  var emailCount={};
+  bks.forEach(function(b){emailCount[b.email]=(emailCount[b.email]||0)+1;});
+  var clMap={};cls.forEach(function(c){clMap[c.email]=c;});
+  var ranked=Object.entries(emailCount).sort(function(a,b){return b[1]-a[1];});
+  var rankHtml='';
+  if(!ranked.length){rankHtml='<div style="color:#999;font-size:13px;text-align:center;padding:20px">データなし</div>';}
+  ranked.forEach(function(entry,i){
+    var email=entry[0],cnt=entry[1],c=clMap[email];
+    var name=c?c.name:email;
+    var remain=c?(c.total_tickets||0)-(c.used_tickets||0):null;
+    var tcol=remain===null?'#999':remain>3?'#16a34a':remain>0?'#f59e0b':'#e94560';
+    var numCls='rp-rank-num'+(i<3?' top':'');
+    var remainHtml=remain!==null?'<span class="rp-remain" style="color:'+tcol+'">残'+remain+'回</span>':'';
+    rankHtml+='<div class="rp-rank-row"><div class="'+numCls+'">'+(i+1)+'</div><div class="rp-rank-name">'+name+'</div><div class="rp-rank-cnt">'+cnt+'回</div>'+remainHtml+'</div>';
+  });
+  document.getElementById('rp-ranking').innerHTML=rankHtml;
+}
+
 async function loadClients(){var r=await sb.from('clients').select('*').order('name');clients=r.data||[];renderClients();}
 function renderClients(){
   var q=(document.getElementById('cm-search').value||'').toLowerCase();
