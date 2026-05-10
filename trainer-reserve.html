@@ -365,6 +365,7 @@ async function doClientLogin(){
   L(true);
   var r=await sb.from('clients').select('id').eq('email',email).maybeSingle();
   L(false);
+  if(r.error){document.getElementById('cl-email-err').textContent='通信エラーが発生しました。再度お試しください';return;}
   if(!r.data){document.getElementById('cl-email-err').textContent='登録されていないメールアドレスです';return;}
   localStorage.setItem('myEmail',email);
   myEmail=email;
@@ -385,7 +386,7 @@ function backToLogin(){
   document.getElementById('client-screen').style.display='none';
   document.getElementById('pw-input').value='';
   document.getElementById('pw-err').textContent='';
-  mode='';cancelSel();cancelOffMode();
+  wkOff=0;mode='';cancelSel();cancelOffMode();
 }
 
 async function loadData(){
@@ -490,7 +491,7 @@ function renderT(){
     return '<div class="cdh'+(doff?' day-off':'')+(offMode&&!past?' off-mode-hover':'')+'" id="hdr-'+iso+'" style="'+(past?'opacity:.35':'')+'">'
       +'<div class="cdn'+dcls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+dcls+'">'+d.getDate()+(doff?'✕':'')+'</div><div class="dob"></div></div>';
   }).join('');
-  if(offMode){dates.forEach(function(d){var iso=d.toISOString().slice(0,10);if(!isPast(d)){var el=document.getElementById('hdr-'+iso);if(el)el.onclick=function(){toggleDayOff(iso);}}});}
+  if(offMode){dates.forEach(function(d){var iso=localISO(d);if(!isPast(d)){var el=document.getElementById('hdr-'+iso);if(el)el.onclick=function(){toggleDayOff(iso);}}});}
   var body=document.getElementById('cal-body-t');
   body.style.gridTemplateColumns=COL;body.innerHTML='';
   TIMES.forEach(function(t){
@@ -646,7 +647,7 @@ function openBkDetail(date,t,k){
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var bg={meguro:'#dbeafe',yokohama:'#fef9c3',ebisu:'#fce7f3'}[bk.loc];
   var tc={meguro:'#1e40af',yokohama:'#854d0e',ebisu:'#9d174d'}[bk.loc];
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約詳細</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div style="background:'+bg+';border-radius:9px;padding:11px 13px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:'+tc+'">'+LOCS[bk.loc]+'：'+bk.name+'様</div><div style="font-size:11px;color:#666;margin-top:3px">'+MENUS[bk.menu]+'　'+t+'〜'+et(t)+'</div></div><div class="infor"><span class="ik">電話番号</span><span class="iv">'+(bk.phone||'未入力')+'</span></div><div class="infor"><span class="ik">メール</span><span class="iv">'+(bk.email||'未入力')+'</span></div><div class="infor"><span class="ik">メッセージ</span><span class="iv">'+(bk.message||'なし')+'</span></div><button class="bd" style="border-color:#f43f5e;color:#be123c" onclick="tCancel(\''+k+'\',\''+date.toISOString().slice(0,10)+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">この予約をキャンセルする</button>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約詳細</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div style="background:'+bg+';border-radius:9px;padding:11px 13px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:'+tc+'">'+LOCS[bk.loc]+'：'+bk.name+'様</div><div style="font-size:11px;color:#666;margin-top:3px">'+MENUS[bk.menu]+'　'+t+'〜'+et(t)+'</div></div><div class="infor"><span class="ik">電話番号</span><span class="iv">'+(bk.phone||'未入力')+'</span></div><div class="infor"><span class="ik">メール</span><span class="iv">'+(bk.email||'未入力')+'</span></div><div class="infor"><span class="ik">メッセージ</span><span class="iv">'+(bk.message||'なし')+'</span></div><button class="bd" style="border-color:#f43f5e;color:#be123c" onclick="tCancel(\''+k+'\',\''+localISO(date)+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">この予約をキャンセルする</button>';
   openPanel();
 }
 async function tCancel(k,iso,t,menu,loc,name,email){
@@ -668,7 +669,7 @@ async function cancelOffSingle(k){L(true);await sb.from('slots').delete().match(
 function openCPanel(date,t,ml,k){
   var p=ml.split('-'),menu=p[0],loc=p[1];
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
-  var iso=date.toISOString().slice(0,10);
+  var iso=localISO(date);
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約する</div><div class="psub">'+ds+'</div><div style="display:flex;gap:5px;margin-bottom:12px"><span class="ctag '+(MTAG[menu]||'')+'">'+MENUS[menu]+'</span><span class="ctag '+(LTAG[loc]||'')+'">'+LOCS[loc]+'</span></div><div style="background:#f5f5f5;border-radius:7px;padding:8px 11px;margin-bottom:14px;font-size:12px;color:#666">🕐 '+t+'〜'+et(t)+'（1時間）</div><div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="fn" placeholder="山田 太郎"></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="fp" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メッセージ（任意）</label><textarea class="finp" id="fm" rows="2" placeholder="気になることなど"></textarea></div><button class="bp" onclick="confirmBk(\''+iso+'\',\''+t+'\',\''+ml+'\',\''+k+'\')">予約を確定する</button>';
   openPanel();
 }
@@ -680,6 +681,8 @@ async function confirmBk(iso,t,ml,k){
   var p=ml.split('-'),menu=p[0],loc=p[1];
   var phone=document.getElementById('fp').value,msg=document.getElementById('fm').value;
   L(true);
+  var chk=await sb.from('bookings').select('date_key').eq('date_key',k).maybeSingle();
+  if(chk.data){L(false);showToast('⚠ この枠はすでに予約済みです');await loadData();renderC();return;}
   var ok=await saveBooking(k,menu,loc,name,email,phone,msg);
   if(!ok){L(false);showToast('⚠ 予約に失敗しました');return;}
   bookings[k]={date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg,created_at:new Date().toISOString()};
@@ -716,7 +719,6 @@ async function clientCancel(k,iso,t,menu,loc,name,email){
     if(!confirm('当日キャンセルのため、回数券1回分が消化されます。\nキャンセルしてよろしいですか？'))return;
   } else {
     if(!confirm('この予約をキャンセルしてよろしいですか？'))return;
-  }
   }
   L(true);await deleteBooking(k);L(false);
   delete bookings[k];myBookings.delete(k);
@@ -837,7 +839,7 @@ async function consumeTix(email){
 }
 
 function updStats(){
-  var ds=wkDates(wkOff).map(function(d){return d.toISOString().slice(0,10);});
+  var ds=wkDates(wkOff).map(function(d){return localISO(d);});
   var a=0,b=0;
   Object.keys(slotSets).forEach(function(k){if(ds.some(function(d){return k.startsWith(d);})&&!bookings[k])a+=slotSets[k].size;});
   Object.keys(bookings).forEach(function(k){if(ds.some(function(d){return k.startsWith(d);}))b++;});
