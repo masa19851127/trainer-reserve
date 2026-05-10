@@ -555,9 +555,9 @@ function renderT(){
       else if(hasSets){sl.className='slot '+(selMode?'t-avail-add':(offMode?'t-avail-off':'t-avail'));sl.appendChild(mkTags(sets));if(!selMode&&!offMode){(function(dd,tt,kk){sl.onclick=function(){openSlotDetail(dd,tt,kk);};})(date,t,k);}}
       else{sl.className='slot '+(selMode?'t-idle-add':(offMode?'t-idle-off':'t-idle'));if(selMode||offMode)sl.innerHTML='<span style="font-size:9px;opacity:.5">'+(selMode?'＋':'✕')+'</span>';}
       if(!past&&selMode&&!doff&&!bk){
-        (function(kk,s){s.onmousedown=function(e){e.preventDefault();drag=true;if(selCells.has(kk))selCells.delete(kk);else selCells.add(kk);updSC();};s.onmouseenter=function(){if(drag&&!selCells.has(kk)){selCells.add(kk);updSC();s.className='slot t-sel-add';}};s.ontouchstart=function(e){e.preventDefault();if(selCells.has(kk))selCells.delete(kk);else selCells.add(kk);updSC();};})(k,sl);
+        (function(kk,s){s.onmousedown=function(e){e.preventDefault();drag=true;if(selCells.has(kk))selCells.delete(kk);else selCells.add(kk);updSC();};s.onmouseenter=function(){if(drag&&!selCells.has(kk)){selCells.add(kk);updSC();s.className='slot t-sel-add';}};s.ontouchstart=function(e){e.preventDefault();if(selCells.has(kk))selCells.delete(kk);else selCells.add(kk);updSC();renderT();};})(k,sl);
       } else if(!past&&offMode&&!doff&&!bk){
-        (function(kk,s){s.onmousedown=function(e){e.preventDefault();drag=true;if(offCells.has(kk))offCells.delete(kk);else offCells.add(kk);updOC();};s.onmouseenter=function(){if(drag&&!offCells.has(kk)){offCells.add(kk);updOC();s.className='slot t-sel-off';}};s.ontouchstart=function(e){e.preventDefault();if(offCells.has(kk))offCells.delete(kk);else offCells.add(kk);updOC();};})(k,sl);
+        (function(kk,s){s.onmousedown=function(e){e.preventDefault();drag=true;if(offCells.has(kk))offCells.delete(kk);else offCells.add(kk);updOC();};s.onmouseenter=function(){if(drag&&!offCells.has(kk)){offCells.add(kk);updOC();s.className='slot t-sel-off';}};s.ontouchstart=function(e){e.preventDefault();if(offCells.has(kk))offCells.delete(kk);else offCells.add(kk);updOC();renderT();};})(k,sl);
       }
       sc.appendChild(sl);body.appendChild(sc);
     });
