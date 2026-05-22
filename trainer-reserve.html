@@ -1033,7 +1033,7 @@ async function openClientDetail(email){
   }
   var btnDis=r>0;
   var tixSt=btnDis?'flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;color:#bbb;font-size:12px;cursor:not-allowed;pointer-events:none':'flex:1;padding:9px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;cursor:pointer';
-  var custSt=btnDis?'padding:9px 14px;border-radius:8px;border:1.5px solid #e5e5e5;background:#f5f5f5;color:#bbb;font-size:12px;cursor:not-allowed;pointer-events:none':'padding:9px 14px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;cursor:pointer';
+  var custSt='padding:9px 14px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;cursor:pointer';
   document.getElementById('pc').innerHTML=
     '<button class="pcl" onclick="closePanel()">×</button>'
     +'<div class="ptitle">'+c.name+'</div><div class="psub">'+c.email+'</div>'
@@ -1041,13 +1041,13 @@ async function openClientDetail(email){
       +'<div style="font-size:11px;color:#666;margin-bottom:4px">残り回数</div>'
       +'<div style="font-size:32px;font-weight:700;color:'+tcol+'">'+r+'<span style="font-size:16px;font-weight:400">/'+c.total_tickets+'回</span></div>'
     +'</div>'
-    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">回数券を追加<span style="font-size:11px;color:#bbb;margin-left:6px">（8/16回は残数0のみ）</span></div>'
+    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">回数券を追加</div>'
     +'<div style="display:flex;gap:6px;margin-bottom:10px">'
       +'<button onclick="addTix(\''+email+'\',1,\'単発\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;cursor:pointer">＋単発</button>'
       +'<button onclick="addTix(\''+email+'\',8,\'8回券\')" style="'+tixSt+'">＋8回</button>'
       +'<button onclick="addTix(\''+email+'\',16,\'16回券\')" style="'+tixSt+'">＋16回</button>'
     +'</div>'
-    +'<div style="display:flex;gap:6px;margin-bottom:10px"><input type="number" id="custom-tix" min="1" max="99" placeholder="任意の回数" class="finp" style="flex:1'+(btnDis?';pointer-events:none;opacity:.4':'')+'"><button onclick="addCustomTix(\''+email+'\')" style="'+custSt+'">追加</button></div>'
+    +'<div style="display:flex;gap:6px;margin-bottom:10px"><input type="number" id="custom-tix" min="1" max="99" placeholder="任意の回数" class="finp" style="flex:1"><button onclick="addCustomTix(\''+email+'\')" style="'+custSt+'">追加</button></div>'
     +'<button onclick="consumeTix(\''+email+'\')" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #f43f5e;background:#fff1f2;color:#be123c;font-size:13px;cursor:pointer;margin-bottom:12px">1回消化する（当日キャンセル等）</button>'
     +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:6px">メモ</div>'
     +'<textarea id="client-note" class="finp" rows="2" style="margin-bottom:4px" placeholder="メモを入力" onblur="saveClientNoteAuto(\''+email+'\')">'+escHtml(c.notes||'')+'</textarea>'
@@ -1074,9 +1074,8 @@ async function saveClientNote(email){
   showToast('✅ メモを保存しました');
 }
 async function addTix(email,amount,label){
-  var c=clients.find(function(x){return x.email===email;});
   L(true);
-  await sb.from('clients').update({total_tickets:(c.total_tickets||0)+amount}).eq('email',email);
+  await sb.from('clients').update({total_tickets:amount,used_tickets:0}).eq('email',email);
   await sb.from('ticket_logs').insert({client_email:email,type:'purchase',amount:amount,note:label+'追加'});
   L(false);closePanel();await loadClients();showToast('✅ '+label+'を追加しました');
 }
