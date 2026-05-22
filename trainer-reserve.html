@@ -425,7 +425,7 @@ function backToLogin(){
   document.getElementById('client-screen').style.display='none';
   document.getElementById('pw-input').value='';
   document.getElementById('pw-err').textContent='';
-  wkOff=0;mode='';cancelSel();cancelOffMode();
+  wkOff=0;rpOff=0;mode='';cancelSel();cancelOffMode();
 }
 
 async function loadData(){
@@ -572,14 +572,18 @@ function renderT(){
       else{sl.className='slot '+(selMode?'t-idle-add':(offMode?'t-idle-off':'t-idle'));if(selMode||offMode)sl.innerHTML='<span style="font-size:9px;opacity:.5">'+(selMode?'＋':'✕')+'</span>';}
       if(!past&&selMode&&!doff&&!bk){
         (function(kk,s){
+          s.setAttribute('data-ck',kk);
           s.onclick=function(e){e.stopPropagation();if(selCells.has(kk)){selCells.delete(kk);s.className='slot t-idle-add';}else{selCells.add(kk);s.className='slot t-sel-add';}updSC();};
           s.onmousedown=function(e){e.preventDefault();drag=true;};
+          s.ontouchstart=function(e){e.stopPropagation();drag=true;};
           s.onmouseenter=function(){if(drag&&!selCells.has(kk)){selCells.add(kk);updSC();s.className='slot t-sel-add';}};
         })(k,sl);
       } else if(!past&&offMode&&!doff&&!bk){
         (function(kk,s){
+          s.setAttribute('data-ck',kk);
           s.onclick=function(e){e.stopPropagation();if(offCells.has(kk)){offCells.delete(kk);s.className='slot t-idle-off';}else{offCells.add(kk);s.className='slot t-sel-off';}updOC();};
           s.onmousedown=function(e){e.preventDefault();drag=true;};
+          s.ontouchstart=function(e){e.stopPropagation();drag=true;};
           s.onmouseenter=function(){if(drag&&!offCells.has(kk)){offCells.add(kk);updOC();s.className='slot t-sel-off';}};
         })(k,sl);
       }
@@ -589,6 +593,18 @@ function renderT(){
   updStats();
 }
 document.addEventListener('mouseup',function(){drag=false;});
+document.addEventListener('touchend',function(){drag=false;});
+document.addEventListener('touchmove',function(e){
+  if(!drag)return;
+  var touch=e.touches[0];
+  var el=document.elementFromPoint(touch.clientX,touch.clientY);
+  while(el&&!el.getAttribute('data-ck')){el=el.parentElement;}
+  if(!el)return;
+  var kk=el.getAttribute('data-ck');
+  e.preventDefault();
+  if(selMode&&!selCells.has(kk)){selCells.add(kk);updSC();el.className='slot t-sel-add';}
+  else if(offMode&&!offCells.has(kk)){offCells.add(kk);updOC();el.className='slot t-sel-off';}
+},{passive:false});
 
 function renderC(){
   var dates=wkDates(wkOff);
@@ -637,7 +653,7 @@ function openMenuPicker(date,t,k,availMls){
   openPanel();
 }
 function openLocPicker(iso,t,menu,k){
-  var date=new Date(iso);
+  var date=new Date(iso+'T00:00:00');
   var sets=slotSets[ck(date,t)]||new Set();
   var aL=[];(ML[menu]||[]).forEach(function(loc){if(sets.has(menu+'-'+loc))aL.push(loc);});
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
@@ -653,7 +669,7 @@ function openLocPicker(iso,t,menu,k){
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><button onclick="goBackMenu()" style="background:none;border:none;color:#666;font-size:12px;cursor:pointer;padding:0 0 8px 0">← 戻る</button><div class="ptitle">場所を選んでください</div><div class="psub">'+MENUS[menu]+'　'+ds+'　'+t+'〜'+et(t)+'</div><div style="margin-top:12px">'+btns+'</div>';
 }
 function goBackMenu(){var a=window._backArgs;if(a)openMenuPicker(a[0],a[1],a[2],a[3]);}
-function doBook(iso,t,menu,loc,k){closePanel();openCPanel(new Date(iso),t,menu+'-'+loc,k);}
+function doBook(iso,t,menu,loc,k){closePanel();openCPanel(new Date(iso+'T00:00:00'),t,menu+'-'+loc,k);}
 
 function openSlotDetail(date,t,k){
   var sets=slotSets[k]||new Set();
@@ -733,7 +749,10 @@ async function tCancel(k,iso,t,menu,loc,name,email){
   L(false);
   delete bookings[k];myBookings.delete(k);
   var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日';
-  await sendMail(email,'【キャンセル】Trainer Reserve — '+ds+' '+t,mailHtmlCancel(name,ds,t,menu,loc,sd),mailTextCancel(name,ds,t,menu,loc,sd));
+  await Promise.all([
+    sendMail(email,'【キャンセル】Trainer Reserve — '+ds+' '+t,mailHtmlCancel(name,ds,t,menu,loc,sd),mailTextCancel(name,ds,t,menu,loc,sd)),
+    sendMail(TR_EMAIL,'【キャンセル】'+name+'様 — '+ds+' '+t+(sd?' (当日)':''),mailHtmlCancel(name,ds,t,menu,loc,sd),mailTextCancel(name,ds,t,menu,loc,sd))
+  ]);
   closePanel();await loadData();renderT();showToast('予約をキャンセルしました');
 }
 
@@ -762,15 +781,16 @@ async function confirmBk(iso,t,ml,k){
   L(true);
   var chk=await sb.from('bookings').select('date_key').eq('date_key',k).maybeSingle();
   if(chk.data){L(false);showToast('⚠ この枠はすでに予約済みです');await loadData();renderC();return;}
-  var ok=await saveBooking(k,menu,loc,name,email,phone,msg);
-  if(!ok){L(false);showToast('⚠ 予約に失敗しました');return;}
-  bookings[k]={date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg,created_at:new Date().toISOString()};
-  myEmail=email;localStorage.setItem('myEmail',email);myBookings.add(k);
-  // clientsテーブルにメアドが登録されていれば自動消化
   var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
   if(cr.data){
     var remaining=(cr.data.total_tickets||0)-(cr.data.used_tickets||0);
     if(remaining<=0){L(false);showToast('⚠ 回数券の残数がありません');return;}
+  }
+  var ok=await saveBooking(k,menu,loc,name,email,phone,msg);
+  if(!ok){L(false);showToast('⚠ 予約に失敗しました');return;}
+  bookings[k]={date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg,created_at:new Date().toISOString()};
+  myEmail=email;localStorage.setItem('myEmail',email);myBookings.add(k);
+  if(cr.data){
     await sb.from('clients').update({used_tickets:(cr.data.used_tickets||0)+1}).eq('email',email);
     await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:1,note:'予約自動消化'});
   }
@@ -949,7 +969,7 @@ function renderClients(){
   list.innerHTML=f.map(function(c){
     var r=(c.total_tickets||0)-(c.used_tickets||0);
     var tcls=r>3?'cm-tk-ok':r>0?'cm-tk-low':'cm-tk-none';
-    return '<div class="cm-card" onclick="openClientDetail(\''+c.email+'\')"><div class="cm-card-top"><span class="cm-name">'+c.name+'</span><span class="'+tcls+'">残り'+r+'回</span></div><div class="cm-email">'+c.email+'</div>'+(c.notes?'<div style="font-size:11px;color:#666;margin-top:3px">'+c.notes+'</div>':'')+'</div>';
+    return '<div class="cm-card" onclick="openClientDetail(\''+c.email+'\')"><div class="cm-card-top"><span class="cm-name">'+c.name+'</span><span class="'+tcls+'">残り'+r+'回</span></div><div class="cm-email">'+c.email+'</div>'+(c.notes?'<div style="font-size:11px;color:#666;margin-top:3px">'+escHtml(c.notes)+'</div>':'')+'</div>';
   }).join('');
 }
 function openAddClient(){
