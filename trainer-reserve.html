@@ -83,7 +83,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .cdh{text-align:center;padding:3px 1px;position:relative;}
 .cdn{font-size:9px;color:#999;font-weight:500;}
 .cdd{font-size:13px;font-weight:600;}
-.cdd.today{color:#e94560;}
+.cdd.today{color:#3b82f6;}
 .cdh.day-off .cdd{color:#f43f5e;}
 .dob{display:none;position:absolute;bottom:1px;left:3px;right:3px;height:2px;background:#f43f5e;border-radius:1px;}
 .cdh.day-off .dob{display:block;}
@@ -465,8 +465,8 @@ async function deleteDayOff(iso){await sb.from('day_offs').delete().eq('date_iso
 async function saveBooking(k,menu,loc,name,email,phone,msg){var r=await sb.from('bookings').insert({date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg});return !r.error;}
 async function deleteBooking(k){await sb.from('bookings').delete().eq('date_key',k);}
 
-async function sendMail(to,subject,html){
-  try{await fetch(SB_URL+'/functions/v1/send-email',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},body:JSON.stringify({to:to,subject:subject,html:html})});}
+async function sendMail(to,subject,html,text){
+  try{await fetch(SB_URL+'/functions/v1/send-email',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},body:JSON.stringify({to:to,subject:subject,html:html,text:text||''})});}
   catch(e){console.log('mail err',e);}
 }
 function mailHtmlClient(name,ds,t,menu,loc){
@@ -477,6 +477,15 @@ function mailHtmlTrainer(name,ds,t,menu,loc,phone,msg){
 }
 function mailHtmlCancel(name,ds,t,menu,loc,sameDay){
   return '<div style="font-family:sans-serif;max-width:500px;margin:0 auto"><div style="background:#64748b;padding:20px 24px"><div style="font-size:18px;font-weight:bold;color:#fff">Trainer Reserve</div><div style="font-size:12px;color:rgba(255,255,255,.75)">予約キャンセルのお知らせ</div></div><div style="padding:24px"><p style="font-size:14px;margin:0 0 16px">'+name+' 様</p><table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px;margin-bottom:16px"><tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr></table>'+(sameDay?'<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:12px;font-size:12px;color:#854d0e">当日キャンセルのため、回数券1回分が消化されます。</div>':'')+'</div></div>';
+}
+function mailTextClient(name,ds,t,menu,loc){
+  return name+' 様\n\n【予約確認】\n日時：'+ds+' '+t+'〜'+et(t)+'\nメニュー：'+MENUS[menu]+'\n場所：'+LOCS[loc]+'\n\n当日はお気をつけてお越しください。\n\nTrainer Reserve';
+}
+function mailTextTrainer(name,ds,t,menu,loc,phone,msg){
+  return '【新規予約】\nお客様：'+name+' 様\n日時：'+ds+' '+t+'〜'+et(t)+'\nメニュー：'+MENUS[menu]+'\n場所：'+LOCS[loc]+'\n電話番号：'+(phone||'未入力')+'\nメッセージ：'+(msg||'なし')+'\n\nTrainer Reserve';
+}
+function mailTextCancel(name,ds,t,menu,loc,sameDay){
+  return name+' 様\n\n【予約キャンセル】\n日時：'+ds+' '+t+'〜'+et(t)+'\nメニュー：'+MENUS[menu]+'\n場所：'+LOCS[loc]+(sameDay?'\n\n※当日キャンセルのため、回数券1回分が消化されます。':'')+'\n\nTrainer Reserve';
 }
 
 function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;document.getElementById('msel-add').classList.add('active');document.getElementById('at-add').classList.add('active');renderT();}
@@ -562,9 +571,17 @@ function renderT(){
       else if(hasSets){sl.className='slot '+(selMode?'t-avail-add':(offMode?'t-avail-off':'t-avail'));sl.appendChild(mkTags(sets));if(!selMode&&!offMode){(function(dd,tt,kk){sl.onclick=function(){openSlotDetail(dd,tt,kk);};})(date,t,k);}}
       else{sl.className='slot '+(selMode?'t-idle-add':(offMode?'t-idle-off':'t-idle'));if(selMode||offMode)sl.innerHTML='<span style="font-size:9px;opacity:.5">'+(selMode?'＋':'✕')+'</span>';}
       if(!past&&selMode&&!doff&&!bk){
-        (function(kk,s){s.onmousedown=function(e){e.preventDefault();drag=true;if(selCells.has(kk))selCells.delete(kk);else selCells.add(kk);updSC();};s.onmouseenter=function(){if(drag&&!selCells.has(kk)){selCells.add(kk);updSC();s.className='slot t-sel-add';}};s.ontouchstart=function(e){e.preventDefault();if(selCells.has(kk))selCells.delete(kk);else selCells.add(kk);updSC();renderT();};})(k,sl);
+        (function(kk,s){
+          s.onclick=function(e){e.stopPropagation();if(selCells.has(kk)){selCells.delete(kk);s.className='slot t-idle-add';}else{selCells.add(kk);s.className='slot t-sel-add';}updSC();};
+          s.onmousedown=function(e){e.preventDefault();drag=true;};
+          s.onmouseenter=function(){if(drag&&!selCells.has(kk)){selCells.add(kk);updSC();s.className='slot t-sel-add';}};
+        })(k,sl);
       } else if(!past&&offMode&&!doff&&!bk){
-        (function(kk,s){s.onmousedown=function(e){e.preventDefault();drag=true;if(offCells.has(kk))offCells.delete(kk);else offCells.add(kk);updOC();};s.onmouseenter=function(){if(drag&&!offCells.has(kk)){offCells.add(kk);updOC();s.className='slot t-sel-off';}};s.ontouchstart=function(e){e.preventDefault();if(offCells.has(kk))offCells.delete(kk);else offCells.add(kk);updOC();renderT();};})(k,sl);
+        (function(kk,s){
+          s.onclick=function(e){e.stopPropagation();if(offCells.has(kk)){offCells.delete(kk);s.className='slot t-idle-off';}else{offCells.add(kk);s.className='slot t-sel-off';}updOC();};
+          s.onmousedown=function(e){e.preventDefault();drag=true;};
+          s.onmouseenter=function(){if(drag&&!offCells.has(kk)){offCells.add(kk);updOC();s.className='slot t-sel-off';}};
+        })(k,sl);
       }
       sc.appendChild(sl);body.appendChild(sc);
     });
@@ -646,6 +663,7 @@ function openSlotDetail(date,t,k){
   openPanel();
 }
 async function openTrainerBook(iso,t,k){
+  if(isTodayStr(iso)){showToast('⚠ 当日予約はできません');return;}
   L(true);
   var cr=await sb.from('clients').select('*').order('name');
   L(false);
@@ -669,6 +687,8 @@ async function confirmTrainerBook(iso,t,k){
   var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
   if(!cr.data){showToast('⚠ お客様が見つかりません');return;}
   var name=cr.data.name;
+  var remaining=(cr.data.total_tickets||0)-(cr.data.used_tickets||0);
+  if(remaining<=0){showToast('⚠ 回数券の残数がありません');return;}
   var p=ml.split('-'),menu=p[0],loc=p[1];
   L(true);
   var ok=await saveBooking(k,menu,loc,name,email,phone,msg);
@@ -679,8 +699,8 @@ async function confirmTrainerBook(iso,t,k){
   var date=new Date(iso+'T00:00:00');
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日';
   await Promise.all([
-    sendMail(email,'【予約確認】Trainer Reserve — '+ds+' '+t+'〜'+et(t),mailHtmlClient(name,ds,t,menu,loc)),
-    sendMail(TR_EMAIL,'【新規予約】'+name+'様 — '+ds+' '+t+'〜'+et(t),mailHtmlTrainer(name,ds,t,menu,loc,phone,msg))
+    sendMail(email,'【予約確認】Trainer Reserve — '+ds+' '+t+'〜'+et(t),mailHtmlClient(name,ds,t,menu,loc),mailTextClient(name,ds,t,menu,loc)),
+    sendMail(TR_EMAIL,'【新規予約】'+name+'様 — '+ds+' '+t+'〜'+et(t),mailHtmlTrainer(name,ds,t,menu,loc,phone,msg),mailTextTrainer(name,ds,t,menu,loc,phone,msg))
   ]);
   L(false);closePanel();await loadData();renderT();showToast('✅ '+name+'様の予約を入れました');
 }
@@ -698,10 +718,22 @@ function openBkDetail(date,t,k){
 }
 async function tCancel(k,iso,t,menu,loc,name,email){
   var sd=isTodayStr(iso);
-  L(true);await deleteBooking(k);L(false);
+  L(true);await deleteBooking(k);
+  var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
+  if(cr.data){
+    if(sd){
+      await sb.from('ticket_logs').insert({client_email:email,type:'cancel_sameday',amount:0,note:'当日キャンセル'});
+    } else {
+      if((cr.data.used_tickets||0)>0){
+        await sb.from('clients').update({used_tickets:(cr.data.used_tickets||0)-1}).eq('email',email);
+        await sb.from('ticket_logs').insert({client_email:email,type:'refund',amount:1,note:'キャンセルによる返還'});
+      }
+    }
+  }
+  L(false);
   delete bookings[k];myBookings.delete(k);
   var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日';
-  await sendMail(email,'【キャンセル】Trainer Reserve — '+ds+' '+t,mailHtmlCancel(name,ds,t,menu,loc,sd));
+  await sendMail(email,'【キャンセル】Trainer Reserve — '+ds+' '+t,mailHtmlCancel(name,ds,t,menu,loc,sd),mailTextCancel(name,ds,t,menu,loc,sd));
   closePanel();await loadData();renderT();showToast('予約をキャンセルしました');
 }
 
@@ -713,6 +745,7 @@ function openOffDetail(date,t,k){
 async function cancelOffSingle(k){L(true);await sb.from('slots').delete().match({date_key:k,is_off:true});L(false);delete offSlots[k];closePanel();renderT();showToast('対応不可を解除しました');}
 
 function openCPanel(date,t,ml,k){
+  if(isToday(date)){showToast('⚠ 当日予約はできません');return;}
   var p=ml.split('-'),menu=p[0],loc=p[1];
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var iso=localISO(date);
@@ -736,13 +769,15 @@ async function confirmBk(iso,t,ml,k){
   // clientsテーブルにメアドが登録されていれば自動消化
   var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
   if(cr.data){
+    var remaining=(cr.data.total_tickets||0)-(cr.data.used_tickets||0);
+    if(remaining<=0){L(false);showToast('⚠ 回数券の残数がありません');return;}
     await sb.from('clients').update({used_tickets:(cr.data.used_tickets||0)+1}).eq('email',email);
     await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:1,note:'予約自動消化'});
   }
   var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日';
   await Promise.all([
-    sendMail(email,'【予約確認】Trainer Reserve — '+ds+' '+t+'〜'+et(t),mailHtmlClient(name,ds,t,menu,loc)),
-    sendMail(TR_EMAIL,'【新規予約】'+name+'様 — '+ds+' '+t+'〜'+et(t),mailHtmlTrainer(name,ds,t,menu,loc,phone,msg))
+    sendMail(email,'【予約確認】Trainer Reserve — '+ds+' '+t+'〜'+et(t),mailHtmlClient(name,ds,t,menu,loc),mailTextClient(name,ds,t,menu,loc)),
+    sendMail(TR_EMAIL,'【新規予約】'+name+'様 — '+ds+' '+t+'〜'+et(t),mailHtmlTrainer(name,ds,t,menu,loc,phone,msg),mailTextTrainer(name,ds,t,menu,loc,phone,msg))
   ]);
   L(false);
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closeBk()">×</button><div class="ptitle">✅ 予約が確定しました！</div><div class="psub">確認メールをお送りしました</div><div style="background:#dcfce7;border-radius:9px;padding:14px;margin-bottom:14px"><div style="font-size:12px;color:#166534">📧 '+email+' にメールを送りました</div></div><div class="infor"><span class="ik">日時</span><span class="iv">'+ds+'　'+t+'〜'+et(t)+'</span></div><div class="infor"><span class="ik">メニュー</span><span class="iv">'+MENUS[menu]+'</span></div><div class="infor"><span class="ik">場所</span><span class="iv">'+LOCS[loc]+'</span></div><button class="bp" onclick="closeBk()">閉じる</button>';
@@ -766,12 +801,24 @@ async function clientCancel(k,iso,t,menu,loc,name,email){
   } else {
     if(!confirm('この予約をキャンセルしてよろしいですか？'))return;
   }
-  L(true);await deleteBooking(k);L(false);
+  L(true);await deleteBooking(k);
+  var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
+  if(cr.data){
+    if(sd){
+      await sb.from('ticket_logs').insert({client_email:email,type:'cancel_sameday',amount:0,note:'当日キャンセル'});
+    } else {
+      if((cr.data.used_tickets||0)>0){
+        await sb.from('clients').update({used_tickets:(cr.data.used_tickets||0)-1}).eq('email',email);
+        await sb.from('ticket_logs').insert({client_email:email,type:'refund',amount:1,note:'キャンセルによる返還'});
+      }
+    }
+  }
+  L(false);
   delete bookings[k];myBookings.delete(k);
   var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日';
   await Promise.all([
-    sendMail(email,'【キャンセル】Trainer Reserve — '+ds+' '+t,mailHtmlCancel(name,ds,t,menu,loc,sd)),
-    sendMail(TR_EMAIL,'【キャンセル】'+name+'様 — '+ds+' '+t+(sd?' (当日)':''),mailHtmlCancel(name,ds,t,menu,loc,sd))
+    sendMail(email,'【キャンセル】Trainer Reserve — '+ds+' '+t,mailHtmlCancel(name,ds,t,menu,loc,sd),mailTextCancel(name,ds,t,menu,loc,sd)),
+    sendMail(TR_EMAIL,'【キャンセル】'+name+'様 — '+ds+' '+t+(sd?' (当日)':''),mailHtmlCancel(name,ds,t,menu,loc,sd),mailTextCancel(name,ds,t,menu,loc,sd))
   ]);
   closePanel();renderC();showToast('予約をキャンセルしました'+(sd?' (1回消化)':''));
 }
@@ -856,7 +903,9 @@ async function loadReport(){
 }
 async function changeRpMonth(d){rpOff+=d;await loadReport();}
 function renderReport(){
-  var bks=rpData.bookings,cls=rpData.clients;
+  var cls=rpData.clients;
+  var registeredEmails=new Set(cls.map(function(c){return c.email;}));
+  var bks=rpData.bookings.filter(function(b){return registeredEmails.has(b.email);});
   var totalSessions=bks.length;
   var uniqueClients=new Set(bks.map(function(b){return b.email;})).size;
   document.getElementById('rp-total').textContent=totalSessions;
@@ -919,15 +968,64 @@ async function saveNewClient(){
   if(r.error){showToast('⚠ 登録失敗：'+r.error.message);return;}
   closePanel();await loadClients();showToast('✅ 登録しました！');
 }
-function openClientDetail(email){
+async function openClientDetail(email){
   var c=clients.find(function(x){return x.email===email;});if(!c)return;
   var r=(c.total_tickets||0)-(c.used_tickets||0);
   var tcol=r>3?'#16a34a':r>0?'#f59e0b':'#e94560';
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">'+c.name+'</div><div class="psub">'+c.email+'</div><div style="background:#f5f5f5;border-radius:10px;padding:14px;margin:12px 0;text-align:center"><div style="font-size:11px;color:#666;margin-bottom:4px">残り回数</div><div style="font-size:32px;font-weight:700;color:'+tcol+'">'+r+'<span style="font-size:16px;font-weight:400">回</span></div><div style="font-size:11px;color:#666;margin-top:2px">合計'+c.total_tickets+'回 / '+c.used_tickets+'回消化</div></div><div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">回数券を追加・差し込む</div><div style="display:flex;gap:6px;margin-bottom:10px"><button onclick="addTix(\''+email+'\',1,\'単発\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;cursor:pointer">＋単発</button><button onclick="addTix(\''+email+'\',8,\'8回券\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;cursor:pointer">＋8回</button><button onclick="addTix(\''+email+'\',16,\'16回券\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;cursor:pointer">＋16回</button></div><div style="display:flex;gap:6px;margin-bottom:14px"><input type="number" id="custom-tix" min="1" max="99" placeholder="任意の回数" class="finp" style="flex:1"><button onclick="addCustomTix(\''+email+'\')" style="padding:9px 14px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;cursor:pointer">追加</button></div><button onclick="consumeTix(\''+email+'\')" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #f43f5e;background:#fff1f2;color:#be123c;font-size:13px;cursor:pointer;margin-bottom:6px">1回消化する（当日キャンセル等）</button>'+(c.notes?'<div class="infor"><span class="ik">メモ</span><span class="iv">'+c.notes+'</span></div>':'');
+  L(true);
+  var bkRes=await sb.from('bookings').select('*').eq('email',email).order('date_key',{ascending:false}).limit(20);
+  var lgRes=await sb.from('ticket_logs').select('*').eq('client_email',email).eq('type','cancel_sameday');
+  L(false);
+  var bkList=bkRes.data||[];
+  var sdCancelCount=(lgRes.data||[]).length;
+  var bkHtml='';
+  if(bkList.length){
+    bkList.forEach(function(b){
+      var parts=b.date_key.split('-');
+      var ds=parseInt(parts[1])+'月'+parseInt(parts[2].substring(0,2))+'日';
+      var t=b.date_key.split('_')[1]||'';
+      bkHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12px"><span style="color:#444">'+ds+(t?' '+t:'')+'</span><span style="color:#666">'+MENUS[b.menu]+' / '+LOCS[b.loc]+'</span></div>';
+    });
+  } else {
+    bkHtml='<div style="color:#999;font-size:12px;text-align:center;padding:10px">予約履歴なし</div>';
+  }
+  document.getElementById('pc').innerHTML=
+    '<button class="pcl" onclick="closePanel()">×</button>'
+    +'<div class="ptitle">'+c.name+'</div><div class="psub">'+c.email+'</div>'
+    +'<div style="background:#f5f5f5;border-radius:10px;padding:14px;margin:12px 0;text-align:center">'
+      +'<div style="font-size:11px;color:#666;margin-bottom:4px">残り回数</div>'
+      +'<div style="font-size:32px;font-weight:700;color:'+tcol+'">'+r+'<span style="font-size:16px;font-weight:400">回</span></div>'
+      +'<div style="font-size:11px;color:#666;margin-top:2px">合計'+c.total_tickets+'回 / '+c.used_tickets+'回消化　当日キャンセル'+sdCancelCount+'回</div>'
+    +'</div>'
+    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">回数券を追加</div>'
+    +'<div style="display:flex;gap:6px;margin-bottom:10px">'
+      +'<button onclick="addTix(\''+email+'\',1,\'単発\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;cursor:pointer">＋単発</button>'
+      +'<button onclick="addTix(\''+email+'\',8,\'8回券\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;cursor:pointer">＋8回</button>'
+      +'<button onclick="addTix(\''+email+'\',16,\'16回券\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #e5e5e5;background:#fff;font-size:12px;cursor:pointer">＋16回</button>'
+    +'</div>'
+    +'<div style="display:flex;gap:6px;margin-bottom:10px"><input type="number" id="custom-tix" min="1" max="99" placeholder="任意の回数" class="finp" style="flex:1"><button onclick="addCustomTix(\''+email+'\')" style="padding:9px 14px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;cursor:pointer">追加</button></div>'
+    +'<button onclick="consumeTix(\''+email+'\')" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #f43f5e;background:#fff1f2;color:#be123c;font-size:13px;cursor:pointer;margin-bottom:12px">1回消化する（当日キャンセル等）</button>'
+    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:6px">メモ</div>'
+    +'<textarea id="client-note" class="finp" rows="2" style="margin-bottom:6px" placeholder="メモを入力">'+escHtml(c.notes||'')+'</textarea>'
+    +'<button onclick="saveClientNote(\''+email+'\')" style="width:100%;padding:8px;border-radius:8px;border:1.5px solid #16a34a;background:#f0fdf4;color:#15803d;font-size:12px;cursor:pointer;margin-bottom:12px">メモを保存</button>'
+    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:6px">予約履歴（直近20件）</div>'
+    +'<div>'+bkHtml+'</div>';
   openPanel();
 }
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+async function saveClientNote(email){
+  var note=document.getElementById('client-note').value;
+  L(true);await sb.from('clients').update({notes:note}).eq('email',email);L(false);
+  var c=clients.find(function(x){return x.email===email;});if(c)c.notes=note;
+  showToast('✅ メモを保存しました');
+}
 async function addTix(email,amount,label){
-  var c=clients.find(function(x){return x.email===email;});L(true);
+  var c=clients.find(function(x){return x.email===email;});
+  var remaining=(c.total_tickets||0)-(c.used_tickets||0);
+  if(remaining>0){
+    if(!confirm('現在'+remaining+'回残っています。'+amount+'回上乗せして合計'+(remaining+amount)+'回にしますか？'))return;
+  }
+  L(true);
   await sb.from('clients').update({total_tickets:(c.total_tickets||0)+amount}).eq('email',email);
   await sb.from('ticket_logs').insert({client_email:email,type:'purchase',amount:amount,note:label+'追加'});
   L(false);closePanel();await loadClients();showToast('✅ '+label+'を追加しました');
