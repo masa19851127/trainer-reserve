@@ -258,7 +258,6 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
   <div id="ttab-cal-content">
     <div class="mode-selector">
       <button class="msel-btn mode-add" id="msel-add" onclick="toggleSelMode()"><span class="msel-icon">＋</span>空き枠を追加<span class="msel-hint">タップして選択</span></button>
-      <button class="msel-btn mode-off" id="msel-off" onclick="toggleOffMode()"><span class="msel-icon">✕</span>対応不可を設定<span class="msel-hint">タップして選択</span></button>
     </div>
     <div class="action-toolbar at-add" id="at-add">
       <span class="at-count" id="sel-count">0枠選択中</span>
@@ -272,14 +271,6 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
       </div>
       <button class="at-done" onclick="cancelSel()">完了</button>
     </div>
-    <div class="action-toolbar at-off" id="at-off">
-      <span class="at-count" id="off-count">0枠選択中</span>
-      <div class="at-chips">
-        <button class="atc atc-off" onclick="applyOff()">対応不可にする</button>
-        <button class="atc atc-rm" onclick="cancelOff()">削除</button>
-      </div>
-      <button class="at-done" onclick="cancelOffMode()">完了</button>
-    </div>
     <div class="stats-bar">
       <div class="stat-pill sp-avail"><div><div class="stat-num" id="sta">0</div><div class="stat-lbl">空き枠</div></div></div>
       <div class="stat-pill sp-booked"><div><div class="stat-num" id="stb">0</div><div class="stat-lbl">予約済み</div></div></div>
@@ -289,7 +280,6 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
       <div class="li"><div class="ld" style="background:#dbeafe;border:1px solid #93c5fd"></div>予約(目黒)</div>
       <div class="li"><div class="ld" style="background:#fef9c3;border:1px solid #fde047"></div>予約(横浜)</div>
       <div class="li"><div class="ld" style="background:#fce7f3;border:1px solid #f9a8d4"></div>予約(恵比寿)</div>
-      <div class="li"><div class="ld" style="background:#ffe4e6;border:1px solid #fda4af"></div>対応不可</div>
     </div>
     <div class="week-bar">
       <button class="wbtn" onclick="changeWeek(-1)">‹</button>
@@ -495,10 +485,8 @@ function mailTextCancel(name,ds,t,menu,loc,sameDay){
 
 function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;document.getElementById('msel-add').classList.add('active');document.getElementById('at-add').classList.add('active');renderT();}
 function cancelSel(){selMode=false;selCells=new Set();document.getElementById('msel-add').classList.remove('active');document.getElementById('at-add').classList.remove('active');renderT();}
-function toggleOffMode(){if(selMode)cancelSel();if(offMode){cancelOffMode();return;}offMode=true;document.getElementById('msel-off').classList.add('active');document.getElementById('at-off').classList.add('active');renderT();}
-function cancelOffMode(){offMode=false;offCells=new Set();document.getElementById('msel-off').classList.remove('active');document.getElementById('at-off').classList.remove('active');renderT();}
+function cancelOffMode(){offMode=false;offCells=new Set();}
 function updSC(){document.getElementById('sel-count').textContent=selCells.size+'枠選択中';}
-function updOC(){document.getElementById('off-count').textContent=offCells.size+'枠選択中';}
 
 async function assignSel(menu,loc){
   if(!selCells.size){showToast('⚠ 枠を選んでください');return;}
@@ -548,10 +536,9 @@ function renderT(){
     var iso=localISO(d),doff=!!dayOffs[iso],past=isPast(d);
     var dy=d.getDay();
     var dcls=(dy===6?' sat':dy===0?' sun':'');
-    return '<div class="cdh'+(doff?' day-off':'')+(offMode&&!past?' off-mode-hover':'')+'" id="hdr-'+iso+'" style="'+(past?'opacity:.35':'')+'">'
+    return '<div class="cdh'+(doff?' day-off':'')+'" id="hdr-'+iso+'" style="'+(past?'opacity:.35':'')+'">'
       +'<div class="cdn'+dcls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+dcls+'">'+d.getDate()+(doff?'✕':'')+'</div><div class="dob"></div></div>';
   }).join('');
-  if(offMode){dates.forEach(function(d){var iso=localISO(d);if(!isPast(d)){var el=document.getElementById('hdr-'+iso);if(el)el.onclick=function(){toggleDayOff(iso);}}});}
   var body=document.getElementById('cal-body-t');
   body.style.gridTemplateColumns=COL;body.innerHTML='';
   TIMES.forEach(function(t){
@@ -560,7 +547,7 @@ function renderT(){
       var k=ck(date,t),iso=localISO(date);
       var sets=slotSets[k],hasSets=sets&&sets.size>0;
       var isOff=!!offSlots[k],doff=!!dayOffs[iso],past=isPast(date);
-      var isSel=selCells.has(k),isOffSel=offCells.has(k),bk=bookings[k];
+      var isSel=selCells.has(k),bk=bookings[k];
       var sc=document.createElement('div');sc.className='slot-cell';
       var sl=document.createElement('div');sl.className='slot';
       if(past){sl.className='slot t-idle';sl.style.opacity='.2';sl.style.pointerEvents='none';}
@@ -569,13 +556,12 @@ function renderT(){
         sl.className='slot '+(BKC[bk.loc]||'t-bk-m');
         var last=bk.name?(bk.name.split(/[\s\u3000]/)[0]):'';
         sl.innerHTML='<span style="font-size:7px;font-weight:700;overflow:hidden;max-width:100%;text-overflow:ellipsis" class="'+(BLC[bk.loc]||'')+'">'+LOCS[bk.loc]+'：'+last+'様</span>';
-        if(!selMode&&!offMode){(function(dd,tt,kk){sl.onclick=function(){openBkDetail(dd,tt,kk);};})(date,t,k);}
+        if(!selMode){(function(dd,tt,kk){sl.onclick=function(){openBkDetail(dd,tt,kk);};})(date,t,k);}
       } else if(selMode&&isSel){sl.className='slot t-sel-add';if(hasSets)sl.appendChild(mkTags(sets));else sl.innerHTML='<span style="font-size:9px;color:#fff">✓</span>';}
-      else if(offMode&&isOffSel){sl.className='slot t-sel-off';sl.innerHTML='<span style="font-size:9px;color:#fff">✕</span>';}
-      else if(isOff){sl.className='slot t-off';sl.innerHTML='<span class="x-off">✕</span>';if(!selMode&&!offMode){(function(dd,tt,kk){sl.onclick=function(){openOffDetail(dd,tt,kk);};})(date,t,k);}}
-      else if(hasSets){sl.className='slot '+(selMode?'t-avail-add':(offMode?'t-avail-off':'t-avail'));sl.appendChild(mkTags(sets));if(!selMode&&!offMode){(function(dd,tt,kk){sl.onclick=function(){openSlotDetail(dd,tt,kk);};})(date,t,k);}}
-      else{sl.className='slot '+(selMode?'t-idle-add':(offMode?'t-idle-off':'t-idle'));if(selMode||offMode)sl.innerHTML='<span style="font-size:9px;opacity:.5">'+(selMode?'＋':'✕')+'</span>';}
-      if(!past&&selMode&&!doff&&!bk&&!isOff){
+      else if(isOff){sl.className='slot t-idle';}
+      else if(hasSets){sl.className='slot '+(selMode?'t-avail-add':'t-avail');sl.appendChild(mkTags(sets));if(!selMode){(function(dd,tt,kk){sl.onclick=function(){openSlotDetail(dd,tt,kk);};})(date,t,k);}}
+      else{sl.className='slot '+(selMode?'t-idle-add':'t-idle');if(selMode)sl.innerHTML='<span style="font-size:9px;opacity:.5">＋</span>';}
+      if(!past&&selMode&&!doff&&!bk){
         (function(kk,s){
           var justAdded=false;
           s.setAttribute('data-ck',kk);
@@ -583,15 +569,6 @@ function renderT(){
           s.ontouchstart=function(e){e.stopPropagation();drag=true;};
           s.onmouseenter=function(){if(drag&&!selCells.has(kk)){selCells.add(kk);updSC();s.className='slot t-sel-add';}};
           s.onclick=function(e){e.stopPropagation();if(justAdded){justAdded=false;return;}if(selCells.has(kk)){selCells.delete(kk);s.className='slot t-idle-add';}else{selCells.add(kk);s.className='slot t-sel-add';}updSC();};
-        })(k,sl);
-      } else if(!past&&offMode&&!doff&&!bk){
-        (function(kk,s){
-          var justAdded=false;
-          s.setAttribute('data-ck',kk);
-          s.onmousedown=function(e){e.preventDefault();drag=true;if(!offCells.has(kk)){offCells.add(kk);s.className='slot t-sel-off';updOC();justAdded=true;}else{justAdded=false;}};
-          s.ontouchstart=function(e){e.stopPropagation();drag=true;};
-          s.onmouseenter=function(){if(drag&&!offCells.has(kk)){offCells.add(kk);updOC();s.className='slot t-sel-off';}};
-          s.onclick=function(e){e.stopPropagation();if(justAdded){justAdded=false;return;}if(offCells.has(kk)){offCells.delete(kk);s.className='slot t-idle-off';}else{offCells.add(kk);s.className='slot t-sel-off';}updOC();};
         })(k,sl);
       }
       sc.appendChild(sl);body.appendChild(sc);
@@ -610,7 +587,6 @@ document.addEventListener('touchmove',function(e){
   var kk=el.getAttribute('data-ck');
   e.preventDefault();
   if(selMode&&!selCells.has(kk)){selCells.add(kk);updSC();el.className='slot t-sel-add';}
-  else if(offMode&&!offCells.has(kk)){offCells.add(kk);updOC();el.className='slot t-sel-off';}
 },{passive:false});
 
 function renderC(){
@@ -643,7 +619,7 @@ function renderC(){
       else if(mine){sl.className='slot c-mine';sl.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>';(function(dd,tt,kk){sl.onclick=function(){openMyBk(dd,tt,kk);};})(date,t,k);}
       else if(bk&&bk._booked){sl.className='slot c-booked';sl.innerHTML='<span class="x-bk">✕</span>';}
       else if(availMls.length>0){if(isToday(date)){sl.className='slot c-off';sl.innerHTML='<span style="font-size:9px;color:#fca5a5;font-weight:700">✕</span>';}else{sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,availMls);}}
-      else{sl.className='slot c-empty';}
+      else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#d1d5db;font-weight:700">✕</span>';}
       sc.appendChild(sl);body.appendChild(sc);
     });
   });
