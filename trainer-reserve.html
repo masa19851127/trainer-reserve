@@ -254,6 +254,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
     <button class="t-tab active" id="ttab-cal" onclick="switchTTab('cal')">カレンダー</button>
     <button class="t-tab" id="ttab-clients" onclick="switchTTab('clients')">お客様管理</button>
     <button class="t-tab" id="ttab-report" onclick="switchTTab('report')">レポート</button>
+    <button class="t-tab" id="ttab-hist" onclick="switchTTab('hist')">予約履歴</button>
   </div>
   <div id="ttab-cal-content">
     <div class="mode-selector">
@@ -298,6 +299,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
       <div id="cm-list"></div>
     </div>
   </div>
+  <div id="ttab-hist-content" style="display:none"><div style="padding:40px;text-align:center;color:#999;font-size:13px">読み込み中...</div></div>
   <div id="ttab-report-content" style="display:none">
     <div class="rp-wrap">
       <div class="rp-month-bar">
@@ -435,15 +437,15 @@ async function loadData(){
   });
   myEmail=localStorage.getItem('myEmail')||'';
   if(mode==='client'){
-    var r2a=await sb.from('bookings').select('date_key').gte('date_key',s).lte('date_key',e+'_z');
+    var r2a=await sb.from('bookings').select('date_key').eq('status','confirmed').gte('date_key',s).lte('date_key',e+'_z');
     bookings={};(r2a.data||[]).forEach(function(r){bookings[r.date_key]={date_key:r.date_key,_booked:true};});
     myBookings=new Set();
     if(myEmail){
-      var r2b=await sb.from('bookings').select('*').eq('email',myEmail).gte('date_key',s).lte('date_key',e+'_z');
+      var r2b=await sb.from('bookings').select('*').eq('email',myEmail).eq('status','confirmed').gte('date_key',s).lte('date_key',e+'_z');
       (r2b.data||[]).forEach(function(r){bookings[r.date_key]=r;myBookings.add(r.date_key);});
     }
   } else {
-    var r2=await sb.from('bookings').select('*').gte('date_key',s).lte('date_key',e+'_z');
+    var r2=await sb.from('bookings').select('*').eq('status','confirmed').gte('date_key',s).lte('date_key',e+'_z');
     bookings={};(r2.data||[]).forEach(function(r){bookings[r.date_key]=r;});myBookings=new Set();
   }
   var r3=await sb.from('day_offs').select('*').gte('date_iso',s).lte('date_iso',e);
@@ -458,7 +460,7 @@ async function deleteAllSlots(k){await sb.from('slots').delete().eq('date_key',k
 async function saveDayOff(iso){await sb.from('day_offs').upsert({date_iso:iso},{onConflict:'date_iso'});await sb.from('slots').delete().like('date_key',iso+'%');}
 async function deleteDayOff(iso){await sb.from('day_offs').delete().eq('date_iso',iso);}
 async function saveBooking(k,menu,loc,name,email,phone,msg){var r=await sb.from('bookings').insert({date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg});return !r.error;}
-async function deleteBooking(k){await sb.from('bookings').delete().eq('date_key',k);}
+async function deleteBooking(k){await sb.from('bookings').update({status:'cancelled'}).eq('date_key',k);}
 
 async function sendMail(to,subject,html,text){
   try{await fetch(SB_URL+'/functions/v1/send-email',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},body:JSON.stringify({to:to,subject:subject,html:html,text:text||''})});}
@@ -550,7 +552,11 @@ function renderT(){
       var isSel=selCells.has(k),bk=bookings[k];
       var sc=document.createElement('div');sc.className='slot-cell';
       var sl=document.createElement('div');sl.className='slot';
-      if(past){sl.className='slot t-idle';sl.style.opacity='.2';sl.style.pointerEvents='none';}
+      if(bk&&past){
+        sl.className='slot '+(BKC[bk.loc]||'t-bk-m');sl.style.opacity='.45';sl.style.pointerEvents='none';
+        var last=bk.name?(bk.name.split(/[\s\u3000]/)[0]):'';
+        sl.innerHTML='<span style="font-size:7px;font-weight:700;overflow:hidden;max-width:100%;text-overflow:ellipsis" class="'+(BLC[bk.loc]||'')+'">'+LOCS[bk.loc]+'：'+last+'様</span>';
+      } else if(past){sl.className='slot t-idle';sl.style.opacity='.2';sl.style.pointerEvents='none';}
       else if(doff){sl.className='slot t-dayoff';sl.innerHTML='<span class="x-off">✕</span>';}
       else if(bk){
         sl.className='slot '+(BKC[bk.loc]||'t-bk-m');
@@ -906,12 +912,13 @@ function changeEmail(){localStorage.removeItem('myEmail');myEmail='';renderMyPag
 
 function switchTTab(tab){
   localStorage.setItem('trainerTab',tab);
-  ['cal','clients','report'].forEach(function(id){
+  ['cal','clients','report','hist'].forEach(function(id){
     document.getElementById('ttab-'+id).classList.toggle('active',tab===id);
     document.getElementById('ttab-'+id+'-content').style.display=tab===id?'block':'none';
   });
   if(tab==='clients')loadClients();
   if(tab==='report')loadReport();
+  if(tab==='hist')loadHistory();
 }
 var rpData={bookings:[],clients:[]};
 function rpRange(off){
@@ -970,6 +977,39 @@ function renderReport(){
   document.getElementById('rp-ranking').innerHTML=rankHtml;
 }
 
+async function loadHistory(){
+  L(true);
+  var today=localISO(new Date());
+  var r1=await sb.from('bookings').select('*').eq('status','confirmed').lt('date_key',today).order('date_key',{ascending:false}).limit(200);
+  var r2=await sb.from('bookings').select('*').eq('status','cancelled').order('date_key',{ascending:false}).limit(200);
+  L(false);
+  var items=[];
+  (r1.data||[]).forEach(function(b){items.push(Object.assign({},b,{_htype:'done'}));});
+  (r2.data||[]).forEach(function(b){items.push(Object.assign({},b,{_htype:'cancelled'}));});
+  items.sort(function(a,b){return b.date_key>a.date_key?1:(b.date_key<a.date_key?-1:0);});
+  var wrap=document.getElementById('ttab-hist-content');
+  if(!items.length){wrap.innerHTML='<div style="text-align:center;padding:40px;color:#999;font-size:13px">予約履歴がありません</div>';return;}
+  var html='<div style="padding:12px">';
+  items.forEach(function(item){
+    var parts=item.date_key.split('_');
+    var iso=parts[0],t=parts[1]||'';
+    var d=new Date(iso+'T00:00:00');
+    var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日（'+DJ[d.getDay()]+'）';
+    var badge=item._htype==='done'
+      ?'<span style="font-size:10px;background:#dcfce7;color:#15803d;border-radius:4px;padding:2px 6px">完了</span>'
+      :'<span style="font-size:10px;background:#fee2e2;color:#b91c1c;border-radius:4px;padding:2px 6px">キャンセル</span>';
+    html+='<div style="padding:10px 12px;border:0.5px solid #e5e5e5;border-radius:10px;margin-bottom:8px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+        +'<div style="font-size:13px;font-weight:600;color:#1a1a1a">'+ds+(t?' '+t+'〜'+et(t):'')+'</div>'
+        +badge
+      +'</div>'
+      +'<div style="font-size:12px;color:#374151">'+(item.name?item.name+'様　':'')+(MENUS[item.menu]||item.menu||'')+'　'+(LOCS[item.loc]||item.loc||'')+'</div>'
+    +'</div>';
+  });
+  html+='</div>';
+  wrap.innerHTML=html;
+}
+
 async function loadClients(){var r=await sb.from('clients').select('*').order('name');clients=r.data||[];renderClients();}
 function renderClients(){
   var q=(document.getElementById('cm-search').value||'').toLowerCase();
@@ -1003,18 +1043,23 @@ async function openClientDetail(email){
   var r=Math.max(0,(c.total_tickets||0)-(c.used_tickets||0));
   var tcol=r>3?'#16a34a':r>0?'#f59e0b':'#e94560';
   L(true);
-  var bkRes=await sb.from('bookings').select('*').eq('email',email).order('date_key',{ascending:false}).limit(20);
+  var bkRes=await sb.from('bookings').select('*').eq('email',email).order('date_key',{ascending:false}).limit(50);
   var lgRes=await sb.from('ticket_logs').select('*').eq('client_email',email).eq('type','cancel_sameday');
   L(false);
   var bkList=bkRes.data||[];
-  var sdCancelCount=(lgRes.data||[]).length;
+  var sdKeys=new Set();
+  (lgRes.data||[]).forEach(function(l){if(l.note){var p=l.note.split('|');if(p.length>=2)sdKeys.add(p[1]);}});
+  var sdCancelCount=sdKeys.size;
   var bkHtml='';
   if(bkList.length){
     bkList.forEach(function(b){
       var parts=b.date_key.split('-');
       var ds=parseInt(parts[1])+'月'+parseInt(parts[2].substring(0,2))+'日';
       var t=b.date_key.split('_')[1]||'';
-      bkHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12px"><span style="color:#444">'+ds+(t?' '+t:'')+'</span><span style="color:#666">'+MENUS[b.menu]+' / '+LOCS[b.loc]+'</span></div>';
+      var isCancelled=b.status==='cancelled';
+      var isSd=sdKeys.has(b.date_key);
+      var badge=isCancelled?(isSd?'<span style="font-size:9px;background:#fef9c3;color:#854d0e;border-radius:3px;padding:1px 5px;margin-left:4px">当日キャンセル</span>':'<span style="font-size:9px;background:#fee2e2;color:#b91c1c;border-radius:3px;padding:1px 5px;margin-left:4px">キャンセル</span>'):'';;
+      bkHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12px;'+(isCancelled?'opacity:.6':'')+'"><span style="color:#444">'+ds+(t?' '+t:'')+badge+'</span><span style="color:#666">'+MENUS[b.menu]+' / '+LOCS[b.loc]+'</span></div>';
     });
   } else {
     bkHtml='<div style="color:#999;font-size:12px;text-align:center;padding:10px">予約履歴なし</div>';
