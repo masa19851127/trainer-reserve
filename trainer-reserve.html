@@ -334,7 +334,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
   </div>
   <div id="ctab-cal-content">
     <div class="week-bar">
-      <button class="wbtn" onclick="changeWeek(-1)">‹</button>
+      <button class="wbtn" id="c-prev-wk" onclick="changeWeek(-1)">‹</button>
       <span class="wlbl" id="wlbl-c"></span>
       <button class="wbtn" onclick="changeWeek(1)">›</button>
     </div>
@@ -391,6 +391,10 @@ function wkDates(o){
   m.setDate(n.getDate()-(dy===0?6:dy-1)+o*7);
   var a=[];for(var i=0;i<7;i++){var d=new Date(m);d.setDate(m.getDate()+i);a.push(d);}return a;
 }
+function clientWkDates(o){
+  var n=new Date();n.setHours(0,0,0,0);
+  var a=[];for(var i=0;i<7;i++){var d=new Date(n);d.setDate(n.getDate()+o*7+i);a.push(d);}return a;
+}
 
 function goTrainerPw(){document.getElementById('login-screen').style.display='none';document.getElementById('pw-screen').style.display='flex';setTimeout(function(){document.getElementById('pw-input').focus();},100);}
 function goClientMode(){
@@ -431,7 +435,7 @@ function backToLogin(){
 
 async function loadData(){
   L(true);
-  var dates=wkDates(wkOff);
+  var dates=mode==='client'?clientWkDates(wkOff):wkDates(wkOff);
   var s=localISO(dates[0]),e=localISO(dates[6]);
   var r1=await sb.from('slots').select('*').gte('date_key',s).lte('date_key',e+'_z');
   slotSets={};offSlots={};
@@ -471,13 +475,13 @@ async function sendMail(to,subject,html,text){
   catch(e){console.log('mail err',e);}
 }
 function mailHtmlClient(name,ds,t,menu,loc){
-  return '<div style="font-family:sans-serif;max-width:500px;margin:0 auto"><div style="background:#c2410c;padding:20px 24px"><div style="font-size:18px;font-weight:bold;color:#fff">Trainer Reserve</div><div style="font-size:12px;color:rgba(255,255,255,.75)">ご予約確認</div></div><div style="padding:24px"><p style="font-size:14px;margin:0 0 16px">'+name+' 様</p><table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px;margin-bottom:20px"><tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr></table><p style="font-size:13px;color:#666;line-height:1.7;margin:0">当日はお気をつけてお越しください。</p></div><div style="border-top:1px solid #e5e5e5;padding:14px 24px"><p style="font-size:11px;color:#999;margin:0">このメールはTrainer Reserveより自動送信されています。</p></div></div>';
+  return '<div style="font-family:sans-serif;max-width:500px;margin:0 auto"><div style="background:#c2410c;padding:20px 24px"><div style="font-size:18px;font-weight:bold;color:#fff">Trainer Reserve</div><div style="font-size:12px;color:rgba(255,255,255,.75)">ご予約確認</div></div><div style="padding:24px"><p style="font-size:14px;margin:0 0 16px">'+name+' 様</p><table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px;margin-bottom:20px"><tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'<br><span style="white-space:nowrap">'+t+'〜'+et(t)+'</span></td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr></table><p style="font-size:13px;color:#666;line-height:1.7;margin:0">当日はお気をつけてお越しください。</p></div><div style="border-top:1px solid #e5e5e5;padding:14px 24px"><p style="font-size:11px;color:#999;margin:0">このメールはTrainer Reserveより自動送信されています。</p></div></div>';
 }
 function mailHtmlTrainer(name,ds,t,menu,loc,phone,msg){
-  return '<div style="font-family:sans-serif;max-width:500px;margin:0 auto"><div style="background:#1a1a2e;padding:20px 24px"><div style="font-size:18px;font-weight:bold;color:#fff">新規予約のお知らせ</div><div style="font-size:12px;color:rgba(255,255,255,.6)">Trainer Reserve</div></div><div style="padding:24px"><table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px"><tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">お客様</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+name+' 様</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">電話番号</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+(phone||'未入力')+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メッセージ</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+(msg||'なし')+'</td></tr></table></div></div>';
+  return '<div style="font-family:sans-serif;max-width:500px;margin:0 auto"><div style="background:#1a1a2e;padding:20px 24px"><div style="font-size:18px;font-weight:bold;color:#fff">新規予約のお知らせ</div><div style="font-size:12px;color:rgba(255,255,255,.6)">Trainer Reserve</div></div><div style="padding:24px"><table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px"><tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'<br><span style="white-space:nowrap">'+t+'〜'+et(t)+'</span></td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">お客様</td><td style="padding:10px 14px;font-weight:bold;border-top:1px solid #e5e5e5">'+name+' 様</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">電話番号</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+(phone||'未入力')+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メッセージ</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+(msg||'なし')+'</td></tr></table></div></div>';
 }
 function mailHtmlCancel(name,ds,t,menu,loc,sameDay){
-  return '<div style="font-family:sans-serif;max-width:500px;margin:0 auto"><div style="background:#64748b;padding:20px 24px"><div style="font-size:18px;font-weight:bold;color:#fff">Trainer Reserve</div><div style="font-size:12px;color:rgba(255,255,255,.75)">予約キャンセルのお知らせ</div></div><div style="padding:24px"><p style="font-size:14px;margin:0 0 16px">'+name+' 様</p><table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px;margin-bottom:16px"><tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'　'+t+'〜'+et(t)+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr></table>'+(sameDay?'<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:12px;font-size:12px;color:#854d0e">当日キャンセルのため、回数券1回分が消化されます。</div>':'')+'</div></div>';
+  return '<div style="font-family:sans-serif;max-width:500px;margin:0 auto"><div style="background:#64748b;padding:20px 24px"><div style="font-size:18px;font-weight:bold;color:#fff">Trainer Reserve</div><div style="font-size:12px;color:rgba(255,255,255,.75)">予約キャンセルのお知らせ</div></div><div style="padding:24px"><p style="font-size:14px;margin:0 0 16px">'+name+' 様</p><table style="width:100%;border-collapse:collapse;background:#f5f5f5;border-radius:8px;margin-bottom:16px"><tr><td style="padding:10px 14px;color:#666;width:80px">日時</td><td style="padding:10px 14px;font-weight:bold">'+ds+'<br><span style="white-space:nowrap">'+t+'〜'+et(t)+'</span></td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">メニュー</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+MENUS[menu]+'</td></tr><tr><td style="padding:10px 14px;color:#666;border-top:1px solid #e5e5e5">場所</td><td style="padding:10px 14px;border-top:1px solid #e5e5e5">'+LOCS[loc]+'</td></tr></table>'+(sameDay?'<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:12px;font-size:12px;color:#854d0e">当日キャンセルのため、回数券1回分が消化されます。</div>':'')+'</div></div>';
 }
 function mailTextClient(name,ds,t,menu,loc){
   return name+' 様\n\n【予約確認】\n日時：'+ds+' '+t+'〜'+et(t)+'\nメニュー：'+MENUS[menu]+'\n場所：'+LOCS[loc]+'\n\n当日はお気をつけてお越しください。\n\nTrainer Reserve';
@@ -610,8 +614,9 @@ document.addEventListener('touchmove',function(e){
 },{passive:false});
 
 function renderC(){
-  var dates=wkDates(wkOff);
+  var dates=clientWkDates(wkOff);
   document.getElementById('wlbl-c').textContent=fmt(dates[0])+' – '+fmt(dates[6]);
+  var pb=document.getElementById('c-prev-wk');if(pb)pb.disabled=wkOff<=0;
   var COL='36px repeat(7,1fr)';
   var head=document.getElementById('cal-head-c');
   head.style.gridTemplateColumns=COL;
@@ -682,7 +687,6 @@ function openSlotDetail(date,t,k){
   openPanel();
 }
 async function openTrainerBook(iso,t,k){
-  if(isTodayStr(iso)){showToast('⚠ 当日予約はできません');return;}
   L(true);
   var cr=await sb.from('clients').select('*').order('name');
   L(false);
@@ -885,7 +889,7 @@ async function showMyPageData(email,wrap){
     var tcol=remain>3?'#16a34a':remain>0?'#f59e0b':'#e94560';
     html+='<div style="font-size:16px;font-weight:700;margin-bottom:2px">'+c.name+' さん</div>';
     html+='<div style="font-size:11px;color:#666;margin-bottom:12px">'+email+'</div>';
-    html+='<div class="my-remain-card"><div style="font-size:11px;color:#666;margin-bottom:6px">残り回数</div><div class="my-remain-num" style="color:'+tcol+'">'+remain+'<span style="font-size:18px;font-weight:400">回</span></div><div style="font-size:11px;color:#666;margin-top:4px">残り'+remain+'/'+c.total_tickets+'回</div></div>';
+    html+='<div class="my-remain-card"><div style="font-size:11px;color:#666;margin-bottom:6px">残り回数</div><div class="my-remain-num" style="color:'+tcol+'">'+remain+'<span style="font-size:18px;font-weight:400">/'+c.total_tickets+'回</span></div></div>';
   } else {
     html+='<div style="font-size:11px;color:#666;margin-bottom:12px">'+email+'</div>';
   }
@@ -908,7 +912,6 @@ async function showMyPageData(email,wrap){
   } else {
     html+='<div style="font-size:13px;color:#999;text-align:center;padding:20px">予約履歴がありません</div>';
   }
-  html+='<button onclick="changeEmail()" style="width:100%;padding:8px;background:none;border:0.5px solid #e5e5e5;border-radius:8px;font-size:12px;color:#666;cursor:pointer;margin-top:12px">別のメールアドレスで確認</button>';
   wrap.innerHTML=html;
 }
 function changeEmail(){localStorage.removeItem('myEmail');myEmail='';renderMyPage();}
@@ -1036,12 +1039,11 @@ async function openClientDetail(email){
     +'<div class="ptitle">'+c.name+'</div><div class="psub">'+c.email+'</div>'
     +'<div style="background:#f5f5f5;border-radius:10px;padding:14px;margin:12px 0;text-align:center">'
       +'<div style="font-size:11px;color:#666;margin-bottom:4px">残り回数</div>'
-      +'<div style="font-size:32px;font-weight:700;color:'+tcol+'">'+r+'<span style="font-size:16px;font-weight:400">回</span></div>'
-      +'<div style="font-size:11px;color:#666;margin-top:2px">残り'+r+'/'+c.total_tickets+'回　当日キャンセル'+sdCancelCount+'回</div>'
+      +'<div style="font-size:32px;font-weight:700;color:'+tcol+'">'+r+'<span style="font-size:16px;font-weight:400">/'+c.total_tickets+'回</span></div>'
     +'</div>'
-    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">回数券を追加'+(btnDis?'<span style="font-size:11px;color:#bbb;margin-left:6px">（残数があるとき不可）</span>':'')+'</div>'
+    +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">回数券を追加<span style="font-size:11px;color:#bbb;margin-left:6px">（8/16回は残数0のみ）</span></div>'
     +'<div style="display:flex;gap:6px;margin-bottom:10px">'
-      +'<button onclick="addTix(\''+email+'\',1,\'単発\')" style="'+tixSt+'">＋単発</button>'
+      +'<button onclick="addTix(\''+email+'\',1,\'単発\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;cursor:pointer">＋単発</button>'
       +'<button onclick="addTix(\''+email+'\',8,\'8回券\')" style="'+tixSt+'">＋8回</button>'
       +'<button onclick="addTix(\''+email+'\',16,\'16回券\')" style="'+tixSt+'">＋16回</button>'
     +'</div>'
@@ -1093,7 +1095,7 @@ function updStats(){
   Object.keys(bookings).forEach(function(k){if(ds.some(function(d){return k.startsWith(d);}))b++;});
   document.getElementById('sta').textContent=a;document.getElementById('stb').textContent=b;
 }
-async function changeWeek(d){wkOff+=d;await loadData();if(mode==='trainer')renderT();else renderC();}
+async function changeWeek(d){if(d<0&&mode==='client'&&wkOff<=0)return;wkOff+=d;await loadData();if(mode==='trainer')renderT();else renderC();}
 function openPanel(){document.getElementById('panel').classList.add('open');document.getElementById('overlay').classList.add('show');}
 function closePanel(){document.getElementById('panel').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
