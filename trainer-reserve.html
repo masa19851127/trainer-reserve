@@ -114,7 +114,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .t-bk-m:hover,.t-bk-y:hover,.t-bk-e:hover{filter:brightness(.96);}
 .bl-m{color:#1e40af;}.bl-y{color:#854d0e;}.bl-e{color:#9d174d;}
 .x-off{font-size:9px;color:#fda4af;font-weight:700;}
-.x-bk{font-size:9px;color:#d1d5db;font-weight:700;}
+.x-bk{font-size:9px;color:#9ca3af;font-weight:700;}
 .c-empty{background:transparent;}
 .c-off{background:#fff0f0;border:.5px solid #fecaca;}
 .c-booked{background:#f3f4f6;border:.5px solid #e5e7eb;}
@@ -614,12 +614,12 @@ function renderC(){
       if(sets&&!bk&&!past&&!doff&&!isOff)sets.forEach(function(ml){availMls.push(ml);});
       var sc=document.createElement('div');sc.className='slot-cell';
       var sl=document.createElement('div');sl.className='slot';
-      if(doff||isOff){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#d1d5db;font-weight:700">✕</span>';}
+      if(doff||isOff){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       else if(past){sl.className='slot c-empty';}
       else if(mine){sl.className='slot c-mine';sl.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>';(function(dd,tt,kk){sl.onclick=function(){openMyBk(dd,tt,kk);};})(date,t,k);}
-      else if(bk&&bk._booked){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#d1d5db;font-weight:700">✕</span>';}
-      else if(availMls.length>0){if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#d1d5db;font-weight:700">✕</span>';}else{sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,availMls);}}
-      else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#d1d5db;font-weight:700">✕</span>';}
+      else if(bk&&bk._booked){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
+      else if(availMls.length>0){if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,availMls);}}
+      else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       sc.appendChild(sl);body.appendChild(sc);
     });
   });
@@ -1032,8 +1032,8 @@ async function openClientDetail(email){
     +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:8px">回数券を追加</div>'
     +'<div style="display:flex;gap:6px;margin-bottom:10px">'
       +'<button onclick="addTix(\''+email+'\',1,\'単発\')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #c2410c;background:#fff1f2;color:#c2410c;font-size:12px;cursor:pointer">＋単発</button>'
-      +'<button onclick="addTix(\''+email+'\',8,\'8回券\')" style="'+tixSt+'">＋8回</button>'
-      +'<button onclick="addTix(\''+email+'\',16,\'16回券\')" style="'+tixSt+'">＋16回</button>'
+      +'<button onclick="addTix(\''+email+'\',8,\'8回券\',true)" style="'+tixSt+'">＋8回</button>'
+      +'<button onclick="addTix(\''+email+'\',16,\'16回券\',true)" style="'+tixSt+'">＋16回</button>'
     +'</div>'
     +'<div style="display:flex;gap:6px;margin-bottom:10px"><input type="number" id="custom-tix" min="1" max="99" placeholder="任意の回数" class="finp" style="flex:1"><button onclick="addCustomTix(\''+email+'\')" style="'+custSt+'">追加</button></div>'
     +'<button onclick="consumeTix(\''+email+'\')" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #f43f5e;background:#fff1f2;color:#be123c;font-size:13px;cursor:pointer;margin-bottom:12px">1回消化する（当日キャンセル等）</button>'
@@ -1061,14 +1061,15 @@ async function saveClientNote(email){
   var c=clients.find(function(x){return x.email===email;});if(c)c.notes=note;
   showToast('✅ メモを保存しました');
 }
-async function addTix(email,amount,label){
+async function addTix(email,amount,label,reset){
   L(true);
-  var cr=await sb.from('clients').select('total_tickets,used_tickets').eq('email',email).maybeSingle();
-  var c=cr.data||{};
-  var remaining=Math.max(0,(c.total_tickets||0)-(c.used_tickets||0));
   var newTotal,newUsed;
-  if(remaining===0){newTotal=amount;newUsed=0;}
-  else{newTotal=(c.total_tickets||0)+amount;newUsed=c.used_tickets||0;}
+  if(reset){newTotal=amount;newUsed=0;}
+  else{
+    var cr=await sb.from('clients').select('total_tickets,used_tickets').eq('email',email).maybeSingle();
+    var c=cr.data||{};
+    newTotal=(c.total_tickets||0)+amount;newUsed=c.used_tickets||0;
+  }
   await sb.from('clients').update({total_tickets:newTotal,used_tickets:newUsed}).eq('email',email);
   await sb.from('ticket_logs').insert({client_email:email,type:'purchase',amount:amount,note:label+'追加'});
   L(false);closePanel();await loadClients();showToast('✅ '+label+'を追加しました');
