@@ -788,7 +788,7 @@ async function confirmBk(iso,t,ml,k){
   var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
   if(cr.data){
     var remaining=(cr.data.total_tickets||0)-(cr.data.used_tickets||0);
-    if(remaining<=0){L(false);showToast('⚠ 回数券の残数がありません');return;}
+    if(remaining<=0){L(false);alert('回数券が無いため予約できません。\nトレーナーにお問い合わせください。');return;}
   }
   var ok=await saveBooking(k,menu,loc,name,email,phone,msg);
   if(!ok){L(false);showToast('⚠ 予約に失敗しました');return;}
@@ -847,6 +847,8 @@ async function clientCancel(k,iso,t,menu,loc,name,email){
     sendMail(TR_EMAIL,'【キャンセル】'+name+'様 — '+ds+' '+t+(sd?' (当日)':''),mailHtmlCancel(name,ds,t,menu,loc,sd),mailTextCancel(name,ds,t,menu,loc,sd))
   ]);
   closePanel();renderC();showToast('予約をキャンセルしました'+(sd?' (1回消化)':''));
+  var mpEl=document.getElementById('mypage-content');
+  if(mpEl)showMyPageData(email,mpEl);
 }
 
 function switchCTab(tab){
@@ -890,8 +892,17 @@ async function showMyPageData(email,wrap){
   if(br.data&&br.data.length>0){
     br.data.forEach(function(bk){
       var parts=bk.date_key.split('_'),iso=parts[0],t=parts[1]||'';
-      var ds=iso.slice(5).replace('-','/');
-      html+='<div class="my-bk-card"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500">'+ds+' '+t+'〜'+et(t)+'</div><span class="ctag '+(MTAG[bk.menu]||'')+'">'+MENUS[bk.menu]+'</span></div><div style="font-size:11px;color:#666;margin-top:3px">'+LOCS[bk.loc]+'</div></div>';
+      var bkDate=new Date(iso+'T00:00:00');
+      var today=new Date();today.setHours(0,0,0,0);
+      var isPast=bkDate<today;
+      var sd=isTodayStr(iso);
+      var dsDisp=(bkDate.getMonth()+1)+'月'+bkDate.getDate()+'日（'+DJ[bkDate.getDay()]+'）';
+      var cancelBtn='';
+      if(!isPast){
+        var btnSt='font-size:11px;border:0.5px solid #f43f5e;color:#be123c;background:none;border-radius:6px;padding:3px 9px;cursor:pointer';
+        cancelBtn='<button style="'+btnSt+'" onclick="clientCancel(\''+bk.date_key+'\',\''+iso+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">'+(sd?'⚠ 当日キャンセル':'キャンセル')+'</button>';
+      }
+      html+='<div class="my-bk-card"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500">'+dsDisp+' '+t+'〜'+et(t)+'</div><span class="ctag '+(MTAG[bk.menu]||'')+'">'+MENUS[bk.menu]+'</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px"><div style="font-size:11px;color:#666">'+LOCS[bk.loc]+'</div>'+cancelBtn+'</div></div>';
     });
   } else {
     html+='<div style="font-size:13px;color:#999;text-align:center;padding:20px">予約履歴がありません</div>';
