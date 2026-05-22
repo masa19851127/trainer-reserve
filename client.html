@@ -237,6 +237,11 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
       <div class="cal-head" id="cal-head-c"></div>
       <div class="cal-body" id="cal-body-c"></div>
     </div></div>
+    <div style="display:flex;gap:12px;padding:6px 14px 2px;flex-wrap:wrap;">
+      <div class="li"><div class="ld" style="background:#f3e8ff;border:1px solid #d8b4fe"></div>目黒</div>
+      <div class="li"><div class="ld" style="background:#dcfce7;border:1px solid #86efac"></div>横浜</div>
+      <div class="li"><div class="ld" style="background:#dbeafe;border:1px solid #93c5fd"></div>恵比寿</div>
+    </div>
   </div>
   <div id="ctab-my-content" style="display:none">
     <div class="mypage-wrap" id="mypage-content"></div>
@@ -270,6 +275,7 @@ const MTAG={pilates:'tag-pilates',training:'tag-training'};
 var mode='',wkOff=0,rpOff=0;
 var slotSets={},offSlots={},dayOffs={},bookings={},blockedSlots={};
 var myBookings=new Set(),myEmail=localStorage.getItem('myEmail')||'';
+var holidays=new Set();
 var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),drag=false,preSelSlotSets=null;
 var clients=[];
 
@@ -425,6 +431,15 @@ function mkTags(sets){
   return w;
 }
 
+async function loadHolidays(){
+  try{
+    var r=await fetch('https://www.googleapis.com/calendar/v3/calendars/ja.japanese%23holiday%40group.v.calendar.google.com/events?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&timeMin=2025-01-01T00:00:00Z&timeMax=2028-01-01T00:00:00Z&singleEvents=true&orderBy=startTime');
+    var j=await r.json();
+    (j.items||[]).forEach(function(item){if(item.start&&item.start.date)holidays.add(item.start.date);});
+    if(mode==='trainer')renderT();else if(mode==='client')renderC();
+  }catch(e){}
+}
+
 function renderT(){
   var dates=wkDates(wkOff);
   document.getElementById('wlbl-t').textContent=fmt(dates[0])+' – '+fmt(dates[6]);
@@ -500,10 +515,11 @@ function renderC(){
   var head=document.getElementById('cal-head-c');
   head.style.gridTemplateColumns=COL;
   head.innerHTML='<div></div>'+dates.map(function(d){
-    var dy=d.getDay();
+    var dy=d.getDay();var iso=localISO(d);
     var dcls=(dy===6?' sat':dy===0?' sun':'');
-    return '<div class="cdh'+(dayOffs[localISO(d)]?' day-off':'')+'">'
-      +'<div class="cdn'+dcls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+dcls+'">'+d.getDate()+'</div><div class="dob"></div></div>';
+    var effCls=holidays.has(iso)?' sun':dcls;
+    return '<div class="cdh'+(dayOffs[iso]?' day-off':'')+'">'
+      +'<div class="cdn'+effCls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+effCls+'">'+d.getDate()+(holidays.has(iso)?'<span style="font-size:7px;vertical-align:top;margin-left:1px">祝</span>':'')+'</div><div class="dob"></div></div>';
   }).join('');
   var body=document.getElementById('cal-body-c');
   body.style.gridTemplateColumns=COL;body.innerHTML='';
@@ -521,7 +537,7 @@ function renderC(){
       else if(past){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       else if(mine){sl.className='slot c-mine';sl.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>';(function(dd,tt,kk){sl.onclick=function(){openMyBk(dd,tt,kk);};})(date,t,k);}
       else if(bk&&bk._booked){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
-      else if(availMls.length>0){var _uMls=availMls.filter(function(ml){var _l=ml.split('-')[1];return !(blockedSlots[k]&&blockedSlots[k].has(_l));});if(_uMls.length===0){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,_uMls);}}
+      else if(availMls.length>0){var _uMls=availMls.filter(function(ml){var _l=ml.split('-')[1];return !(blockedSlots[k]&&blockedSlots[k].has(_l));});if(_uMls.length===0){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{sl.className='slot';sl.style.cssText='display:flex;flex-direction:column;padding:1px;gap:1px;background:transparent;border:none;';var _LBCOL={yokohama:{bg:'#dcfce7',bd:'#86efac',tc:'#166634'},ebisu:{bg:'#dbeafe',bd:'#93c5fd',tc:'#1e40af'},meguro:{bg:'#f3e8ff',bd:'#d8b4fe',tc:'#6b21a8'}};var _locMap={};_uMls.forEach(function(ml){var pts=ml.split('-'),m=pts[0],l=pts[1];if(!_locMap[l])_locMap[l]=[];_locMap[l].push(m);});['meguro','yokohama','ebisu'].filter(function(l){return _locMap[l];}).forEach(function(l){var col=_LBCOL[l];var btn=document.createElement('button');btn.style.cssText='flex:1;border-radius:3px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:7px;font-weight:700;cursor:pointer;padding:0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;';btn.textContent=LOCS[l];(function(dd,tt,kk,loc,menus){btn.onclick=function(e){e.stopPropagation();if(menus.length===1){doBook(localISO(dd),tt,menus[0],loc,kk);}else{openMenuPickerForLoc(dd,tt,kk,loc,menus);}};})(date,t,k,l,_locMap[l]);sl.appendChild(btn);});}}
       else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       sc.appendChild(sl);body.appendChild(sc);
     });
@@ -551,13 +567,20 @@ function openLocPicker(iso,t,menu,k){
     var tc={meguro:'#1e40af',yokohama:'#854d0e',ebisu:'#9d174d'}[loc];
     var _isBlk=blockedSlots[k]&&blockedSlots[k].has(loc);
     if(avail&&!_isBlk){btns+='<button onclick="doBook(\''+iso+'\',\''+t+'\',\''+menu+'\',\''+loc+'\',\''+k+'\')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:2px solid '+tc+';background:'+bg+';color:'+tc+';font-size:14px;font-weight:700;cursor:pointer;text-align:left;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">→ 予約する</span></button>';}
-    else if(avail&&_isBlk){btns+='<div style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:1.5px solid #e5e5e5;background:#f5f5f5;color:#9ca3af;font-size:14px;font-weight:700;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">移動時間のため予約不可</span></div>';}
     else{btns+='<div style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:1.5px solid #e5e5e5;background:#f5f5f5;color:#9ca3af;font-size:14px;font-weight:700;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">予約不可</span></div>';}
   });
   window._backArgs=[date,t,k,Array.from(sets)];
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><button onclick="goBackMenu()" style="background:none;border:none;color:#666;font-size:12px;cursor:pointer;padding:0 0 8px 0">← 戻る</button><div class="ptitle">場所を選んでください</div><div class="psub">'+MENUS[menu]+'　'+ds+'　'+t+'〜'+et(t)+'</div><div style="margin-top:12px">'+btns+'</div>';
 }
 function goBackMenu(){var a=window._backArgs;if(a)openMenuPicker(a[0],a[1],a[2],a[3]);}
+function openMenuPickerForLoc(date,t,k,loc,menus){
+  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
+  var iso=localISO(date);
+  var btns='';
+  menus.forEach(function(menu){btns+='<button onclick="doBook(\''+iso+'\',\''+t+'\',\''+menu+'\',\''+loc+'\',\''+k+'\')" style="width:100%;padding:14px;margin-bottom:10px;border-radius:10px;border:2px solid #e5e5e5;background:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px"><span style="font-size:20px">'+(menu==='pilates'?'🧘':'💪')+'</span>'+MENUS[menu]+'</button>';});
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">メニューを選んでください</div><div class="psub">'+LOCS[loc]+'　'+ds+'　'+t+'〜'+et(t)+'（1時間）</div><div style="margin-top:12px">'+btns+'</div>';
+  openPanel();
+}
 function doBook(iso,t,menu,loc,k){closePanel();openCPanel(new Date(iso+'T00:00:00'),t,menu+'-'+loc,k);}
 
 function openSlotDetail(date,t,k){
@@ -573,7 +596,7 @@ async function openTrainerBook(iso,t,k){
   L(false);
   var clientList=cr.data||[];
   var sets=slotSets[k]||new Set();
-  var mlOpts='';[...sets].forEach(function(ml){var _mll=ml.split('-')[1];var _isBlk=blockedSlots[k]&&blockedSlots[k].has(_mll);mlOpts+='<option value="'+ml+'"'+(_isBlk?' disabled':'')+'>'+TL[ml]+(_isBlk?'（移動時間のため不可）':'')+'</option>';});
+  var mlOpts='';[...sets].forEach(function(ml){var _mll=ml.split('-')[1];var _isBlk=blockedSlots[k]&&blockedSlots[k].has(_mll);mlOpts+='<option value="'+ml+'"'+(_isBlk?' disabled':'')+'>'+TL[ml]+'</option>';});
   var clientOpts='<option value="">-- お客様を選択 --</option>';
   clientList.forEach(function(c){clientOpts+='<option value="'+c.email+'">'+c.name+'（'+c.email+'）</option>';});
   var date=new Date(iso+'T00:00:00');
@@ -1018,6 +1041,7 @@ function closePanel(){document.getElementById('panel').classList.remove('open');
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
 
 window.onload=async function(){
+  loadHolidays();
   var clInp=document.getElementById('cl-email-inp');
   if(clInp){
     clInp.onkeydown=function(e){if(e.key==='Enter')doClientLogin();};
