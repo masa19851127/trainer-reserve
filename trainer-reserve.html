@@ -642,7 +642,7 @@ function renderC(){
       else if(past){sl.className='slot c-empty';}
       else if(mine){sl.className='slot c-mine';sl.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>';(function(dd,tt,kk){sl.onclick=function(){openMyBk(dd,tt,kk);};})(date,t,k);}
       else if(bk&&bk._booked){sl.className='slot c-booked';sl.innerHTML='<span class="x-bk">✕</span>';}
-      else if(availMls.length>0){if(isToday(date)){sl.className='slot c-booked';sl.innerHTML='<span style="font-size:7px;color:#9ca3af">当日不可</span>';}else{sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,availMls);}}
+      else if(availMls.length>0){if(isToday(date)){sl.className='slot c-off';sl.innerHTML='<span style="font-size:9px;color:#fca5a5;font-weight:700">✕</span>';}else{sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,availMls);}}
       else{sl.className='slot c-empty';}
       sc.appendChild(sl);body.appendChild(sc);
     });
