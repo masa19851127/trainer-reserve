@@ -984,7 +984,7 @@ function renderClients(){
     var r=Math.max(0,(c.total_tickets||0)-(c.used_tickets||0));
     var tcls=r>3?'cm-tk-ok':r>0?'cm-tk-low':'cm-tk-none';
     var ename=c.email.replace(/'/g,"\\'");var nname=c.name.replace(/'/g,"\\'");
-    return '<div class="cm-card" onclick="openClientDetail(\''+ename+'\')"><div class="cm-card-top"><span class="cm-name">'+c.name+'</span><div style="display:flex;align-items:center;gap:8px"><span class="'+tcls+'">残り'+r+'回</span><button onclick="event.stopPropagation();confirmDeleteClient(\''+ename+'\',\''+nname+'\');return false;" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;cursor:pointer">削除</button></div></div><div class="cm-email">'+c.email+'</div>'+(c.notes?'<div style="font-size:11px;color:#666;margin-top:3px">'+escHtml(c.notes)+'</div>':'')+'</div>';
+    return '<div class="cm-card" onclick="openClientDetail(\''+ename+'\')"><div class="cm-card-top"><span class="cm-name">'+c.name+'</span><span class="'+tcls+'">残り'+r+'回</span></div><div class="cm-email">'+c.email+'</div>'+(c.notes?'<div style="font-size:11px;color:#666;margin-top:3px">'+escHtml(c.notes)+'</div>':'')+'</div>';
   }).join('');
 }
 function openAddClient(){
@@ -1060,7 +1060,8 @@ async function openClientDetail(email){
     +'<div style="font-size:10px;color:#aaa;margin-bottom:6px">フォーカスを外すと自動保存</div>'
     +'<button onclick="saveClientNote(\''+email+'\')" style="width:100%;padding:8px;border-radius:8px;border:1.5px solid #16a34a;background:#f0fdf4;color:#15803d;font-size:12px;cursor:pointer;margin-bottom:12px">メモを保存</button>'
     +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:6px">予約履歴（直近20件）</div>'
-    +'<div>'+bkHtml+'</div>';
+    +'<div>'+bkHtml+'</div>'
+    +'<div style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;text-align:center"><button onclick="confirmDeleteClient(\''+email+'\',\''+c.name.replace(/\'/g,"\\\'")+'\'" style="font-size:11px;padding:6px 16px;border-radius:6px;border:1px solid #fca5a5;background:transparent;color:#dc2626;cursor:pointer">このお客様を削除する</button></div>';
   openPanel();
 }
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
