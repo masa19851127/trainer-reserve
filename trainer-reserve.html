@@ -114,8 +114,8 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .t-bk-m:hover,.t-bk-y:hover,.t-bk-e:hover{filter:brightness(.96);}
 .bl-m{color:#1e40af;}.bl-y{color:#854d0e;}.bl-e{color:#9d174d;}
 .x-off{font-size:9px;color:#fda4af;font-weight:700;}
-.x-bk{font-size:9px;color:#6b7280 !important;font-weight:700;}
-.c-empty{background:transparent;color:#6b7280;}
+.x-bk{font-size:9px;color:#9ca3af;font-weight:700;}
+.c-empty{background:#f3f4f6;}
 .c-off{background:#fff0f0;border:.5px solid #fecaca;}
 .c-booked{background:#f3f4f6;border:.5px solid #e5e7eb;}
 .c-mine{background:#16a34a;border-color:#15803d;cursor:pointer;}
@@ -254,7 +254,6 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
     <button class="t-tab active" id="ttab-cal" onclick="switchTTab('cal')">カレンダー</button>
     <button class="t-tab" id="ttab-clients" onclick="switchTTab('clients')">お客様管理</button>
     <button class="t-tab" id="ttab-report" onclick="switchTTab('report')">レポート</button>
-    <button class="t-tab" id="ttab-hist" onclick="switchTTab('hist')">予約履歴</button>
   </div>
   <div id="ttab-cal-content">
     <div class="mode-selector">
@@ -299,7 +298,6 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
       <div id="cm-list"></div>
     </div>
   </div>
-  <div id="ttab-hist-content" style="display:none"><div style="padding:40px;text-align:center;color:#999;font-size:13px">読み込み中...</div></div>
   <div id="ttab-report-content" style="display:none">
     <div class="rp-wrap">
       <div class="rp-month-bar">
@@ -620,12 +618,12 @@ function renderC(){
       if(sets&&!bk&&!past&&!doff&&!isOff)sets.forEach(function(ml){availMls.push(ml);});
       var sc=document.createElement('div');sc.className='slot-cell';
       var sl=document.createElement('div');sl.className='slot';
-      if(doff||isOff){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#6b7280 !important;font-weight:700">✕</span>';}
-      else if(past){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#6b7280 !important;font-weight:700">✕</span>';}
+      if(doff||isOff){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
+      else if(past){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       else if(mine){sl.className='slot c-mine';sl.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>';(function(dd,tt,kk){sl.onclick=function(){openMyBk(dd,tt,kk);};})(date,t,k);}
-      else if(bk&&bk._booked){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#6b7280 !important;font-weight:700">✕</span>';}
-      else if(availMls.length>0){if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#6b7280 !important;font-weight:700">✕</span>';}else{sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,availMls);}}
-      else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#6b7280 !important;font-weight:700">✕</span>';}
+      else if(bk&&bk._booked){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
+      else if(availMls.length>0){if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,availMls);}}
+      else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       sc.appendChild(sl);body.appendChild(sc);
     });
   });
@@ -912,13 +910,12 @@ function changeEmail(){localStorage.removeItem('myEmail');myEmail='';renderMyPag
 
 function switchTTab(tab){
   localStorage.setItem('trainerTab',tab);
-  ['cal','clients','report','hist'].forEach(function(id){
+  ['cal','clients','report'].forEach(function(id){
     document.getElementById('ttab-'+id).classList.toggle('active',tab===id);
     document.getElementById('ttab-'+id+'-content').style.display=tab===id?'block':'none';
   });
   if(tab==='clients')loadClients();
   if(tab==='report')loadReport();
-  if(tab==='hist')loadHistory();
 }
 var rpData={bookings:[],clients:[]};
 function rpRange(off){
@@ -977,38 +974,6 @@ function renderReport(){
   document.getElementById('rp-ranking').innerHTML=rankHtml;
 }
 
-async function loadHistory(){
-  L(true);
-  var today=localISO(new Date());
-  var r1=await sb.from('bookings').select('*').eq('status','confirmed').lt('date_key',today).order('date_key',{ascending:false}).limit(200);
-  var r2=await sb.from('bookings').select('*').eq('status','cancelled').order('date_key',{ascending:false}).limit(200);
-  L(false);
-  var items=[];
-  (r1.data||[]).forEach(function(b){items.push(Object.assign({},b,{_htype:'done'}));});
-  (r2.data||[]).forEach(function(b){items.push(Object.assign({},b,{_htype:'cancelled'}));});
-  items.sort(function(a,b){return b.date_key>a.date_key?1:(b.date_key<a.date_key?-1:0);});
-  var wrap=document.getElementById('ttab-hist-content');
-  if(!items.length){wrap.innerHTML='<div style="text-align:center;padding:40px;color:#999;font-size:13px">予約履歴がありません</div>';return;}
-  var html='<div style="padding:12px">';
-  items.forEach(function(item){
-    var parts=item.date_key.split('_');
-    var iso=parts[0],t=parts[1]||'';
-    var d=new Date(iso+'T00:00:00');
-    var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日（'+DJ[d.getDay()]+'）';
-    var badge=item._htype==='done'
-      ?'<span style="font-size:10px;background:#dcfce7;color:#15803d;border-radius:4px;padding:2px 6px">完了</span>'
-      :'<span style="font-size:10px;background:#fee2e2;color:#b91c1c;border-radius:4px;padding:2px 6px">キャンセル</span>';
-    html+='<div style="padding:10px 12px;border:0.5px solid #e5e5e5;border-radius:10px;margin-bottom:8px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
-        +'<div style="font-size:13px;font-weight:600;color:#1a1a1a">'+ds+(t?' '+t+'〜'+et(t):'')+'</div>'
-        +badge
-      +'</div>'
-      +'<div style="font-size:12px;color:#374151">'+(item.name?item.name+'様　':'')+(MENUS[item.menu]||item.menu||'')+'　'+(LOCS[item.loc]||item.loc||'')+'</div>'
-    +'</div>';
-  });
-  html+='</div>';
-  wrap.innerHTML=html;
-}
 
 async function loadClients(){var r=await sb.from('clients').select('*').order('name');clients=r.data||[];renderClients();}
 function renderClients(){
