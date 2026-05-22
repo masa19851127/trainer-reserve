@@ -1063,7 +1063,13 @@ async function saveClientNote(email){
 }
 async function addTix(email,amount,label){
   L(true);
-  await sb.from('clients').update({total_tickets:amount,used_tickets:0}).eq('email',email);
+  var cr=await sb.from('clients').select('total_tickets,used_tickets').eq('email',email).maybeSingle();
+  var c=cr.data||{};
+  var remaining=Math.max(0,(c.total_tickets||0)-(c.used_tickets||0));
+  var newTotal,newUsed;
+  if(remaining===0){newTotal=amount;newUsed=0;}
+  else{newTotal=(c.total_tickets||0)+amount;newUsed=c.used_tickets||0;}
+  await sb.from('clients').update({total_tickets:newTotal,used_tickets:newUsed}).eq('email',email);
   await sb.from('ticket_logs').insert({client_email:email,type:'purchase',amount:amount,note:label+'追加'});
   L(false);closePanel();await loadClients();showToast('✅ '+label+'を追加しました');
 }
