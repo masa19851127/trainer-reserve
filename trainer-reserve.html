@@ -1061,7 +1061,7 @@ async function openClientDetail(email){
     +'<button onclick="saveClientNote(\''+email+'\')" style="width:100%;padding:8px;border-radius:8px;border:1.5px solid #16a34a;background:#f0fdf4;color:#15803d;font-size:12px;cursor:pointer;margin-bottom:12px">メモを保存</button>'
     +'<div style="font-size:12px;font-weight:500;color:#666;margin-bottom:6px">予約履歴（直近20件）</div>'
     +'<div>'+bkHtml+'</div>'
-    +'<div style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;text-align:center"><button onclick="confirmDeleteClient(\''+email+'\',\''+c.name.replace(/\'/g,"\\\'")+'\'" style="font-size:11px;padding:6px 16px;border-radius:6px;border:1px solid #fca5a5;background:transparent;color:#dc2626;cursor:pointer">このお客様を削除する</button></div>';
+    +'<div style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;text-align:center"><button data-email="'+escHtml(email)+'" data-name="'+escHtml(c.name)+'" onclick="confirmDeleteClient(this.dataset.email,this.dataset.name)" style="font-size:11px;padding:6px 16px;border-radius:6px;border:1px solid #fca5a5;background:transparent;color:#dc2626;cursor:pointer">このお客様を削除する</button></div>';
   openPanel();
 }
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
