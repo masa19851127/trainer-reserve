@@ -114,7 +114,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .t-bk-m:hover,.t-bk-y:hover,.t-bk-e:hover{filter:brightness(.96);}
 .bl-m{color:#1e40af;}.bl-y{color:#854d0e;}.bl-e{color:#9d174d;}
 .x-off{font-size:9px;color:#fda4af;font-weight:700;}
-.x-bk{font-size:9px;color:#9ca3af;font-weight:700;}
+.x-bk{font-size:9px;color:#6b7280;font-weight:700;}
 .c-empty{background:transparent;}
 .c-off{background:#fff0f0;border:.5px solid #fecaca;}
 .c-booked{background:#f3f4f6;border:.5px solid #e5e7eb;}
@@ -620,12 +620,12 @@ function renderC(){
       if(sets&&!bk&&!past&&!doff&&!isOff)sets.forEach(function(ml){availMls.push(ml);});
       var sc=document.createElement('div');sc.className='slot-cell';
       var sl=document.createElement('div');sl.className='slot';
-      if(doff||isOff){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
+      if(doff||isOff){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#6b7280;font-weight:700">✕</span>';}
       else if(past){sl.className='slot c-empty';}
       else if(mine){sl.className='slot c-mine';sl.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>';(function(dd,tt,kk){sl.onclick=function(){openMyBk(dd,tt,kk);};})(date,t,k);}
-      else if(bk&&bk._booked){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
-      else if(availMls.length>0){if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,availMls);}}
-      else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
+      else if(bk&&bk._booked){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#6b7280;font-weight:700">✕</span>';}
+      else if(availMls.length>0){if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#6b7280;font-weight:700">✕</span>';}else{sl.className='slot c-avail';sl.innerHTML='<span style="font-size:8px;font-weight:600">予約する</span>';(function(dd,tt,kk,mls){sl.onclick=function(){openMenuPicker(dd,tt,kk,mls);};})(date,t,k,availMls);}}
+      else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#6b7280;font-weight:700">✕</span>';}
       sc.appendChild(sl);body.appendChild(sc);
     });
   });
@@ -1047,19 +1047,27 @@ async function openClientDetail(email){
   var lgRes=await sb.from('ticket_logs').select('*').eq('client_email',email).eq('type','cancel_sameday');
   L(false);
   var bkList=bkRes.data||[];
-  var sdKeys=new Set();
-  (lgRes.data||[]).forEach(function(l){if(l.note){var p=l.note.split('|');if(p.length>=2)sdKeys.add(p[1]);}});
-  var sdCancelCount=sdKeys.size;
+  var bkKeys=new Set(bkList.map(function(b){return b.date_key;}));
+  var sdCancelCount=0;
+  var histItems=[];
+  bkList.forEach(function(b){histItems.push({date_key:b.date_key,menu:b.menu,loc:b.loc,type:b.status==='cancelled'?'cancelled':'confirmed'});});
+  (lgRes.data||[]).forEach(function(l){
+    if(!l.note)return;var p=l.note.split('|');if(p.length<4)return;
+    sdCancelCount++;
+    if(!bkKeys.has(p[1])){histItems.push({date_key:p[1],menu:p[2],loc:p[3],type:'sameday'});}
+    else{var h=histItems.find(function(x){return x.date_key===p[1];});if(h)h.type='sameday';}
+  });
+  histItems.sort(function(a,b){return b.date_key>a.date_key?1:(b.date_key<a.date_key?-1:0);});
   var bkHtml='';
-  if(bkList.length){
-    bkList.forEach(function(b){
-      var parts=b.date_key.split('-');
+  if(histItems.length){
+    histItems.forEach(function(item){
+      var parts=item.date_key.split('-');
       var ds=parseInt(parts[1])+'月'+parseInt(parts[2].substring(0,2))+'日';
-      var t=b.date_key.split('_')[1]||'';
-      var isCancelled=b.status==='cancelled';
-      var isSd=sdKeys.has(b.date_key);
-      var badge=isCancelled?(isSd?'<span style="font-size:9px;background:#fef9c3;color:#854d0e;border-radius:3px;padding:1px 5px;margin-left:4px">当日キャンセル</span>':'<span style="font-size:9px;background:#fee2e2;color:#b91c1c;border-radius:3px;padding:1px 5px;margin-left:4px">キャンセル</span>'):'';;
-      bkHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12px;'+(isCancelled?'opacity:.6':'')+'"><span style="color:#444">'+ds+(t?' '+t:'')+badge+'</span><span style="color:#666">'+MENUS[b.menu]+' / '+LOCS[b.loc]+'</span></div>';
+      var t=item.date_key.split('_')[1]||'';
+      var badge=item.type==='sameday'?'<span style="font-size:9px;background:#fef9c3;color:#854d0e;border-radius:3px;padding:1px 5px;margin-left:4px">当日キャンセル</span>'
+        :item.type==='cancelled'?'<span style="font-size:9px;background:#fee2e2;color:#b91c1c;border-radius:3px;padding:1px 5px;margin-left:4px">キャンセル</span>':'';;
+      var dimmed=item.type!=='confirmed'?'opacity:.6;':'';
+      bkHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12px;'+dimmed+'"><span style="color:#444">'+ds+(t?' '+t:'')+badge+'</span><span style="color:#666">'+(MENUS[item.menu]||item.menu||'')+' / '+(LOCS[item.loc]||item.loc||'')+'</span></div>';
     });
   } else {
     bkHtml='<div style="color:#999;font-size:12px;text-align:center;padding:10px">予約履歴なし</div>';
