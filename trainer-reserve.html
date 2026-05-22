@@ -98,7 +98,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .slot{border-radius:4px;flex:1;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:600;border:1px solid transparent;overflow:hidden;padding:0 2px;cursor:default;}
 .t-empty{background:transparent;}
 .t-idle{background:#f5f5f5;border:.5px solid #efefef;opacity:.5;}
-.t-idle-add{background:#fff;border:.5px dashed #d1d5db;cursor:pointer;}
+.t-idle-add{background:#fefce8;border:.5px dashed #fbbf24;cursor:pointer;}
 .t-idle-off{background:#fff1f2;border:.5px dashed #fda4af;opacity:.8;cursor:pointer;}
 .t-sel-add{background:#f59e0b !important;border:2px solid #d97706 !important;}
 .t-sel-off{background:#f43f5e !important;border:2px solid #be123c !important;}
@@ -269,7 +269,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
         <button class="atc atc-ty" onclick="assignSel('training','yokohama')">T・横浜</button>
         <button class="atc atc-rm" onclick="removeSel()">削除</button>
       </div>
-      <button class="at-done" onclick="cancelSel()">完了</button>
+      <button class="at-done" onclick="confirmSel()">完了</button>
     </div>
     <div class="stats-bar">
       <div class="stat-pill sp-avail"><div><div class="stat-num" id="sta">0</div><div class="stat-lbl">空き枠</div></div></div>
@@ -365,7 +365,7 @@ const MTAG={pilates:'tag-pilates',training:'tag-training'};
 var mode='',wkOff=0,rpOff=0;
 var slotSets={},offSlots={},dayOffs={},bookings={};
 var myBookings=new Set(),myEmail=localStorage.getItem('myEmail')||'';
-var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),drag=false;
+var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),drag=false,preSelSlotSets=null;
 var clients=[];
 
 function L(s){document.getElementById('loading').style.display=s?'flex':'none';}
@@ -483,25 +483,24 @@ function mailTextCancel(name,ds,t,menu,loc,sameDay){
   return name+' 様\n\n【予約キャンセル】\n日時：'+ds+' '+t+'〜'+et(t)+'\nメニュー：'+MENUS[menu]+'\n場所：'+LOCS[loc]+(sameDay?'\n\n※当日キャンセルのため、回数券1回分が消化されます。':'')+'\n\nTrainer Reserve\nhttps://masa19851127.github.io/trainer-reserve/trainer-reserve.html';
 }
 
-function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;document.getElementById('msel-add').classList.add('active');document.getElementById('at-add').classList.add('active');renderT();}
-function cancelSel(){selMode=false;selCells=new Set();document.getElementById('msel-add').classList.remove('active');document.getElementById('at-add').classList.remove('active');renderT();}
+function deepCopySlotSets(s){var c={};for(var k in s){c[k]=new Set(s[k]);}return c;}function clearSelState(){selMode=false;selCells=new Set();preSelSlotSets=null;document.getElementById('msel-add').classList.remove('active');document.getElementById('at-add').classList.remove('active');}function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;preSelSlotSets=deepCopySlotSets(slotSets);document.getElementById('msel-add').classList.add('active');document.getElementById('at-add').classList.add('active');renderT();}
+function cancelSel(){if(preSelSlotSets!==null){slotSets=preSelSlotSets;}clearSelState();renderT();}
 function cancelOffMode(){offMode=false;offCells=new Set();}
 function updSC(){document.getElementById('sel-count').textContent=selCells.size+'枠選択中';}
 
-async function assignSel(menu,loc){
+function assignSel(menu,loc){
   if(!selCells.size){showToast('⚠ 枠を選んでください');return;}
   var ml=menu+'-'+loc;
   var allHave=[...selCells].every(function(k){return slotSets[k]&&slotSets[k].has(ml);});
-  L(true);
   if(allHave){
-    for(var k of selCells){if(slotSets[k]){slotSets[k].delete(ml);if(!slotSets[k].size)delete slotSets[k];}await deleteSlot(k,menu,loc);}
-    L(false);renderT();showToast('取り消しました');
+    for(var k of selCells){if(slotSets[k]){slotSets[k].delete(ml);if(!slotSets[k].size)delete slotSets[k];}}
+    renderT();showToast('取り消し（完了で確定）');
   } else {
-    for(var k of selCells){if(!slotSets[k])slotSets[k]=new Set();slotSets[k].add(ml);delete offSlots[k];await saveSlot(k,menu,loc);}
-    L(false);renderT();showToast('✓ '+selCells.size+'枠に追加しました');
+    for(var k of selCells){if(!slotSets[k])slotSets[k]=new Set();slotSets[k].add(ml);delete offSlots[k];}
+    renderT();showToast('✓ '+selCells.size+'枠に追加（完了で確定）');
   }
 }
-async function removeSel(){L(true);for(var k of selCells){await deleteAllSlots(k);delete slotSets[k];}L(false);renderT();showToast('削除しました');}
+function removeSel(){for(var k of selCells){delete slotSets[k];}renderT();showToast('削除（完了で確定）');}async function confirmSel(){L(true);var pre=preSelSlotSets||{};var allKeys=new Set([...Object.keys(slotSets),...Object.keys(pre)]);for(var k of allKeys){var newSet=slotSets[k]||new Set();var oldSet=pre[k]||new Set();if(newSet.size===0&&oldSet.size>0){await deleteAllSlots(k);}else{for(var ml of newSet){if(!oldSet.has(ml)){var pts=ml.split('-');await saveSlot(k,pts[0],pts[1]);}}for(var ml of oldSet){if(!newSet.has(ml)){var pts=ml.split('-');await deleteSlot(k,pts[0],pts[1]);}}}}clearSelState();L(false);renderT();showToast('✓ 空き枠を保存しました');}
 async function applyOff(){
   if(!offCells.size){showToast('⚠ 枠を選んでください');return;}L(true);
   for(var k of offCells){await saveOffSlot(k);offSlots[k]=true;delete slotSets[k];}
@@ -564,7 +563,7 @@ function renderT(){
       } else if(selMode&&isSel){sl.className='slot t-sel-add';if(hasSets)sl.appendChild(mkTags(sets));else sl.innerHTML='<span style="font-size:9px;color:#fff">✓</span>';}
       else if(isOff){sl.className='slot t-idle';}
       else if(hasSets){sl.className='slot '+(selMode?'t-avail-add':'t-avail');sl.appendChild(mkTags(sets));if(!selMode){(function(dd,tt,kk){sl.onclick=function(){openSlotDetail(dd,tt,kk);};})(date,t,k);}}
-      else{sl.className='slot '+(selMode?'t-idle-add':'t-idle');if(selMode)sl.innerHTML='<span style="font-size:9px;color:#d1d5db">＋</span>';}
+      else{sl.className='slot '+(selMode?'t-idle-add':'t-idle');if(selMode)sl.innerHTML='<span style="font-size:9px;color:#ca8a04">＋</span>';}
       if(!past&&selMode&&!doff&&!bk){
         (function(kk,s){
           var justAdded=false;
@@ -975,7 +974,7 @@ function renderReport(){
 }
 
 
-async function loadClients(){var r=await sb.from('clients').select('*').order('name');clients=r.data||[];renderClients();}
+async function loadClients(){var r=await sb.from('clients').select('*').order('name');clients=r.data||[];renderClients();}function confirmDeleteClient(email,name){if(!confirm(name+'さんを削除しますか？この操作は取り消せません。'))return;deleteClientByEmail(email);}async function deleteClientByEmail(email){L(true);await sb.from('clients').delete().eq('email',email);L(false);showToast('削除しました');await loadClients();}
 function renderClients(){
   var q=(document.getElementById('cm-search').value||'').toLowerCase();
   var list=document.getElementById('cm-list');
@@ -984,7 +983,8 @@ function renderClients(){
   list.innerHTML=f.map(function(c){
     var r=Math.max(0,(c.total_tickets||0)-(c.used_tickets||0));
     var tcls=r>3?'cm-tk-ok':r>0?'cm-tk-low':'cm-tk-none';
-    return '<div class="cm-card" onclick="openClientDetail(\''+c.email+'\')"><div class="cm-card-top"><span class="cm-name">'+c.name+'</span><span class="'+tcls+'">残り'+r+'回</span></div><div class="cm-email">'+c.email+'</div>'+(c.notes?'<div style="font-size:11px;color:#666;margin-top:3px">'+escHtml(c.notes)+'</div>':'')+'</div>';
+    var ename=c.email.replace(/'/g,"\\'");var nname=c.name.replace(/'/g,"\\'");
+    return '<div class="cm-card" onclick="openClientDetail(\''+ename+'\')"><div class="cm-card-top"><span class="cm-name">'+c.name+'</span><div style="display:flex;align-items:center;gap:8px"><span class="'+tcls+'">残り'+r+'回</span><button onclick="event.stopPropagation();confirmDeleteClient(\''+ename+'\',\''+nname+'\');return false;" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;cursor:pointer">削除</button></div></div><div class="cm-email">'+c.email+'</div>'+(c.notes?'<div style="font-size:11px;color:#666;margin-top:3px">'+escHtml(c.notes)+'</div>':'')+'</div>';
   }).join('');
 }
 function openAddClient(){
