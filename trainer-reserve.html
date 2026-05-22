@@ -1144,28 +1144,30 @@ window.onload=async function(){
     document.getElementById('topbar-badge').textContent='トレーナー';
     document.getElementById('topbar-badge').className='tbadge tbadge-t';
     document.getElementById('trainer-screen').style.display='block';
-    mode='trainer';L(true);await loadData();renderT();L(false);
+    mode='trainer';L(true);
+    try{await loadData();renderT();}finally{L(false);}
     var savedTTab=localStorage.getItem('trainerTab');
     if(savedTTab&&savedTTab!=='cal')switchTTab(savedTTab);
   } else if(savedMode==='client'){
     var savedEmail=localStorage.getItem('myEmail');
     if(savedEmail){
       L(true);
-      var rv=await sb.from('clients').select('id').eq('email',savedEmail).maybeSingle();
-      if(rv.data){
-        myEmail=savedEmail;mode='client';
-        document.getElementById('login-screen').style.display='none';
-        document.getElementById('topbar').style.display='flex';
-        document.getElementById('topbar-badge').textContent='お客様';
-        document.getElementById('topbar-badge').className='tbadge tbadge-c';
-        document.getElementById('client-screen').style.display='block';
-        await loadData();renderC();
-        var savedCTab=localStorage.getItem('clientTab');
-        if(savedCTab&&savedCTab!=='cal')switchCTab(savedCTab);
-      } else {
-        localStorage.removeItem('sessionMode');
-      }
-      L(false);
+      try{
+        var rv=await sb.from('clients').select('id').eq('email',savedEmail).maybeSingle();
+        if(rv.data){
+          myEmail=savedEmail;mode='client';
+          document.getElementById('login-screen').style.display='none';
+          document.getElementById('topbar').style.display='flex';
+          document.getElementById('topbar-badge').textContent='お客様';
+          document.getElementById('topbar-badge').className='tbadge tbadge-c';
+          document.getElementById('client-screen').style.display='block';
+          await loadData();renderC();
+          var savedCTab=localStorage.getItem('clientTab');
+          if(savedCTab&&savedCTab!=='cal')switchCTab(savedCTab);
+        } else {
+          localStorage.removeItem('sessionMode');
+        }
+      }finally{L(false);}
     } else {
       localStorage.removeItem('sessionMode');
     }
