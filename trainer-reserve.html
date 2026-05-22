@@ -570,7 +570,7 @@ function renderT(){
       else if(isOff){sl.className='slot t-off';sl.innerHTML='<span class="x-off">✕</span>';if(!selMode&&!offMode){(function(dd,tt,kk){sl.onclick=function(){openOffDetail(dd,tt,kk);};})(date,t,k);}}
       else if(hasSets){sl.className='slot '+(selMode?'t-avail-add':(offMode?'t-avail-off':'t-avail'));sl.appendChild(mkTags(sets));if(!selMode&&!offMode){(function(dd,tt,kk){sl.onclick=function(){openSlotDetail(dd,tt,kk);};})(date,t,k);}}
       else{sl.className='slot '+(selMode?'t-idle-add':(offMode?'t-idle-off':'t-idle'));if(selMode||offMode)sl.innerHTML='<span style="font-size:9px;opacity:.5">'+(selMode?'＋':'✕')+'</span>';}
-      if(!past&&selMode&&!doff&&!bk){
+      if(!past&&selMode&&!doff&&!bk&&!isOff){
         (function(kk,s){
           s.setAttribute('data-ck',kk);
           s.onclick=function(e){e.stopPropagation();if(selCells.has(kk)){selCells.delete(kk);s.className='slot t-idle-add';}else{selCells.add(kk);s.className='slot t-sel-add';}updSC();};
