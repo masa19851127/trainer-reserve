@@ -58,7 +58,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .at-count{font-size:12px;font-weight:700;white-space:nowrap;}
 .at-add .at-count{color:#92400e;}.at-off .at-count{color:#9f1239;}
 .at-chips{display:flex;gap:4px;flex-wrap:wrap;}
-.atc{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;white-space:nowrap;}
+.atc{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;white-space:nowrap;flex-shrink:0;overflow:visible;}
 .atc-pm{background:#f3e8ff;border-color:#d8b4fe;color:#6b21a8;}
 .atc-py{background:#dcfce7;border-color:#86efac;color:#166534;}
 .atc-te{background:#fce7f3;border-color:#f9a8d4;color:#9d174d;}
@@ -67,8 +67,10 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .atc-off{background:#ffe4e6;border-color:#fda4af;color:#9f1239;}
 .at-done{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:#16a34a;border:1.5px solid #15803d;color:#fff;box-shadow:0 2px 6px rgba(22,163,74,.3);}
 .at-done:hover{filter:brightness(.92);}
-.at-selall{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fef3c7;border:1.5px solid #fbbf24;color:#92400e;white-space:nowrap;}
+.at-selall{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fef3c7;border:1.5px solid #fbbf24;color:#92400e;white-space:nowrap;flex-shrink:0;}
 .at-selall:hover{background:#fde68a;}
+.at-cancel{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:transparent;border:1px solid #d1d5db;color:#6b7280;white-space:nowrap;flex-shrink:0;}
+.at-cancel:hover{background:#f3f4f6;}
 .stats-bar{display:flex;gap:8px;padding:8px 14px;border-bottom:0.5px solid #e5e5e5;}
 .stat-pill{flex:1;background:#f5f5f5;border-radius:8px;padding:6px 10px;display:flex;align-items:center;justify-content:space-between;}
 .stat-num{font-size:18px;font-weight:700;line-height:1;}
@@ -264,8 +266,9 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
       <button class="msel-btn mode-add" id="msel-add" onclick="toggleSelMode()"><span class="msel-icon">＋</span>空き枠を追加<span class="msel-hint">タップして選択</span></button>
     </div>
     <div class="action-toolbar at-add" id="at-add">
+      <button class="at-cancel" onclick="cancelSel()">← キャンセル</button>
       <span class="at-count" id="sel-count">0枠選択中</span>
-      <button class="at-selall" onclick="selectAllCells()">⊞ 全エリア選択</button>
+      <button class="at-selall" onclick="selectAllCells()">⊞ 全エリア一括追加</button>
       <div class="at-chips">
         <span style="font-size:10px;color:#92400e;font-weight:600">追加→</span>
         <button class="atc atc-pm" onclick="assignSel('pilates','meguro')">P・目黒</button>
@@ -457,8 +460,8 @@ async function loadData(force){
     else{if(!slotSets[row.date_key])slotSets[row.date_key]=new Set();slotSets[row.date_key].add(row.menu+'-'+row.loc);}
   });
   if(mode==='client'){
-    var r2a=await sb.from('bookings').select('date_key,loc').eq('status','confirmed').gte('date_key',s).lte('date_key',e+'_z');
-    bookings={};(r2a.data||[]).forEach(function(r){bookings[r.date_key]={date_key:r.date_key,loc:r.loc,_booked:true};});
+    var r2a=await sb.from('bookings').select('date_key,loc,menu').eq('status','confirmed').gte('date_key',s).lte('date_key',e+'_z');
+    bookings={};(r2a.data||[]).forEach(function(r){bookings[r.date_key]={date_key:r.date_key,loc:r.loc,menu:r.menu,_booked:true};});
     myBookings=new Set();
     if(myEmail){
       var r2b=await sb.from('bookings').select('*').eq('email',myEmail).eq('status','confirmed').gte('date_key',s).lte('date_key',e+'_z');
@@ -469,8 +472,8 @@ async function loadData(force){
     bookings={};(r2.data||[]).forEach(function(r){bookings[r.date_key]=r;});myBookings=new Set();
   }
   blockedSlots={};
-  var _bAllLocs=['meguro','yokohama','ebisu'];
-  Object.values(bookings).forEach(function(bk){if(!bk||!bk.loc)return;var _bp=bk.date_key.split('_');if(_bp.length<2)return;var _biso=_bp[0],_bhi=parseInt(_bp[1]);if(isNaN(_bhi))return;var _boL=_bAllLocs.filter(function(l){return l!==bk.loc;});[-1,1].forEach(function(d){var _bh=_bhi+d;if(_bh<10||_bh>21)return;var _bk=_biso+'_'+_bh+':00';if(!blockedSlots[_bk])blockedSlots[_bk]=new Set();_boL.forEach(function(l){blockedSlots[_bk].add(l);});});});
+  var _allMls=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];
+  Object.values(bookings).forEach(function(bk){if(!bk||!bk.loc||!bk.menu)return;var bkMl=bk.menu+'-'+bk.loc;var _bp=bk.date_key.split('_');if(_bp.length<2)return;var _biso=_bp[0],_bhi=parseInt(_bp[1]);if(isNaN(_bhi))return;var _otherMls=_allMls.filter(function(ml){return ml!==bkMl;});[-1,1].forEach(function(d){var _bh=_bhi+d;if(_bh<10||_bh>21)return;var _bk=_biso+'_'+_bh+':00';if(!blockedSlots[_bk])blockedSlots[_bk]=new Set();_otherMls.forEach(function(ml){blockedSlots[_bk].add(ml);});});});
   var r3=await sb.from('day_offs').select('*').gte('date_iso',s).lte('date_iso',e);
   dayOffs={};(r3.data||[]).forEach(function(r){dayOffs[r.date_iso]=true;});
   _saveToCache();
@@ -523,7 +526,7 @@ function assignSel(menu,loc){
     renderT();showToast('取り消し（完了で確定）');
   } else {
     var _blockedCells=[];
-    for(var k of selCells){if(blockedSlots[k]&&blockedSlots[k].has(loc)){_blockedCells.push(k);}}
+    for(var k of selCells){if(blockedSlots[k]&&blockedSlots[k].has(ml)){_blockedCells.push(k);}}
     if(_blockedCells.length>0){alert('前後1時間以内に別の場所の予約があるため追加できません');return;}
     for(var k of selCells){if(!slotSets[k])slotSets[k]=new Set();slotSets[k].add(ml);delete offSlots[k];}
     renderT();showToast('✓ '+selCells.size+'枠に追加（完了で確定）');
@@ -531,19 +534,20 @@ function assignSel(menu,loc){
 }
 function removeSel(){for(var k of selCells){delete slotSets[k];}renderT();showToast('削除（完了で確定）');}
 function selectAllCells(){
-  if(!selMode){toggleSelMode();}
-  var dates=wkDates(wkOff);
-  dates.forEach(function(d){
-    var iso=localISO(d);
-    if(isPast(d))return;
-    if(dayOffs[iso])return;
-    TIMES.forEach(function(t){
-      var k=ck(d,t);
-      if(bookings[k])return;
-      selCells.add(k);
+  if(!selCells.size){showToast('⚠ 先にセルを選択してください');return;}
+  var _allMls=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];
+  var _added=0,_blocked=0;
+  for(var k of selCells){
+    if(!slotSets[k])slotSets[k]=new Set();
+    delete offSlots[k];
+    _allMls.forEach(function(ml){
+      if(blockedSlots[k]&&blockedSlots[k].has(ml)){_blocked++;return;}
+      slotSets[k].add(ml);_added++;
     });
-  });
-  updSC();renderT();showToast('✓ 表示中の全セルを選択しました');
+  }
+  renderT();
+  if(_blocked>0)showToast('✓ '+_added+'枠追加（'+_blocked+'件はブロック）');
+  else showToast('✓ 選択中'+selCells.size+'セルに全エリア追加（完了で確定）');
 }
 async function confirmSel(){
   L(true);
@@ -737,7 +741,7 @@ function renderC(){
       else if(past){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       else if(mine){sl.className='slot c-mine';sl.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>';(function(dd,tt,kk){sl.onclick=function(){openMyBk(dd,tt,kk);};})(date,t,k);}
       else if(bk&&bk._booked){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
-      else if(availMls.length>0){var _uMls=availMls.filter(function(ml){var _l=ml.split('-')[1];return !(blockedSlots[k]&&blockedSlots[k].has(_l));});if(_uMls.length===0){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{sl.className='slot';sl.style.cssText='display:flex;flex-direction:column;padding:1px;gap:1px;background:transparent;border:none;';var _order=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];var _combos=_uMls.slice().sort(function(a,b){return _order.indexOf(a)-_order.indexOf(b);});_combos.forEach(function(ml){var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};var pts=ml.split('-'),m=pts[0],l=pts[1];var btn=document.createElement('button');btn.style.cssText='flex:1;min-height:0;border-radius:3px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:8px;font-weight:700;cursor:pointer;padding:0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;';btn.textContent=TL[ml]||(LOCS[l]);(function(dd,tt,kk,menu,loc){btn.onclick=function(e){e.stopPropagation();doBook(localISO(dd),tt,menu,loc,kk);};})(date,t,k,m,l);sl.appendChild(btn);});}}
+      else if(availMls.length>0){var _uMls=availMls.filter(function(ml){return !(blockedSlots[k]&&blockedSlots[k].has(ml));});if(_uMls.length===0){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{sl.className='slot';sl.style.cssText='display:flex;flex-direction:row;flex-wrap:wrap;align-content:center;justify-content:center;padding:2px;gap:2px;background:transparent;border:none;';var _order=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];var _combos=_uMls.slice().sort(function(a,b){return _order.indexOf(a)-_order.indexOf(b);});_combos.forEach(function(ml){var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};var pts=ml.split('-'),m=pts[0],l=pts[1];var btn=document.createElement('button');btn.style.cssText='flex:0 0 auto;border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:10px;font-weight:700;cursor:pointer;padding:3px 7px;white-space:nowrap;';btn.textContent=TL[ml]||(LOCS[l]);(function(dd,tt,kk,menu,loc){btn.onclick=function(e){e.stopPropagation();doBook(localISO(dd),tt,menu,loc,kk);};})(date,t,k,m,l);sl.appendChild(btn);});}}
       else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       sc.appendChild(sl);body.appendChild(sc);
     });
@@ -765,7 +769,7 @@ function openLocPicker(iso,t,menu,k){
     var avail=aL.indexOf(loc)>=0;
     var _col=MLCOL[menu+'-'+loc]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};
     var bg=_col.bg, tc=_col.tc;
-    var _isBlk=blockedSlots[k]&&blockedSlots[k].has(loc);
+    var _isBlk=blockedSlots[k]&&blockedSlots[k].has(menu+'-'+loc);
     if(avail&&!_isBlk){btns+='<button onclick="doBook(\''+iso+'\',\''+t+'\',\''+menu+'\',\''+loc+'\',\''+k+'\')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:2px solid '+tc+';background:'+bg+';color:'+tc+';font-size:14px;font-weight:700;cursor:pointer;text-align:left;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">→ 予約する</span></button>';}
     else{btns+='<div style="width:100%;padding:13px;margin-bottom:8px;border-radius:10px;border:1.5px solid #e5e5e5;background:#f5f5f5;color:#9ca3af;font-size:14px;font-weight:700;">'+LOCS[loc]+'<span style="font-size:11px;font-weight:400;margin-left:8px">予約不可</span></div>';}
   });
@@ -802,15 +806,18 @@ async function openTrainerBook(iso,t,k){
   var availMlList=[...sets].sort(function(a,b){return _order.indexOf(a)-_order.indexOf(b);});
   var _blkNote='';var mlBtns='';
   availMlList.forEach(function(ml){
-    var _mll=ml.split('-')[1];
-    var _isBlk=blockedSlots[k]&&blockedSlots[k].has(_mll);
-    if(_isBlk){_blkNote='<p style="font-size:11px;color:#9ca3af;margin:0 0 8px">※ 前後1時間以内に別の場所の予約があるため、一部の選択肢は非表示です</p>';return;}
+    var _isBlk=blockedSlots[k]&&blockedSlots[k].has(ml);
     var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};
-    mlBtns+='<button type="button" data-ml="'+ml+'" class="tb-ml-btn" onclick="window._pickTbMl(this,\''+ml+'\')" style="padding:10px 8px;border-radius:9px;border:2px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:13px;font-weight:700;cursor:pointer;text-align:center;">'+TL[ml]+'</button>';
+    if(_isBlk){
+      _blkNote='<p style="font-size:11px;color:#9ca3af;margin:0 0 8px">※ グレーアウトしている場所は前後1時間以内に別の予定があるため選択不可です</p>';
+      mlBtns+='<button type="button" disabled style="padding:10px 8px;border-radius:9px;border:2px dashed #d1d5db;background:#f5f5f5;color:#9ca3af;font-size:13px;font-weight:700;cursor:not-allowed;text-align:center;opacity:.6">'+TL[ml]+'<br><span style="font-size:9px;font-weight:500">移動時間</span></button>';
+    }else{
+      mlBtns+='<button type="button" data-ml="'+ml+'" class="tb-ml-btn" onclick="window._pickTbMl(this,\''+ml+'\')" style="padding:10px 8px;border-radius:9px;border:2px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:13px;font-weight:700;cursor:pointer;text-align:center;">'+TL[ml]+'</button>';
+    }
   });
   if(!mlBtns){mlBtns='<div style="font-size:12px;color:#9ca3af;padding:6px 0">利用可能なメニュー・場所がありません</div>';}
   var clientOpts='<option value="">-- お客様を選択 --</option>';
-  clientList.forEach(function(c){clientOpts+='<option value="'+c.email+'">'+c.name+'（'+c.email+'）</option>';});
+  clientList.forEach(function(c){clientOpts+='<option value="'+c.email+'">'+c.name+'</option>';});
   var date=new Date(iso+'T00:00:00');
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約を入れる</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div class="fgrp"><label class="flbl">お客様 <span style="color:#e94560">*</span></label><select class="finp" id="tb-client">'+clientOpts+'</select></div><div class="fgrp"><label class="flbl">メニュー・場所 <span style="color:#e94560">*</span></label>'+_blkNote+'<input type="hidden" id="tb-ml" value=""><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+mlBtns+'</div></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="tb-phone" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メモ</label><input class="finp" id="tb-msg" placeholder="任意"></div><button class="bp" style="background:#1a1a2e" onclick="confirmTrainerBook(\''+iso+'\',\''+t+'\',\''+k+'\')">予約を確定する</button>';
@@ -830,7 +837,7 @@ async function confirmTrainerBook(iso,t,k){
   var remaining=(cr.data.total_tickets||0)-(cr.data.used_tickets||0);
   if(remaining<=0){showToast('⚠ 回数券の残数がありません');return;}
   var p=ml.split('-'),menu=p[0],loc=p[1];
-  if(blockedSlots[k]&&blockedSlots[k].has(loc)){alert('前後1時間以内に別の場所の予約があるため追加できません');return;}
+  if(blockedSlots[k]&&blockedSlots[k].has(menu+'-'+loc)){alert('前後1時間以内に別の場所の予約があるため追加できません');return;}
   L(true);
   var ok=await saveBooking(k,menu,loc,name,email,phone,msg);
   if(!ok){L(false);showToast('⚠ 予約に失敗しました');return;}
@@ -908,7 +915,7 @@ async function confirmBk(iso,t,ml,k){
   if(!email){showToast('⚠ メールアドレスが取得できません');return;}
   var p=ml.split('-'),menu=p[0],loc=p[1];
   var phone=document.getElementById('fp').value,msg=document.getElementById('fm').value;
-  if(blockedSlots[k]&&blockedSlots[k].has(loc)){showToast('⚠ 移動時間のため予約できません');return;}
+  if(blockedSlots[k]&&blockedSlots[k].has(menu+'-'+loc)){showToast('⚠ 移動時間のため予約できません');return;}
   L(true);
   var chk=await sb.from('bookings').select('date_key').eq('date_key',k).maybeSingle();
   if(chk.data){L(false);showToast('⚠ この枠はすでに予約済みです');await loadData();renderC();return;}
