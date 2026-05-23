@@ -700,7 +700,33 @@ function renderT(){
         if(!selMode){(function(dd,tt,kk){sl.onclick=function(){openBkDetail(dd,tt,kk);};})(date,t,k);}
       } else if(selMode&&isSel){sl.className='slot t-sel-add';if(hasSets)sl.appendChild(mkTags(sets));else sl.innerHTML='<span style="font-size:9px;color:#fff">✓</span>';}
       else if(isOff){sl.className='slot '+(selMode?'t-idle-add':'t-idle');if(selMode)sl.innerHTML='<span style="font-size:9px;color:#ca8a04">＋</span>';}
-      else if(hasSets){sl.className='slot '+(selMode?'t-avail-add':'t-avail');sl.appendChild(mkTags(sets));if(!selMode){(function(dd,tt,kk){sl.onclick=function(){openSlotDetail(dd,tt,kk);};})(date,t,k);}}
+      else if(hasSets){
+        if(selMode){
+          sl.className='slot t-avail-add';
+          sl.appendChild(mkTags(sets));
+        } else {
+          sl.className='slot';
+          sl.style.cssText='display:flex;flex-direction:row;flex-wrap:wrap;align-content:center;justify-content:center;padding:2px;gap:2px;background:transparent;border:none;';
+          var _orderT=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];
+          var _combosT=[...sets].sort(function(a,b){return _orderT.indexOf(a)-_orderT.indexOf(b);});
+          _combosT.forEach(function(ml){
+            var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};
+            var _isBlkT=blockedSlots[k]&&blockedSlots[k].has(ml);
+            var btn=document.createElement('button');
+            if(_isBlkT){
+              btn.style.cssText='flex:0 0 auto;border-radius:4px;border:1px dashed #d1d5db;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;cursor:pointer;padding:3px 6px;white-space:nowrap;position:relative;font-family:inherit;';
+              btn.innerHTML=(TL[ml]||LOCS[ml.split('-')[1]])+'<span style="position:absolute;top:-4px;right:-3px;font-size:9px;line-height:1;background:#fff;border-radius:50%;padding:1px">🚶</span>';
+              btn.onclick=function(e){e.preventDefault();e.stopPropagation();alert('移動時間のためお客様から予約不可です');};
+            } else {
+              btn.style.cssText='flex:0 0 auto;border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:10px;font-weight:700;cursor:pointer;padding:3px 6px;white-space:nowrap;font-family:inherit;';
+              btn.textContent=TL[ml]||LOCS[ml.split('-')[1]];
+              (function(dd,tt,kk){btn.onclick=function(e){e.preventDefault();e.stopPropagation();openSlotDetail(dd,tt,kk);};})(date,t,k);
+            }
+            sl.appendChild(btn);
+          });
+          (function(dd,tt,kk){sl.onclick=function(){openSlotDetail(dd,tt,kk);};})(date,t,k);
+        }
+      }
       else{sl.className='slot '+(selMode?'t-idle-add':'t-idle');if(selMode)sl.innerHTML='<span style="font-size:9px;color:#ca8a04">＋</span>';}
       if(!past&&selMode&&!doff&&!bk){
         (function(kk,s){
