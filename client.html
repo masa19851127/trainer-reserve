@@ -645,17 +645,17 @@ function openCellPicker(date,t,k,combos){
   closeCellPicker();
   var iso=localISO(date);
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
-  var html='<div style="font-size:11px;color:#666;margin-bottom:4px;text-align:center">'+ds+'　'+t+'〜'+et(t)+'</div><div style="font-size:17px;font-weight:700;margin-bottom:16px;text-align:center">どこで予約しますか？</div>';
+  var html='<div style="font-size:10px;color:#666;margin-bottom:3px;text-align:center">'+ds+'　'+t+'〜'+et(t)+'</div><div style="font-size:14px;font-weight:700;margin-bottom:10px;text-align:center">どこで予約しますか？</div>';
   combos.forEach(function(ml){
     var p=ml.split('-'),menu=p[0],loc=p[1];
     var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};
     var menuShort=menu==='training'?'トレーニング':'ピラティス';
-    html+='<button class="cell-pick-btn" data-iso="'+iso+'" data-t="'+t+'" data-menu="'+menu+'" data-loc="'+loc+'" data-k="'+k+'" style="display:block;width:100%;margin-bottom:10px;padding:16px 18px;border-radius:14px;border:2px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-weight:700;cursor:pointer;text-align:center;line-height:1.25;font-family:inherit"><div style="font-size:22px">'+LOCS[loc]+'</div><div style="font-size:13px;font-weight:500;margin-top:4px;opacity:.85">'+menuShort+'</div></button>';
+    html+='<button class="cell-pick-btn" data-iso="'+iso+'" data-t="'+t+'" data-menu="'+menu+'" data-loc="'+loc+'" data-k="'+k+'" style="display:block;width:100%;margin-bottom:6px;padding:10px 12px;border-radius:10px;border:2px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-weight:700;cursor:pointer;text-align:center;line-height:1.2;font-family:inherit"><div style="font-size:16px">'+LOCS[loc]+'</div><div style="font-size:11px;font-weight:500;margin-top:2px;opacity:.85">'+menuShort+'</div></button>';
   });
   var dlg=document.createElement('dialog');
   dlg.id='cell-picker-dlg';
-  dlg.style.cssText='border:none;border-radius:18px;padding:22px 20px;width:min(360px,92vw);max-height:80dvh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.25);background:#fff;';
-  dlg.innerHTML='<button onclick="closeCellPicker()" style="position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:1px solid #e5e5e5;background:#f5f5f5;color:#666;font-size:16px;cursor:pointer;font-family:inherit">×</button>'+html;
+  dlg.style.cssText='border:none;border-radius:14px;padding:16px 14px;width:min(280px,86vw);max-height:80dvh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.22);background:#fff;';
+  dlg.innerHTML='<button onclick="closeCellPicker()" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:1px solid #e5e5e5;background:#f5f5f5;color:#666;font-size:14px;cursor:pointer;font-family:inherit;padding:0;line-height:1">×</button>'+html;
   document.body.appendChild(dlg);
   dlg.addEventListener('click',function(e){if(e.target===dlg)closeCellPicker();});
   dlg.querySelectorAll('.cell-pick-btn').forEach(function(b){
