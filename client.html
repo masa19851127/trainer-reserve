@@ -78,9 +78,9 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .wbtn{background:#f5f5f5;border:.5px solid #e5e5e5;border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#666;display:flex;align-items:center;justify-content:center;}
 .wlbl{font-size:12px;font-weight:600;}
 .cal-outer{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.cal-inner{padding:6px 8px max(16px,env(safe-area-inset-bottom,16px));min-width:320px;}
+.cal-inner{padding:6px 4px max(16px,env(safe-area-inset-bottom,16px));min-width:0;width:100%;}
 .cal-head{display:grid;margin-bottom:2px;}
-.cdh{text-align:center;padding:3px 1px;position:relative;}
+.cdh{text-align:center;padding:3px 1px;position:relative;min-width:0;overflow:hidden;}
 .cdn{font-size:9px;color:#999;font-weight:500;}
 .cdd{font-size:13px;font-weight:600;}
 .cdd.today{color:#92400e;background:#fef9c3;border-radius:3px;}
@@ -89,12 +89,12 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .cdh.day-off .dob{display:block;}
 .cdh.off-mode-hover:hover{background:#fff1f2;cursor:pointer;border-radius:4px;}
 .cal-body{display:grid;border-top:1px solid #e8e8e8;border-left:1px solid #e8e8e8;}
-.tlbl{font-size:9px;color:#bbb;text-align:right;padding:3px 4px 0 0;display:flex;align-items:flex-start;justify-content:flex-end;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;height:64px;background:#fafafa;}
+.tlbl{font-size:9px;color:#bbb;text-align:right;padding:3px 3px 0 0;display:flex;align-items:flex-start;justify-content:flex-end;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;height:64px;background:#fafafa;min-width:0;overflow:hidden;}
 .cdd.sat{color:#1e40af;}
 .cdd.sun{color:#e94560;}
 .cdn.sat{color:#93c5fd;}
 .cdn.sun{color:#fca5a5;}
-.slot-cell{border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;padding:2px;height:64px;display:flex;}
+.slot-cell{border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;padding:2px;height:64px;display:flex;min-width:0;overflow:hidden;}
 .slot{border-radius:4px;flex:1;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:600;border:1px solid transparent;overflow:hidden;padding:0 2px;cursor:default;}
 .t-empty{background:transparent;}
 .t-idle{background:#f5f5f5;border:.5px solid #efefef;opacity:.5;}
@@ -282,6 +282,27 @@ var holidays=new Set();
 var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),drag=false,preSelSlotSets=null;
 var clients=[];
 var weekCache={};
+function _fullLabel(ml){var p=ml.split('-');var ms=p[0]==='training'?'トレーニング':'ピラティス';return ms+'：'+(LOCS[p[1]]||p[1]);}
+function _recomputeBlockedSlots(){
+  blockedSlots={};
+  var _allMls=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];
+  Object.values(bookings).forEach(function(bk){
+    if(!bk||!bk.loc||!bk.menu||!bk.date_key)return;
+    var bkMl=bk.menu+'-'+bk.loc;
+    var _bp=bk.date_key.split('_');
+    if(_bp.length<2)return;
+    var _biso=_bp[0],_bhi=parseInt(_bp[1]);
+    if(isNaN(_bhi))return;
+    var _otherMls=_allMls.filter(function(ml){return ml!==bkMl;});
+    [-1,1].forEach(function(d){
+      var _bh=_bhi+d;
+      if(_bh<10||_bh>21)return;
+      var _bk=_biso+'_'+_bh+':00';
+      if(!blockedSlots[_bk])blockedSlots[_bk]=new Set();
+      _otherMls.forEach(function(ml){blockedSlots[_bk].add(ml);});
+    });
+  });
+}
 function _cacheKey(){var dates=mode==='client'?clientWkDates(wkOff):wkDates(wkOff);return mode+'|'+localISO(dates[0])+'|'+localISO(dates[6])+'|'+(localStorage.getItem('myEmail')||'');}
 function _restoreFromCache(c){slotSets={};Object.keys(c.slotSets).forEach(function(k){slotSets[k]=new Set(c.slotSets[k]);});offSlots=Object.assign({},c.offSlots);bookings={};Object.keys(c.bookings).forEach(function(k){bookings[k]=Object.assign({},c.bookings[k]);});myBookings=new Set(c.myBookings);blockedSlots={};Object.keys(c.blockedSlots).forEach(function(k){blockedSlots[k]=new Set(c.blockedSlots[k]);});dayOffs=Object.assign({},c.dayOffs);}
 function _saveToCache(){var key=_cacheKey();weekCache[key]={slotSets:Object.keys(slotSets).reduce(function(o,k){o[k]=new Set(slotSets[k]);return o;},{}),offSlots:Object.assign({},offSlots),bookings:Object.keys(bookings).reduce(function(o,k){o[k]=Object.assign({},bookings[k]);return o;},{}),myBookings:new Set(myBookings),blockedSlots:Object.keys(blockedSlots).reduce(function(o,k){o[k]=new Set(blockedSlots[k]);return o;},{}),dayOffs:Object.assign({},dayOffs)};}
@@ -360,9 +381,7 @@ async function loadData(force){
     var r2=await sb.from('bookings').select('*').eq('status','confirmed').gte('date_key',s).lte('date_key',e+'_z');
     bookings={};(r2.data||[]).forEach(function(r){bookings[r.date_key]=r;});myBookings=new Set();
   }
-  blockedSlots={};
-  var _allMls=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];
-  Object.values(bookings).forEach(function(bk){if(!bk||!bk.loc||!bk.menu)return;var bkMl=bk.menu+'-'+bk.loc;var _bp=bk.date_key.split('_');if(_bp.length<2)return;var _biso=_bp[0],_bhi=parseInt(_bp[1]);if(isNaN(_bhi))return;var _otherMls=_allMls.filter(function(ml){return ml!==bkMl;});[-1,1].forEach(function(d){var _bh=_bhi+d;if(_bh<10||_bh>21)return;var _bk=_biso+'_'+_bh+':00';if(!blockedSlots[_bk])blockedSlots[_bk]=new Set();_otherMls.forEach(function(ml){blockedSlots[_bk].add(ml);});});});
+  _recomputeBlockedSlots();
   var r3=await sb.from('day_offs').select('*').gte('date_iso',s).lte('date_iso',e);
   dayOffs={};(r3.data||[]).forEach(function(r){dayOffs[r.date_iso]=true;});
   _saveToCache();
@@ -477,7 +496,7 @@ async function loadHolidays(){
 function renderT(){
   var dates=wkDates(wkOff);
   document.getElementById('wlbl-t').textContent=fmt(dates[0])+' – '+fmt(dates[6]);
-  var COL='36px repeat(7,1fr)';
+  var COL='32px repeat(7,minmax(0,1fr))';
   var head=document.getElementById('cal-head-t');
   head.style.gridTemplateColumns=COL;
   head.innerHTML='<div></div>'+dates.map(function(d){
@@ -545,7 +564,7 @@ function renderC(){
   var dates=clientWkDates(wkOff);
   document.getElementById('wlbl-c').textContent=fmt(dates[0])+' – '+fmt(dates[6]);
   var pb=document.getElementById('c-prev-wk');if(pb)pb.disabled=wkOff<=0;
-  var COL='36px repeat(7,1fr)';
+  var COL='32px repeat(7,minmax(0,1fr))';
   var head=document.getElementById('cal-head-c');
   head.style.gridTemplateColumns=COL;
   head.innerHTML='<div></div>'+dates.map(function(d){
@@ -571,7 +590,7 @@ function renderC(){
       else if(past){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       else if(mine){sl.className='slot c-mine';sl.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>';(function(dd,tt,kk){sl.onclick=function(){openMyBk(dd,tt,kk);};})(date,t,k);}
       else if(bk&&bk._booked){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
-      else if(availMls.length>0){var _uMls=availMls.filter(function(ml){return !(blockedSlots[k]&&blockedSlots[k].has(ml));});if(_uMls.length===0){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{var _order=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];var _combos=_uMls.slice().sort(function(a,b){return _order.indexOf(a)-_order.indexOf(b);});sl.className='slot';var _n=_combos.length;var _layout;if(_n>=3)_layout='display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;';else _layout='display:flex;flex-direction:row;gap:2px;';sl.style.cssText=_layout+'padding:2px;background:transparent;border:none;cursor:pointer;';_combos.forEach(function(ml,_i){var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};var span=document.createElement('div');var _spSt='border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:10px;font-weight:700;padding:2px;display:flex;align-items:center;justify-content:center;white-space:nowrap;width:100%;height:100%;pointer-events:none;';if(_n===3&&_i===2)_spSt+='grid-column:1 / span 2;';if(_n<=2)_spSt+='flex:1;';span.style.cssText=_spSt;span.textContent=TL[ml]||LOCS[ml.split('-')[1]];sl.appendChild(span);});(function(dd,tt,kk,combos){sl.onclick=function(e){e.stopPropagation();if(combos.length===1){var p=combos[0].split('-');doBook(localISO(dd),tt,p[0],p[1],kk);}else{openCellPicker(dd,tt,kk,combos);}};})(date,t,k,_combos);}}
+      else if(availMls.length>0){var _uMls=availMls.filter(function(ml){return !(blockedSlots[k]&&blockedSlots[k].has(ml));});if(_uMls.length===0){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{var _order=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];var _combos=_uMls.slice().sort(function(a,b){return _order.indexOf(a)-_order.indexOf(b);});sl.className='slot';var _n=_combos.length;var _layout;if(_n>=3)_layout='display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;';else _layout='display:flex;flex-direction:row;gap:2px;';sl.style.cssText=_layout+'padding:2px;background:transparent;border:none;cursor:pointer;';var _openPicker=function(){if(_combos.length===1){var p=_combos[0].split('-');doBook(localISO(date),t,p[0],p[1],k);}else{openCellPicker(date,t,k,_combos);}};_combos.forEach(function(ml,_i){var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};var btn=document.createElement('button');var _btSt='border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:10px;font-weight:700;padding:2px;display:flex;align-items:center;justify-content:center;white-space:nowrap;width:100%;height:100%;cursor:pointer;font-family:inherit;';if(_n===3&&_i===2)_btSt+='grid-column:1 / span 2;';if(_n<=2)_btSt+='flex:1;';btn.style.cssText=_btSt;btn.textContent=TL[ml]||LOCS[ml.split('-')[1]];btn.onclick=function(e){e.preventDefault();e.stopPropagation();_openPicker();};sl.appendChild(btn);});sl.onclick=function(e){e.stopPropagation();_openPicker();};}}
       else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       sc.appendChild(sl);body.appendChild(sc);
     });
@@ -620,6 +639,7 @@ function openMenuPickerForLoc(date,t,k,loc,menus){
 function doBook(iso,t,menu,loc,k){closePanel();openCPanel(new Date(iso+'T00:00:00'),t,menu+'-'+loc,k);}
 
 function openCellPicker(date,t,k,combos){
+  closeCellPicker();
   var iso=localISO(date);
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var html='<div style="font-size:11px;color:#666;margin-bottom:4px;text-align:center">'+ds+'　'+t+'〜'+et(t)+'</div><div style="font-size:17px;font-weight:700;margin-bottom:16px;text-align:center">どこで予約しますか？</div>';
@@ -627,30 +647,30 @@ function openCellPicker(date,t,k,combos){
     var p=ml.split('-'),menu=p[0],loc=p[1];
     var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};
     var menuShort=menu==='training'?'トレーニング':'ピラティス';
-    html+='<button class="cell-pick-btn" data-iso="'+iso+'" data-t="'+t+'" data-menu="'+menu+'" data-loc="'+loc+'" data-k="'+k+'" style="display:block;width:100%;margin-bottom:10px;padding:16px 18px;border-radius:14px;border:2px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-weight:700;cursor:pointer;text-align:center;line-height:1.25"><div style="font-size:22px">'+LOCS[loc]+'</div><div style="font-size:13px;font-weight:500;margin-top:4px;opacity:.85">'+menuShort+'</div></button>';
+    html+='<button class="cell-pick-btn" data-iso="'+iso+'" data-t="'+t+'" data-menu="'+menu+'" data-loc="'+loc+'" data-k="'+k+'" style="display:block;width:100%;margin-bottom:10px;padding:16px 18px;border-radius:14px;border:2px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-weight:700;cursor:pointer;text-align:center;line-height:1.25;font-family:inherit"><div style="font-size:22px">'+LOCS[loc]+'</div><div style="font-size:13px;font-weight:500;margin-top:4px;opacity:.85">'+menuShort+'</div></button>';
   });
-  var bg=document.createElement('div');
-  bg.id='cell-picker-bg';
-  var scrollY=window.pageYOffset||document.documentElement.scrollTop||0;
-  bg.style.cssText='position:absolute;top:'+scrollY+'px;left:0;width:100%;height:100dvh;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
-  bg.addEventListener('click',function(e){if(e.target===bg)closeCellPicker();});
-  bg.innerHTML='<div style="background:#fff;border-radius:18px;padding:22px 20px;width:min(360px,92vw);max-height:80dvh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.25);position:relative"><button onclick="closeCellPicker()" style="position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:1px solid #e5e5e5;background:#f5f5f5;color:#666;font-size:16px;cursor:pointer">×</button>'+html+'</div>';
-  document.body.appendChild(bg);
-  document.documentElement.style.overflow='hidden';
-  document.body.style.overflow='hidden';
-  bg.querySelectorAll('.cell-pick-btn').forEach(function(b){
-    b.addEventListener('click',function(){
+  var dlg=document.createElement('dialog');
+  dlg.id='cell-picker-dlg';
+  dlg.style.cssText='border:none;border-radius:18px;padding:22px 20px;width:min(360px,92vw);max-height:80dvh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.25);background:#fff;';
+  dlg.innerHTML='<button onclick="closeCellPicker()" style="position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:1px solid #e5e5e5;background:#f5f5f5;color:#666;font-size:16px;cursor:pointer;font-family:inherit">×</button>'+html;
+  document.body.appendChild(dlg);
+  dlg.addEventListener('click',function(e){if(e.target===dlg)closeCellPicker();});
+  dlg.querySelectorAll('.cell-pick-btn').forEach(function(b){
+    b.addEventListener('click',function(ev){
+      ev.preventDefault();
       var iso2=b.getAttribute('data-iso'),t2=b.getAttribute('data-t'),menu2=b.getAttribute('data-menu'),loc2=b.getAttribute('data-loc'),k2=b.getAttribute('data-k');
       closeCellPicker();
       doBook(iso2,t2,menu2,loc2,k2);
     });
   });
+  if(typeof dlg.showModal==='function'){dlg.showModal();}
+  else{dlg.setAttribute('open','');}
 }
 function closeCellPicker(){
-  var bg=document.getElementById('cell-picker-bg');
-  if(bg)bg.remove();
-  document.documentElement.style.overflow='';
-  document.body.style.overflow='';
+  var dlg=document.getElementById('cell-picker-dlg');
+  if(!dlg)return;
+  try{if(typeof dlg.close==='function')dlg.close();}catch(_){}
+  dlg.remove();
 }
 
 function openSlotDetail(date,t,k){
@@ -706,6 +726,7 @@ async function confirmTrainerBook(iso,t,k){
   var ok=await saveBooking(k,menu,loc,name,email,phone,msg);
   if(!ok){L(false);showToast('⚠ 予約に失敗しました');return;}
   bookings[k]={date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg};
+  _recomputeBlockedSlots();
   await sb.from('clients').update({used_tickets:(cr.data.used_tickets||0)+1}).eq('email',email);
   await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:1,note:'トレーナーによる予約入力'});
   var date=new Date(iso+'T00:00:00');
@@ -744,7 +765,7 @@ async function tCancel(k,iso,t,menu,loc,name,email){
     }
   }
   L(false);
-  delete bookings[k];myBookings.delete(k);
+  delete bookings[k];myBookings.delete(k);_recomputeBlockedSlots();
   var _dd=new Date(iso+'T00:00:00');
   var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日（'+DJ[_dd.getDay()]+'）';
   await Promise.all([
@@ -769,7 +790,7 @@ function openCPanel(date,t,ml,k){
   var iso=localISO(date);
   var _prefill=myName||localStorage.getItem('myName')||'';
   var _col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約する</div><div class="psub">'+ds+'</div><div style="background:'+_col.bg+';border:1.5px solid '+_col.bd+';color:'+_col.tc+';border-radius:10px;padding:10px 14px;margin-bottom:12px;text-align:center;font-size:15px;font-weight:700">'+(TL[ml]||(MENUS[menu]+'・'+LOCS[loc]))+'</div><div style="background:#f5f5f5;border-radius:7px;padding:8px 11px;margin-bottom:14px;font-size:12px;color:#666">🕐 '+t+'〜'+et(t)+'（1時間）</div><div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="fn" placeholder="山田 太郎" value="'+escHtml(_prefill)+'"></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="fp" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メッセージ（任意）</label><textarea class="finp" id="fm" rows="2" placeholder="気になることなど"></textarea></div><button class="bp" onclick="confirmBk(\''+iso+'\',\''+t+'\',\''+ml+'\',\''+k+'\')">予約を確定する</button>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約する</div><div class="psub">'+ds+'</div><div style="background:'+_col.bg+';border:1.5px solid '+_col.bd+';color:'+_col.tc+';border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;font-size:17px;font-weight:700">'+_fullLabel(ml)+'</div><div style="background:#f5f5f5;border-radius:7px;padding:8px 11px;margin-bottom:14px;font-size:12px;color:#666">🕐 '+t+'〜'+et(t)+'（1時間）</div><div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="fn" placeholder="山田 太郎" value="'+escHtml(_prefill)+'"></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="fp" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メッセージ（任意）</label><textarea class="finp" id="fm" rows="2" placeholder="気になることなど"></textarea></div><button class="bp" onclick="confirmBk(\''+iso+'\',\''+t+'\',\''+ml+'\',\''+k+'\')">予約を確定する</button>';
   openPanel();
 }
 async function confirmBk(iso,t,ml,k){
@@ -792,6 +813,7 @@ async function confirmBk(iso,t,ml,k){
   if(!ok){L(false);showToast('⚠ 予約に失敗しました');return;}
   bookings[k]={date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg,created_at:new Date().toISOString()};
   myEmail=email;localStorage.setItem('myEmail',email);myBookings.add(k);
+  _recomputeBlockedSlots();
   if(cr.data){
     await sb.from('clients').update({used_tickets:(cr.data.used_tickets||0)+1}).eq('email',email);
     await sb.from('ticket_logs').insert({client_email:email,type:'consume',amount:1,note:'予約自動消化'});
@@ -838,7 +860,7 @@ async function clientCancel(k,iso,t,menu,loc,name,email){
     }
   }
   L(false);
-  delete bookings[k];myBookings.delete(k);
+  delete bookings[k];myBookings.delete(k);_recomputeBlockedSlots();
   var _dd3=new Date(iso+'T00:00:00');
   var ds=parseInt(iso.slice(5,7))+'月'+parseInt(iso.slice(8,10))+'日（'+DJ[_dd3.getDay()]+'）';
   await Promise.all([
