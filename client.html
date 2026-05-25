@@ -9,6 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="common.js?v=1"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -269,20 +270,6 @@ const sb=supabase.createClient(SB_URL,SB_KEY);
 const TR_PW='masa1127';
 const TR_EMAIL='masa.nu.pe.27@gmail.com';
 
-const TIMES=[];
-for(var h=10;h<=21;h++) TIMES.push(h+':00');
-const DJ=['日','月','火','水','木','金','土'];
-const LOCS={meguro:'目黒',yokohama:'横浜',ebisu:'恵比寿'};
-const MENUS={pilates:'ピラティス',training:'パーソナルトレーニング'};
-const ML={pilates:['meguro','yokohama'],training:['ebisu','yokohama']};
-const TC={'pilates-meguro':'stag-pm','pilates-yokohama':'stag-py','training-ebisu':'stag-te','training-yokohama':'stag-ty'};
-const TL={'pilates-meguro':'P・目黒','pilates-yokohama':'P・横浜','training-ebisu':'T・恵比寿','training-yokohama':'T・横浜'};
-const BKC={'pilates-meguro':'t-bk-pm','pilates-yokohama':'t-bk-py','training-yokohama':'t-bk-ty','training-ebisu':'t-bk-te'};
-const BLC={'pilates-meguro':'bl-pm','pilates-yokohama':'bl-py','training-yokohama':'bl-ty','training-ebisu':'bl-te'};
-const MLCOL={'pilates-meguro':{bg:'#f3e8ff',bd:'#d8b4fe',tc:'#6b21a8'},'pilates-yokohama':{bg:'#dcfce7',bd:'#86efac',tc:'#166534'},'training-yokohama':{bg:'#e0f2fe',bd:'#7dd3fc',tc:'#0369a1'},'training-ebisu':{bg:'#fce7f3',bd:'#f9a8d4',tc:'#9d174d'}};
-const LTAG={meguro:'tag-meguro',yokohama:'tag-yokohama',ebisu:'tag-ebisu'};
-const MTAG={pilates:'tag-pilates',training:'tag-training'};
-
 var mode='',wkOff=0,rpOff=0;
 var slotSets={},offSlots={},dayOffs={},bookings={},blockedSlots={};
 var myBookings=new Set(),myEmail=localStorage.getItem('myEmail')||'',myName=localStorage.getItem('myName')||'';
@@ -478,7 +465,6 @@ function mkTags(sets){
   return w;
 }
 
-const HOLIDAYS_FALLBACK=['2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24','2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06','2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13','2025-11-03','2025-11-23','2025-11-24','2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20','2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06','2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23','2026-10-12','2026-11-03','2026-11-23','2027-01-01','2027-01-11','2027-02-11','2027-02-23','2027-03-21','2027-03-22','2027-04-29','2027-05-03','2027-05-04','2027-05-05','2027-07-19','2027-08-11','2027-09-20','2027-09-23','2027-10-11','2027-11-03','2027-11-23'];
 function _applyHolidays(arr){arr.forEach(function(d){holidays.add(d);});if(mode==='trainer')renderT();else if(mode==='client')renderC();}
 async function loadHolidays(){
   var CK='holidaysCache_v1',TK='holidaysCacheTs_v1';
