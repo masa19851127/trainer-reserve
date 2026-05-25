@@ -717,7 +717,12 @@ function renderT(){
         } else {
           sl.className='slot';
           var _orderT=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];
-          var _combosT=[...sets].sort(function(a,b){return _orderT.indexOf(a)-_orderT.indexOf(b);});
+          var _combosT=[...sets].sort(function(a,b){
+            var _aBlk=blockedSlots[k]&&blockedSlots[k].has(a)?1:0;
+            var _bBlk=blockedSlots[k]&&blockedSlots[k].has(b)?1:0;
+            if(_aBlk!==_bBlk)return _aBlk-_bBlk;
+            return _orderT.indexOf(a)-_orderT.indexOf(b);
+          });
           var _nT=_combosT.length;
           var _isMobT=window.matchMedia('(max-width: 767px)').matches;
           var _mkBtnT=function(ml,colMode){
