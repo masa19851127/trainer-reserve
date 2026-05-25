@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=13"></script>
+<script src="common.js?v=14"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -384,7 +384,7 @@ var mode='',wkOff=0,rpOff=0;
 var slotSets={},offSlots={},dayOffs={},bookings={},blockedSlots={};
 var myBookings=new Set(),myEmail=localStorage.getItem('myEmail')||'',myName=localStorage.getItem('myName')||'';
 var holidays=new Set();
-var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),drag=false,preSelSlotSets=null;
+var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),preSelSlotSets=null;
 var clients=[];
 
 function L(s){document.getElementById('loading').style.display=s?'flex':'none';}
@@ -724,12 +724,13 @@ function renderT(){
       else{sl.className='slot '+(selMode?'t-idle-add':'t-idle');if(selMode)sl.innerHTML='<span style="font-size:9px;color:#ca8a04">＋</span>';}
       if(!past&&selMode&&!doff&&!bk){
         (function(kk,s){
-          var justAdded=false;
           s.setAttribute('data-ck',kk);
-          s.onmousedown=function(e){e.preventDefault();drag=true;if(!selCells.has(kk)){selCells.add(kk);s.className='slot t-sel-add';updSC();justAdded=true;}else{justAdded=false;}};
-          s.ontouchstart=function(e){e.stopPropagation();drag=true;};
-          s.onmouseenter=function(){if(drag&&!selCells.has(kk)){selCells.add(kk);updSC();s.className='slot t-sel-add';}};
-          s.onclick=function(e){e.stopPropagation();if(justAdded){justAdded=false;return;}if(selCells.has(kk)){selCells.delete(kk);s.className='slot t-idle-add';}else{selCells.add(kk);s.className='slot t-sel-add';}updSC();};
+          s.onclick=function(e){
+            e.stopPropagation();
+            if(selCells.has(kk)){selCells.delete(kk);s.className='slot t-idle-add';}
+            else{selCells.add(kk);s.className='slot t-sel-add';}
+            updSC();
+          };
         })(k,sl);
       }
       sc.appendChild(sl);body.appendChild(sc);
@@ -737,18 +738,6 @@ function renderT(){
   });
   updStats();
 }
-document.addEventListener('mouseup',function(){drag=false;});
-document.addEventListener('touchend',function(){drag=false;});
-document.addEventListener('touchmove',function(e){
-  if(!drag)return;
-  var touch=e.touches[0];
-  var el=document.elementFromPoint(touch.clientX,touch.clientY);
-  while(el&&!el.getAttribute('data-ck')){el=el.parentElement;}
-  if(!el)return;
-  var kk=el.getAttribute('data-ck');
-  e.preventDefault();
-  if(selMode&&!selCells.has(kk)){selCells.add(kk);updSC();el.className='slot t-sel-add';}
-},{passive:false});
 
 function renderC(){
   var dates=clientWkDates(wkOff);
