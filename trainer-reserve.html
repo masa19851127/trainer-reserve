@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=8"></script>
+<script src="common.js?v=9"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -47,34 +47,26 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .t-tabs{display:flex;border-bottom:0.5px solid #e5e5e5;position:sticky;top:44px;background:#fff;z-index:40;}
 .t-tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:#666;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;}
 .t-tab.active{color:#c2410c;border-bottom-color:#c2410c;}
-.mode-selector{display:flex;gap:8px;padding:10px 14px;border-bottom:0.5px solid #e5e5e5;background:#f5f5f5;}
-.msel-btn{flex:1;padding:10px 8px;border-radius:9px;border:2px solid #e5e5e5;cursor:pointer;font-size:12px;font-weight:700;text-align:center;background:#fff;color:#666;}
-.msel-btn .msel-icon{font-size:16px;display:block;margin-bottom:3px;}
-.msel-hint{font-size:10px;display:block;margin-top:1px;opacity:.8;}
-.msel-btn.mode-add{border-color:#f59e0b;color:#92400e;background:#fffbeb;}
-.msel-btn.mode-add.active{background:#f59e0b;color:#fff;}
-.msel-btn.mode-off{border-color:#f43f5e;color:#9f1239;background:#fff1f2;}
-.msel-btn.mode-off.active{background:#f43f5e;color:#fff;}
-.action-toolbar{display:none;padding:8px 14px;border-bottom:1px solid;flex-wrap:wrap;gap:6px;align-items:center;}
-.action-toolbar.active{display:flex;}
+.mode-selector{display:flex;background:#f5f5f5;border-bottom:0.5px solid #e5e5e5;}
+.msel-btn{flex:1;margin:10px 12px;padding:10px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;text-align:center;background:#fff;color:#666;}
+.msel-btn.mode-add{background:#f97316;color:#fff;}
+.msel-btn.mode-add.active{background:#c2410c;color:#fff;}
+.action-toolbar{display:none;padding:8px 14px;border-bottom:1px solid;}
+.action-toolbar.active{display:block;}
 .at-add{background:#fffbeb;border-color:#fde68a;}
 .at-off{background:#fff1f2;border-color:#fecdd3;}
-.at-count{font-size:12px;font-weight:700;white-space:nowrap;}
-.at-add .at-count{color:#92400e;}.at-off .at-count{color:#9f1239;}
-.at-chips{display:flex;gap:4px;flex-wrap:wrap;}
-.atc{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;white-space:nowrap;flex-shrink:0;overflow:visible;}
+.at-row{display:flex;align-items:center;gap:5px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;}
+.at-row-area{gap:4px;margin-top:8px;}
+.at-count{font-size:10.5px;font-weight:600;white-space:nowrap;flex:1;color:#92400e;}
+.at-cancel-new{background:#fff;color:#92400e;border:1px solid #fcd34d;border-radius:6px;padding:6px 9px;font-size:10.5px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.at-del-new{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;padding:6px 9px;font-size:10.5px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.atc-all{background:#fff;color:#1a1a1a;border:1px solid #d1d5db;border-radius:6px;padding:5px 8px;font-size:10px;font-weight:600;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+.at-done-new{margin-top:10px;width:100%;background:#16a34a;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;}
+.atc{padding:5px 8px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;overflow:visible;}
 .atc-pm{background:#f3e8ff;border-color:#d8b4fe;color:#6b21a8;}
 .atc-py{background:#dcfce7;border-color:#86efac;color:#166534;}
 .atc-te{background:#fce7f3;border-color:#f9a8d4;color:#9d174d;}
 .atc-ty{background:#e0f2fe;border-color:#7dd3fc;color:#0369a1;}
-.atc-rm{background:#fee2e2;border-color:#fca5a5;color:#991b1b;}
-.atc-off{background:#ffe4e6;border-color:#fda4af;color:#9f1239;}
-.at-done{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:#16a34a;border:1.5px solid #15803d;color:#fff;box-shadow:0 2px 6px rgba(22,163,74,.3);}
-.at-done:hover{filter:brightness(.92);}
-.at-selall{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fef3c7;border:1.5px solid #fbbf24;color:#92400e;white-space:nowrap;flex-shrink:0;}
-.at-selall:hover{background:#fde68a;}
-.at-cancel{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:transparent;border:1px solid #d1d5db;color:#6b7280;white-space:nowrap;flex-shrink:0;}
-.at-cancel:hover{background:#f3f4f6;}
 .stats-bar{display:flex;gap:8px;padding:8px 14px;border-bottom:0.5px solid #e5e5e5;}
 .stat-pill{flex:1;background:#f5f5f5;border-radius:8px;padding:6px 10px;display:flex;align-items:center;justify-content:space-between;}
 .stat-num{font-size:18px;font-weight:700;line-height:1;}
@@ -210,6 +202,14 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .rp-rank-name{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rp-rank-cnt{font-size:12px;font-weight:700;color:#1a1a1a;flex-shrink:0;margin-right:6px;}
 .rp-remain{font-size:11px;font-weight:700;flex-shrink:0;}
+.ad-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.ad-box{background:#fff;border-radius:14px;padding:22px 20px;width:100%;max-width:330px;box-shadow:0 10px 40px rgba(0,0,0,0.3);}
+.ad-title{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px;}
+.ad-body{font-size:13px;color:#4b5563;line-height:1.6;margin-bottom:18px;}
+.ad-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ad-btn{padding:10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;}
+.ad-cancel{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
+.ad-confirm{background:#dc2626;color:#fff;}
 </style>
 </head>
 <body>
@@ -272,21 +272,23 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
   </div>
   <div id="ttab-cal-content">
     <div class="mode-selector">
-      <button class="msel-btn mode-add" id="msel-add" onclick="toggleSelMode()"><span class="msel-icon">＋</span>空き枠を追加<span class="msel-hint">タップして選択</span></button>
+      <button class="msel-btn mode-add" id="msel-add" onclick="toggleSelMode()">＋ 空き枠を追加</button>
     </div>
     <div class="action-toolbar at-add" id="at-add">
-      <button class="at-cancel" onclick="cancelSel()">← キャンセル</button>
-      <span class="at-count" id="sel-count">0枠選択中</span>
-      <button class="at-selall" onclick="selectAllCells()">⊞ 全エリア一括追加</button>
-      <div class="at-chips">
-        <span style="font-size:10px;color:#92400e;font-weight:600">追加→</span>
+      <div class="at-row">
+        <button class="at-cancel-new" onclick="cancelSel()">← 中止</button>
+        <span class="at-count" id="sel-count">0枠選択中</span>
+        <button class="at-del-new" onclick="confirmRemoveSel()">削除</button>
+      </div>
+      <div class="at-row at-row-area">
+        <span style="font-size:10px;color:#92400e;font-weight:600;flex-shrink:0">追加→</span>
         <button class="atc atc-pm" onclick="assignSel('pilates','meguro')">P・目黒</button>
         <button class="atc atc-py" onclick="assignSel('pilates','yokohama')">P・横浜</button>
         <button class="atc atc-ty" onclick="assignSel('training','yokohama')">T・横浜</button>
         <button class="atc atc-te" onclick="assignSel('training','ebisu')">T・恵比寿</button>
-        <button class="atc atc-rm" onclick="removeSel()">削除</button>
+        <button class="atc-all" onclick="confirmAddAllAreas()">全部</button>
       </div>
-      <button class="at-done" onclick="confirmSel()">✓ 完了して保存</button>
+      <button class="at-done-new" onclick="confirmSel()">✓ 完了して保存</button>
     </div>
     <div class="stats-bar">
       <div class="stat-pill sp-avail"><div><div class="stat-num" id="sta">0</div><div class="stat-lbl">空き枠</div></div></div>
@@ -358,6 +360,17 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 <div class="overlay" id="overlay" onclick="closePanel()"></div>
 <div class="panel" id="panel"><div id="pc"></div></div>
 <div class="toast" id="toast"></div>
+
+<div id="actionDialog" class="ad-overlay" style="display:none;">
+  <div class="ad-box">
+    <div id="adTitle" class="ad-title">予約枠を削除</div>
+    <div id="adBody" class="ad-body">選択した枠を削除します。よろしいですか？</div>
+    <div class="ad-btns">
+      <button class="ad-btn ad-cancel" onclick="closeActionDialog()">戻る</button>
+      <button id="adConfirm" class="ad-btn ad-confirm">削除する</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const TR_PW='masa1127';
@@ -443,6 +456,10 @@ async function loadData(force){
 }
 
 function deepCopySlotSets(s){var c={};for(var k in s){c[k]=new Set(s[k]);}return c;}function clearSelState(){selMode=false;selCells=new Set();preSelSlotSets=null;document.getElementById('msel-add').classList.remove('active');document.getElementById('at-add').classList.remove('active');}function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;preSelSlotSets=deepCopySlotSets(slotSets);document.getElementById('msel-add').classList.add('active');document.getElementById('at-add').classList.add('active');renderT();}
+function openActionDialog(title,body,confirmLabel,onConfirm){document.getElementById('adTitle').textContent=title;document.getElementById('adBody').textContent=body;var btn=document.getElementById('adConfirm');btn.textContent=confirmLabel;btn.onclick=function(){closeActionDialog();onConfirm();};document.getElementById('actionDialog').style.display='flex';}
+function closeActionDialog(){document.getElementById('actionDialog').style.display='none';}
+function confirmRemoveSel(){if(!selCells.size){showToast('⚠ 枠を選んでください');return;}openActionDialog('予約枠を削除','選択した枠を削除します。よろしいですか？','削除する',function(){removeSel();});}
+function confirmAddAllAreas(){if(!selCells.size){showToast('⚠ 先にセルを選択してください');return;}openActionDialog('全エリアを設定','選択した枠に全エリア（P・目黒、P・横浜、T・横浜、T・恵比寿）の空き枠を設定します。よろしいですか？','設定する',function(){selectAllCells();});}
 function cancelSel(){if(preSelSlotSets!==null){slotSets=preSelSlotSets;}clearSelState();renderT();}
 function cancelOffMode(){offMode=false;offCells=new Set();}
 function updSC(){document.getElementById('sel-count').textContent=selCells.size+'枠選択中';}
