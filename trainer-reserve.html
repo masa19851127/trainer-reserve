@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=6"></script>
+<script src="common.js?v=7"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -870,6 +870,8 @@ async function confirmTrainerBook(iso,t,k){
   var msg=document.getElementById('tb-msg').value;
   if(!email){showToast('⚠ お客様を選択してください');return;}
   if(!ml){showToast('⚠ メニューを選択してください');return;}
+  var slotDate=new Date(iso+'T'+t+':00');
+  if(slotDate<new Date()){showToast('⏰ 既に開始時刻を過ぎた枠には予約できません');return;}
   var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
   if(!cr.data){showToast('⚠ お客様が見つかりません');return;}
   var name=cr.data.name;
@@ -953,6 +955,8 @@ async function confirmBk(iso,t,ml,k){
   var email=myEmail;
   if(!name){showToast('⚠ お名前を入力してください');return;}
   if(!email){showToast('⚠ メールアドレスが取得できません');return;}
+  var slotDate=new Date(iso+'T'+t+':00');
+  if(slotDate<new Date()){showToast('⏰ 既に開始時刻を過ぎた枠には予約できません');return;}
   var p=ml.split('-'),menu=p[0],loc=p[1];
   var phone=document.getElementById('fp').value,msg=document.getElementById('fm').value;
   if(blockedSlots[k]&&blockedSlots[k].has(menu+'-'+loc)){showToast('⚠ 移動時間のため予約できません');return;}

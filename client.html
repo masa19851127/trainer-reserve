@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=6"></script>
+<script src="common.js?v=7"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -230,6 +230,20 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .rp-rank-name{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rp-rank-cnt{font-size:12px;font-weight:700;color:#1a1a1a;flex-shrink:0;margin-right:6px;}
 .rp-remain{font-size:11px;font-weight:700;flex-shrink:0;}
+.cd-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.cd-box{background:#fff;border-radius:14px;padding:22px 20px;width:100%;max-width:330px;box-shadow:0 10px 40px rgba(0,0,0,0.3);}
+.cd-title{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px;}
+.cd-title.warn{color:#dc2626;display:flex;align-items:center;gap:6px;}
+.cd-body{font-size:13px;color:#4b5563;line-height:1.6;margin-bottom:8px;}
+.cd-detail{background:#f9fafb;border-radius:8px;padding:10px 12px;font-size:12px;color:#374151;margin-bottom:18px;border-left:3px solid #d1d5db;}
+.cd-detail.warn{background:#fef2f2;color:#7f1d1d;border-left:3px solid #dc2626;}
+.cd-warn{background:#fef2f2;border:0.5px solid #fca5a5;border-radius:8px;padding:10px 12px;margin-bottom:18px;}
+.cd-warn-text{font-size:12px;color:#991b1b;line-height:1.6;}
+.cd-warn-text strong{font-weight:600;}
+.cd-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cd-btn{padding:10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;}
+.cd-cancel{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
+.cd-confirm{background:#dc2626;color:#fff;}
 </style>
 </head>
 <body>
@@ -243,7 +257,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
     <label class="flbl">メールアドレス</label>
     <input class="pw-input" id="cl-email-inp" type="email" placeholder="yourmail@example.com">
     <div class="pw-err" id="cl-email-err"></div>
-    <button class="pw-btn" style="background:#16a34a" onclick="doClientLogin()">入る</button>
+    <button class="pw-btn" style="background:#16a34a" onclick="doClientLogin()">ログインする</button>
   </div>
 </div>
 
@@ -296,6 +310,21 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 <div class="overlay" id="overlay" onclick="closePanel()"></div>
 <div class="panel" id="panel"><div id="pc"></div></div>
 <div class="toast" id="toast"></div>
+
+<div id="cancelDialog" class="cd-overlay" style="display:none;">
+  <div class="cd-box">
+    <div id="cdTitle" class="cd-title">予約をキャンセル</div>
+    <div id="cdBody" class="cd-body">以下の予約をキャンセルします。よろしいですか？</div>
+    <div id="cdDetail" class="cd-detail"></div>
+    <div id="cdWarn" class="cd-warn" style="display:none;">
+      <div class="cd-warn-text">当日キャンセルのため、<strong>回数券が1回消化されます</strong>。</div>
+    </div>
+    <div class="cd-btns">
+      <button class="cd-btn cd-cancel" onclick="closeCancelDialog()">戻る</button>
+      <button id="cdConfirm" class="cd-btn cd-confirm">キャンセルする</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const TR_PW='masa1127';
@@ -754,6 +783,8 @@ async function confirmTrainerBook(iso,t,k){
   var msg=document.getElementById('tb-msg').value;
   if(!email){showToast('⚠ お客様を選択してください');return;}
   if(!ml){showToast('⚠ メニューを選択してください');return;}
+  var slotDate=new Date(iso+'T'+t+':00');
+  if(slotDate<new Date()){showToast('⏰ 既に開始時刻を過ぎた枠には予約できません');return;}
   var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
   if(!cr.data){showToast('⚠ お客様が見つかりません');return;}
   var name=cr.data.name;
@@ -837,6 +868,8 @@ async function confirmBk(iso,t,ml,k){
   var email=myEmail;
   if(!name){showToast('⚠ お名前を入力してください');return;}
   if(!email){showToast('⚠ メールアドレスが取得できません');return;}
+  var slotDate=new Date(iso+'T'+t+':00');
+  if(slotDate<new Date()){showToast('⏰ 既に開始時刻を過ぎた枠には予約できません');return;}
   var p=ml.split('-'),menu=p[0],loc=p[1];
   var phone=document.getElementById('fp').value,msg=document.getElementById('fm').value;
   if(blockedSlots[k]&&blockedSlots[k].has(menu+'-'+loc)){showToast('⚠ 移動時間のため予約できません');return;}
@@ -875,17 +908,52 @@ function openMyBk(date,t,k){
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var iso=localISO(date);
   var sd=isTodayStr(iso);
-  var cancelBtn='<button class="bd" style="border-color:#f43f5e;color:#be123c;margin-top:8px" onclick="clientCancel(\''+k+'\',\''+iso+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">キャンセルする'+(sd?' (当日 → 1回消化)':'')+'</button>';
+  var cancelBtn='<button class="bd" style="border-color:#f43f5e;color:#be123c;margin-top:8px" onclick="confirmCancelBooking(\''+k+'\',\''+iso+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+(bk.name||'')+'\',\''+(bk.email||'')+'\')">キャンセルする</button>';
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">あなたの予約</div><div class="psub">'+ds+'</div><div style="background:#dcfce7;border-radius:9px;padding:12px 14px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#15803d;margin-bottom:4px">✅ 予約確定済み</div><div style="font-size:12px;color:#166534">🕐 '+t+'〜'+et(t)+'（1時間）</div></div><div class="infor"><span class="ik">メニュー</span><span class="iv">'+MENUS[bk.menu]+'</span></div><div class="infor"><span class="ik">場所</span><span class="iv">'+LOCS[bk.loc]+'</span></div>'+(sd?'<div style="background:#fef9c3;border:0.5px solid #fde047;border-radius:8px;padding:10px 12px;margin:10px 0;font-size:11px;color:#854d0e">⚠ 当日キャンセルは回数券1回分の消化となります</div>':'')+cancelBtn;
   openPanel();
 }
+function openCancelDialog(detail,isSameDay,onConfirm){
+  var title=document.querySelector('#cdTitle');
+  var body=document.querySelector('#cdBody');
+  var detailEl=document.querySelector('#cdDetail');
+  var warn=document.querySelector('#cdWarn');
+  var btn=document.querySelector('#cdConfirm');
+  if(isSameDay){
+    title.innerHTML='<span>⚠</span>当日キャンセルになります';
+    title.className='cd-title warn';
+    body.textContent='以下の予約をキャンセルします。';
+    detailEl.className='cd-detail warn';
+    warn.style.display='block';
+  } else {
+    title.textContent='予約をキャンセル';
+    title.className='cd-title';
+    body.textContent='以下の予約をキャンセルします。よろしいですか？';
+    detailEl.className='cd-detail';
+    warn.style.display='none';
+  }
+  detailEl.innerHTML=detail;
+  btn.onclick=function(){
+    closeCancelDialog();
+    onConfirm();
+  };
+  document.querySelector('#cancelDialog').style.display='flex';
+}
+function closeCancelDialog(){
+  document.querySelector('#cancelDialog').style.display='none';
+}
+function confirmCancelBooking(k,iso,t,menu,loc,name,email){
+  var sameDay=isTodayStr(iso);
+  var date=new Date(iso+'T00:00:00');
+  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
+  var menuLabel=menu==='training'?'トレーニング':'ピラティス';
+  var locLabel=LOCS[loc]||loc;
+  var detail=ds+' '+t+'〜'+et(t)+'<br>'+locLabel+' ／ '+menuLabel;
+  openCancelDialog(detail,sameDay,function(){
+    clientCancel(k,iso,t,menu,loc,name,email);
+  });
+}
 async function clientCancel(k,iso,t,menu,loc,name,email){
   var sd=isTodayStr(iso);
-  if(sd){
-    if(!confirm('当日キャンセルのため、回数券1回分が消化されます。\nキャンセルしてよろしいですか？'))return;
-  } else {
-    if(!confirm('この予約をキャンセルしてよろしいですか？'))return;
-  }
   L(true);await deleteBooking(k);
   var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
   if(cr.data){
@@ -980,20 +1048,27 @@ async function showMyPageData(email,wrap){
       var bkDate=new Date(iso+'T00:00:00');
       var today=new Date();today.setHours(0,0,0,0);
       var isPastDate=bkDate<today;
-      var sd=isTodayStr(iso);
       var dsDisp=(bkDate.getMonth()+1)+'月'+bkDate.getDate()+'日（'+DJ[bkDate.getDay()]+'）';
+      var menuShort=item.menu==='training'?'トレーニング':'ピラティス';
+      var locLabel=LOCS[item.loc]||item.loc;
+      var rightHtml='';
+      var cardStyle='';
+      var titleColor='#1a1a1a';
+      var subColor='#6b7280';
       if(item.status==='sameday'){
-        html+='<div class="my-bk-card" style="opacity:0.65;background:#f9fafb"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500;color:#6b7280">'+dsDisp+' '+t+'〜'+et(t)+'</div><span class="ctag" style="background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb">'+MENUS[item.menu]+'</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px"><div style="font-size:11px;color:#9ca3af">'+LOCS[item.loc]+'</div><span style="font-size:10px;background:#fee2e2;color:#991b1b;border-radius:4px;padding:2px 6px;border:0.5px solid #fca5a5">⚠ 当日キャンセル</span></div></div>';
+        cardStyle='opacity:0.65;background:#f9fafb';
+        titleColor='#6b7280';
+        subColor='#9ca3af';
+        rightHtml='<span style="font-size:10px;background:#fee2e2;color:#991b1b;border-radius:4px;padding:2px 6px;border:0.5px solid #fca5a5;flex-shrink:0;white-space:nowrap">⚠ 当日キャンセル</span>';
       } else if(item.status==='cancelled'){
-        html+='<div class="my-bk-card" style="opacity:0.65;background:#f9fafb"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500;color:#6b7280">'+dsDisp+' '+t+'〜'+et(t)+'</div><span class="ctag" style="background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb">'+MENUS[item.menu]+'</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px"><div style="font-size:11px;color:#9ca3af">'+LOCS[item.loc]+'</div><span style="font-size:10px;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:2px 6px;border:0.5px solid #d1d5db">キャンセル済</span></div></div>';
-      } else {
-        var cancelBtn='';
-        if(!isPastDate){
-          var btnSt='font-size:11px;border:0.5px solid #f43f5e;color:#be123c;background:none;border-radius:6px;padding:3px 9px;cursor:pointer';
-          cancelBtn='<button style="'+btnSt+'" onclick="clientCancel(\''+item.date_key+'\',\''+iso+'\',\''+t+'\',\''+item.menu+'\',\''+item.loc+'\',\''+item.name+'\',\''+item.email+'\')">'+(sd?'⚠ 当日キャンセルする':'キャンセルする')+'</button>';
-        }
-        html+='<div class="my-bk-card"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500">'+dsDisp+' '+t+'〜'+et(t)+'</div><span class="ctag '+(MTAG[item.menu]||'')+'">'+MENUS[item.menu]+'</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px"><div style="font-size:11px;color:#666">'+LOCS[item.loc]+'</div>'+cancelBtn+'</div></div>';
+        cardStyle='opacity:0.65;background:#f9fafb';
+        titleColor='#6b7280';
+        subColor='#9ca3af';
+        rightHtml='<span style="font-size:10px;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:2px 6px;border:0.5px solid #d1d5db;flex-shrink:0;white-space:nowrap">キャンセル済</span>';
+      } else if(!isPastDate){
+        rightHtml='<button style="background:#dc2626;color:#fff;border:1px solid #dc2626;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;flex-shrink:0;white-space:nowrap" onclick="confirmCancelBooking(\''+item.date_key+'\',\''+iso+'\',\''+t+'\',\''+item.menu+'\',\''+item.loc+'\',\''+(item.name||'')+'\',\''+(item.email||'')+'\')">キャンセルする</button>';
       }
+      html+='<div class="my-bk-card"'+(cardStyle?' style="'+cardStyle+'"':'')+'><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:'+titleColor+'">'+dsDisp+' '+t+'〜'+et(t)+'</div><div style="font-size:11px;color:'+subColor+';margin-top:2px">'+locLabel+' ／ '+menuShort+'</div></div>'+rightHtml+'</div></div>';
     });
   } else {
     html+='<div style="font-size:13px;color:#999;text-align:center;padding:20px">予約履歴がありません</div>';
