@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=11"></script>
+<script src="common.js?v=12"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -623,15 +623,14 @@ function renderT(){
     var effCls=holidays.has(iso)?' sun':dcls;
     var _canSel=selMode&&!past&&!doff;
     var _selClass=_canSel?' cdh-selectable':'';
-    return '<div class="cdh'+(doff?' day-off':'')+_selClass+'" id="hdr-'+iso+'" data-iso="'+iso+'" style="'+(past?'opacity:.35':'')+'">'
+    var _onclickAttr=_canSel?' onclick="toggleDateColumn(\''+iso+'\')"':'';
+    var _styleParts=[];
+    if(past)_styleParts.push('opacity:.35');
+    if(_canSel)_styleParts.push('cursor:pointer');
+    var _styleAttr=_styleParts.length?' style="'+_styleParts.join(';')+'"':'';
+    return '<div class="cdh'+(doff?' day-off':'')+_selClass+'" id="hdr-'+iso+'" data-iso="'+iso+'"'+_onclickAttr+_styleAttr+'>'
       +'<div class="cdn'+effCls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+effCls+'">'+d.getDate()+(holidays.has(iso)?'<span style="font-size:7px;vertical-align:top;margin-left:1px">祝</span>':'')+(doff?'✕':'')+'</div><div class="dob"></div></div>';
   }).join('');
-  if(selMode){
-    Array.prototype.forEach.call(head.querySelectorAll('.cdh-selectable'),function(el){
-      var iso=el.getAttribute('data-iso');
-      el.addEventListener('click',function(){toggleDateColumn(iso);});
-    });
-  }
   var body=document.getElementById('cal-body-t');
   body.style.gridTemplateColumns=COL;body.innerHTML='';
   TIMES.forEach(function(t){
