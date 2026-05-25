@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=8"></script>
+<script src="common.js?v=9"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -48,21 +48,27 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .t-tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:#666;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;}
 .t-tab.active{color:#c2410c;border-bottom-color:#c2410c;}
 .mode-selector{display:flex;gap:8px;padding:10px 14px;border-bottom:0.5px solid #e5e5e5;background:#f5f5f5;}
-.msel-btn{flex:1;padding:10px 8px;border-radius:9px;border:2px solid #e5e5e5;cursor:pointer;font-size:12px;font-weight:700;text-align:center;background:#fff;color:#666;}
+.msel-btn{flex:1;padding:10px;border-radius:9px;border:2px solid #e5e5e5;cursor:pointer;font-size:13px;font-weight:700;text-align:center;background:#fff;color:#666;}
 .msel-btn .msel-icon{font-size:16px;display:block;margin-bottom:3px;}
 .msel-hint{font-size:10px;display:block;margin-top:1px;opacity:.8;}
 .msel-btn.mode-add{border-color:#f59e0b;color:#92400e;background:#fffbeb;}
 .msel-btn.mode-add.active{background:#f59e0b;color:#fff;}
 .msel-btn.mode-off{border-color:#f43f5e;color:#9f1239;background:#fff1f2;}
 .msel-btn.mode-off.active{background:#f43f5e;color:#fff;}
-.action-toolbar{display:none;padding:8px 14px;border-bottom:1px solid;flex-wrap:wrap;gap:6px;align-items:center;}
-.action-toolbar.active{display:flex;}
+.action-toolbar{display:none;padding:8px 14px;border-bottom:1px solid;}
+.action-toolbar.active{display:block;}
 .at-add{background:#fffbeb;border-color:#fde68a;}
 .at-off{background:#fff1f2;border-color:#fecdd3;}
-.at-count{font-size:12px;font-weight:700;white-space:nowrap;}
+.at-count{font-size:10.5px;font-weight:600;white-space:nowrap;flex:1;}
 .at-add .at-count{color:#92400e;}.at-off .at-count{color:#9f1239;}
-.at-chips{display:flex;gap:4px;flex-wrap:wrap;}
-.atc{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;white-space:nowrap;flex-shrink:0;overflow:visible;}
+.at-row{display:flex;align-items:center;gap:5px;overflow-x:auto;white-space:nowrap;padding-bottom:6px;-webkit-overflow-scrolling:touch;}
+.at-cancel-new{background:#fff;color:#92400e;border:1px solid #fcd34d;border-radius:6px;padding:6px 9px;font-size:10.5px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.at-drag{background:#fff;color:#6b7280;border:1px solid #d1d5db;border-radius:6px;padding:6px 9px;font-size:10.5px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.at-drag.on{background:#16a34a;color:#fff;border-color:#16a34a;}
+.at-del-new{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;padding:6px 9px;font-size:10.5px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.at-done-new{width:100%;background:#16a34a;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;}
+.atc-all{background:#fff;color:#1a1a1a;border:1px solid #d1d5db;border-radius:6px;padding:5px 8px;font-size:10px;font-weight:600;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+.atc{padding:5px 8px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid;white-space:nowrap;flex-shrink:0;overflow:visible;}
 .atc-pm{background:#f3e8ff;border-color:#d8b4fe;color:#6b21a8;}
 .atc-py{background:#dcfce7;border-color:#86efac;color:#166534;}
 .atc-te{background:#fce7f3;border-color:#f9a8d4;color:#9d174d;}
@@ -210,6 +216,18 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .rp-rank-name{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rp-rank-cnt{font-size:12px;font-weight:700;color:#1a1a1a;flex-shrink:0;margin-right:6px;}
 .rp-remain{font-size:11px;font-weight:700;flex-shrink:0;}
+.cdh-selectable{background:#dcfce7;}
+.cdh-selectable .cdd{color:#166534 !important;}
+.tlbl-selectable{background:#dcfce7 !important;color:#166534 !important;font-weight:600;cursor:pointer;}
+body.drag-select-mode .slot-cell{touch-action:none;}
+.cd-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.cd-box{background:#fff;border-radius:14px;padding:22px 20px;width:100%;max-width:330px;box-shadow:0 10px 40px rgba(0,0,0,0.3);}
+.cd-title{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px;}
+.cd-body{font-size:13px;color:#4b5563;line-height:1.6;margin-bottom:18px;}
+.cd-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cd-btn{padding:10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;}
+.cd-cancel{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
+.cd-confirm{background:#dc2626;color:#fff;}
 </style>
 </head>
 <body>
@@ -272,21 +290,24 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
   </div>
   <div id="ttab-cal-content">
     <div class="mode-selector">
-      <button class="msel-btn mode-add" id="msel-add" onclick="toggleSelMode()"><span class="msel-icon">＋</span>空き枠を追加<span class="msel-hint">タップして選択</span></button>
+      <button class="msel-btn mode-add" id="msel-add" onclick="toggleSelMode()">＋ 空き枠を追加</button>
     </div>
     <div class="action-toolbar at-add" id="at-add">
-      <button class="at-cancel" onclick="cancelSel()">← キャンセル</button>
-      <span class="at-count" id="sel-count">0枠選択中</span>
-      <button class="at-selall" onclick="selectAllCells()">⊞ 全エリア一括追加</button>
-      <div class="at-chips">
-        <span style="font-size:10px;color:#92400e;font-weight:600">追加→</span>
+      <div class="at-row">
+        <button class="at-cancel-new" onclick="cancelSel()">← 中止</button>
+        <span class="at-count" id="sel-count">0枠選択中</span>
+        <button class="at-drag" id="dragBtn" onclick="toggleDragMode()">✋ ドラッグ</button>
+        <button class="at-del-new" onclick="confirmRemoveSel()">削除</button>
+      </div>
+      <div class="at-row">
+        <span style="font-size:10px;color:#92400e;font-weight:600;flex-shrink:0">追加→</span>
         <button class="atc atc-pm" onclick="assignSel('pilates','meguro')">P・目黒</button>
         <button class="atc atc-py" onclick="assignSel('pilates','yokohama')">P・横浜</button>
         <button class="atc atc-ty" onclick="assignSel('training','yokohama')">T・横浜</button>
         <button class="atc atc-te" onclick="assignSel('training','ebisu')">T・恵比寿</button>
-        <button class="atc atc-rm" onclick="removeSel()">削除</button>
+        <button class="atc-all" onclick="confirmSelectAllCells()">全部</button>
       </div>
-      <button class="at-done" onclick="confirmSel()">✓ 完了して保存</button>
+      <button class="at-done-new" onclick="confirmSel()">✓ 完了して保存</button>
     </div>
     <div class="stats-bar">
       <div class="stat-pill sp-avail"><div><div class="stat-num" id="sta">0</div><div class="stat-lbl">空き枠</div></div></div>
@@ -359,6 +380,17 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 <div class="panel" id="panel"><div id="pc"></div></div>
 <div class="toast" id="toast"></div>
 
+<div id="trainerConfirmDialog" class="cd-overlay" style="display:none;">
+  <div class="cd-box">
+    <div id="tcdTitle" class="cd-title">予約枠を削除</div>
+    <div id="tcdBody" class="cd-body">選択した枠を削除します。よろしいですか？</div>
+    <div class="cd-btns">
+      <button class="cd-btn cd-cancel" onclick="closeTrainerConfirmDialog()">戻る</button>
+      <button id="tcdConfirm" class="cd-btn cd-confirm">削除する</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const TR_PW='masa1127';
 const TR_EMAIL='masa.nu.pe.27@gmail.com';
@@ -368,6 +400,7 @@ var slotSets={},offSlots={},dayOffs={},bookings={},blockedSlots={};
 var myBookings=new Set(),myEmail=localStorage.getItem('myEmail')||'',myName=localStorage.getItem('myName')||'';
 var holidays=new Set();
 var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),drag=false,preSelSlotSets=null;
+var dragSelectMode=false,dragInitialState=true;
 var clients=[];
 
 function L(s){document.getElementById('loading').style.display=s?'flex':'none';}
@@ -442,7 +475,14 @@ async function loadData(force){
   L(false);
 }
 
-function deepCopySlotSets(s){var c={};for(var k in s){c[k]=new Set(s[k]);}return c;}function clearSelState(){selMode=false;selCells=new Set();preSelSlotSets=null;document.getElementById('msel-add').classList.remove('active');document.getElementById('at-add').classList.remove('active');}function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;preSelSlotSets=deepCopySlotSets(slotSets);document.getElementById('msel-add').classList.add('active');document.getElementById('at-add').classList.add('active');renderT();}
+function deepCopySlotSets(s){var c={};for(var k in s){c[k]=new Set(s[k]);}return c;}function clearSelState(){selMode=false;selCells=new Set();preSelSlotSets=null;document.getElementById('msel-add').classList.remove('active');document.getElementById('at-add').classList.remove('active');dragSelectMode=false;document.body.classList.remove('drag-select-mode');var _dbtn=document.getElementById('dragBtn');if(_dbtn)_dbtn.classList.remove('on');}function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;preSelSlotSets=deepCopySlotSets(slotSets);document.getElementById('msel-add').classList.add('active');document.getElementById('at-add').classList.add('active');renderT();}
+function toggleDragMode(){dragSelectMode=!dragSelectMode;document.body.classList.toggle('drag-select-mode',dragSelectMode);var _b=document.getElementById('dragBtn');if(_b)_b.classList.toggle('on',dragSelectMode);}
+function openTrainerConfirmDialog(title,body,confirmLabel,onConfirm){document.querySelector('#tcdTitle').textContent=title;document.querySelector('#tcdBody').textContent=body;var btn=document.querySelector('#tcdConfirm');btn.textContent=confirmLabel;btn.onclick=function(){closeTrainerConfirmDialog();onConfirm();};document.querySelector('#trainerConfirmDialog').style.display='flex';}
+function closeTrainerConfirmDialog(){document.querySelector('#trainerConfirmDialog').style.display='none';}
+function confirmRemoveSel(){if(!selCells.size){showToast('⚠ 枠を選んでください');return;}openTrainerConfirmDialog('予約枠を削除','選択した枠を削除します。よろしいですか？','削除する',function(){removeSel();});}
+function confirmSelectAllCells(){if(!selCells.size){showToast('⚠ 先にセルを選択してください');return;}openTrainerConfirmDialog('予約枠を全エリア設定','選択した枠に全エリアの空き枠を設定します。よろしいですか？','設定する',function(){selectAllCells();});}
+function toggleColumnSelection(iso){if(!selMode)return;var date=new Date(iso+'T00:00:00');if(isPast(date))return;if(dayOffs[iso])return;var validKeys=[];TIMES.forEach(function(t){if(isPastSlot(iso,t))return;var k=iso+'_'+t;if(bookings[k])return;validKeys.push(k);});if(validKeys.length===0)return;var allSelected=validKeys.every(function(k){return selCells.has(k);});validKeys.forEach(function(k){if(allSelected)selCells.delete(k);else selCells.add(k);});updSC();renderT();}
+function toggleRowSelection(t){if(!selMode)return;var dates=wkDates(wkOff);var validKeys=[];dates.forEach(function(date){var iso=localISO(date);if(isPast(date))return;if(dayOffs[iso])return;if(isPastSlot(iso,t))return;var k=iso+'_'+t;if(bookings[k])return;validKeys.push(k);});if(validKeys.length===0)return;var allSelected=validKeys.every(function(k){return selCells.has(k);});validKeys.forEach(function(k){if(allSelected)selCells.delete(k);else selCells.add(k);});updSC();renderT();}
 function cancelSel(){if(preSelSlotSets!==null){slotSets=preSelSlotSets;}clearSelState();renderT();}
 function cancelOffMode(){offMode=false;offCells=new Set();}
 function updSC(){document.getElementById('sel-count').textContent=selCells.size+'枠選択中';}
@@ -560,13 +600,20 @@ function renderT(){
     var dy=d.getDay();
     var dcls=(dy===6?' sat':dy===0?' sun':'');
     var effCls=holidays.has(iso)?' sun':dcls;
-    return '<div class="cdh'+(doff?' day-off':'')+'" id="hdr-'+iso+'" style="'+(past?'opacity:.35':'')+'">'
+    var _canSel=selMode&&!past&&!doff;
+    var _onclickAttr=_canSel?' onclick="toggleColumnSelection(\''+iso+'\')"':'';
+    var _cdhCls='cdh'+(doff?' day-off':'')+(_canSel?' cdh-selectable':'');
+    return '<div class="'+_cdhCls+'" id="hdr-'+iso+'"'+_onclickAttr+' style="'+(past?'opacity:.35':'')+(_canSel?';cursor:pointer':'')+'">'
       +'<div class="cdn'+effCls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+effCls+'">'+d.getDate()+(holidays.has(iso)?'<span style="font-size:7px;vertical-align:top;margin-left:1px">祝</span>':'')+(doff?'✕':'')+'</div><div class="dob"></div></div>';
   }).join('');
   var body=document.getElementById('cal-body-t');
   body.style.gridTemplateColumns=COL;body.innerHTML='';
   TIMES.forEach(function(t){
-    var tl=document.createElement('div');tl.className='tlbl';tl.textContent=t;body.appendChild(tl);
+    var tl=document.createElement('div');
+    tl.className='tlbl'+(selMode?' tlbl-selectable':'');
+    tl.textContent=t;
+    if(selMode){(function(tt){tl.onclick=function(){toggleRowSelection(tt);};})(t);}
+    body.appendChild(tl);
     dates.forEach(function(date){
       var k=ck(date,t),iso=localISO(date);
       var sets=slotSets[k],hasSets=sets&&sets.size>0;
@@ -654,10 +701,37 @@ function renderT(){
         (function(kk,s){
           var justAdded=false;
           s.setAttribute('data-ck',kk);
-          s.onmousedown=function(e){e.preventDefault();drag=true;if(!selCells.has(kk)){selCells.add(kk);s.className='slot t-sel-add';updSC();justAdded=true;}else{justAdded=false;}};
-          s.ontouchstart=function(e){e.stopPropagation();drag=true;};
-          s.onmouseenter=function(){if(drag&&!selCells.has(kk)){selCells.add(kk);updSC();s.className='slot t-sel-add';}};
-          s.onclick=function(e){e.stopPropagation();if(justAdded){justAdded=false;return;}if(selCells.has(kk)){selCells.delete(kk);s.className='slot t-idle-add';}else{selCells.add(kk);s.className='slot t-sel-add';}updSC();};
+          s.onmousedown=function(e){
+            if(!dragSelectMode)return;
+            e.preventDefault();drag=true;
+            var newSel=!selCells.has(kk);
+            dragInitialState=newSel;
+            if(newSel){selCells.add(kk);s.className='slot t-sel-add';}
+            else{selCells.delete(kk);s.className='slot t-idle-add';}
+            updSC();justAdded=true;
+          };
+          s.ontouchstart=function(e){
+            if(!dragSelectMode)return;
+            e.stopPropagation();drag=true;
+            var newSel=!selCells.has(kk);
+            dragInitialState=newSel;
+            if(newSel){selCells.add(kk);s.className='slot t-sel-add';}
+            else{selCells.delete(kk);s.className='slot t-idle-add';}
+            updSC();justAdded=true;
+          };
+          s.onmouseenter=function(){
+            if(!drag||!dragSelectMode)return;
+            var cur=selCells.has(kk);
+            if(dragInitialState&&!cur){selCells.add(kk);s.className='slot t-sel-add';updSC();}
+            else if(!dragInitialState&&cur){selCells.delete(kk);s.className='slot t-idle-add';updSC();}
+          };
+          s.onclick=function(e){
+            e.stopPropagation();
+            if(justAdded){justAdded=false;return;}
+            if(selCells.has(kk)){selCells.delete(kk);s.className='slot t-idle-add';}
+            else{selCells.add(kk);s.className='slot t-sel-add';}
+            updSC();
+          };
         })(k,sl);
       }
       sc.appendChild(sl);body.appendChild(sc);
@@ -668,14 +742,17 @@ function renderT(){
 document.addEventListener('mouseup',function(){drag=false;});
 document.addEventListener('touchend',function(){drag=false;});
 document.addEventListener('touchmove',function(e){
-  if(!drag)return;
+  if(!drag||!dragSelectMode)return;
   var touch=e.touches[0];
   var el=document.elementFromPoint(touch.clientX,touch.clientY);
   while(el&&!el.getAttribute('data-ck')){el=el.parentElement;}
   if(!el)return;
   var kk=el.getAttribute('data-ck');
   e.preventDefault();
-  if(selMode&&!selCells.has(kk)){selCells.add(kk);updSC();el.className='slot t-sel-add';}
+  if(!selMode)return;
+  var cur=selCells.has(kk);
+  if(dragInitialState&&!cur){selCells.add(kk);updSC();el.className='slot t-sel-add';}
+  else if(!dragInitialState&&cur){selCells.delete(kk);updSC();el.className='slot t-idle-add';}
 },{passive:false});
 
 function renderC(){
