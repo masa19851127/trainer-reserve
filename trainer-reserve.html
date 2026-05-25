@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=9"></script>
+<script src="common.js?v=10"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -202,6 +202,10 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .rp-rank-name{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rp-rank-cnt{font-size:12px;font-weight:700;color:#1a1a1a;flex-shrink:0;margin-right:6px;}
 .rp-remain{font-size:11px;font-weight:700;flex-shrink:0;}
+.cdh-selectable{background:#dcfce7;cursor:pointer;}
+.cdh-selectable .cdd{color:#166534 !important;}
+.cdh-selectable .cdn{color:#166534 !important;}
+.tlbl-selectable{background:#dcfce7 !important;color:#166534 !important;cursor:pointer;}
 .ad-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
 .ad-box{background:#fff;border-radius:14px;padding:22px 20px;width:100%;max-width:330px;box-shadow:0 10px 40px rgba(0,0,0,0.3);}
 .ad-title{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px;}
@@ -286,7 +290,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
         <button class="atc atc-py" onclick="assignSel('pilates','yokohama')">P・横浜</button>
         <button class="atc atc-ty" onclick="assignSel('training','yokohama')">T・横浜</button>
         <button class="atc atc-te" onclick="assignSel('training','ebisu')">T・恵比寿</button>
-        <button class="atc-all" onclick="confirmAddAllAreas()">全部</button>
+        <button class="atc-all" onclick="selectAllCells()">全部</button>
       </div>
       <button class="at-done-new" onclick="confirmSel()">✓ 完了して保存</button>
     </div>
@@ -459,7 +463,47 @@ function deepCopySlotSets(s){var c={};for(var k in s){c[k]=new Set(s[k]);}return
 function openActionDialog(title,body,confirmLabel,onConfirm){document.getElementById('adTitle').textContent=title;document.getElementById('adBody').textContent=body;var btn=document.getElementById('adConfirm');btn.textContent=confirmLabel;btn.onclick=function(){closeActionDialog();onConfirm();};document.getElementById('actionDialog').style.display='flex';}
 function closeActionDialog(){document.getElementById('actionDialog').style.display='none';}
 function confirmRemoveSel(){if(!selCells.size){showToast('⚠ 枠を選んでください');return;}openActionDialog('予約枠を削除','選択した枠を削除します。よろしいですか？','削除する',function(){removeSel();});}
-function confirmAddAllAreas(){if(!selCells.size){showToast('⚠ 先にセルを選択してください');return;}openActionDialog('全エリアを設定','選択した枠に全エリア（P・目黒、P・横浜、T・横浜、T・恵比寿）の空き枠を設定します。よろしいですか？','設定する',function(){selectAllCells();});}
+function toggleDateColumn(iso){
+  if(!selMode)return;
+  var dateObj=new Date(iso+'T00:00:00');
+  if(isPast(dateObj))return;
+  if(dayOffs[iso])return;
+  var targetCells=[];
+  TIMES.forEach(function(t){
+    if(isPastSlot(iso,t))return;
+    var k=iso+'_'+t;
+    if(bookings[k])return;
+    targetCells.push(k);
+  });
+  if(targetCells.length===0)return;
+  var allSelected=targetCells.every(function(k){return selCells.has(k);});
+  targetCells.forEach(function(k){
+    if(allSelected)selCells.delete(k);
+    else selCells.add(k);
+  });
+  updSC();renderT();
+}
+function toggleTimeRow(t){
+  if(!selMode)return;
+  var dates=wkDates(wkOff);
+  var targetCells=[];
+  dates.forEach(function(d){
+    if(isPast(d))return;
+    var iso=localISO(d);
+    if(dayOffs[iso])return;
+    if(isPastSlot(iso,t))return;
+    var k=iso+'_'+t;
+    if(bookings[k])return;
+    targetCells.push(k);
+  });
+  if(targetCells.length===0)return;
+  var allSelected=targetCells.every(function(k){return selCells.has(k);});
+  targetCells.forEach(function(k){
+    if(allSelected)selCells.delete(k);
+    else selCells.add(k);
+  });
+  updSC();renderT();
+}
 function cancelSel(){if(preSelSlotSets!==null){slotSets=preSelSlotSets;}clearSelState();renderT();}
 function cancelOffMode(){offMode=false;offCells=new Set();}
 function updSC(){document.getElementById('sel-count').textContent=selCells.size+'枠選択中';}
@@ -577,13 +621,20 @@ function renderT(){
     var dy=d.getDay();
     var dcls=(dy===6?' sat':dy===0?' sun':'');
     var effCls=holidays.has(iso)?' sun':dcls;
-    return '<div class="cdh'+(doff?' day-off':'')+'" id="hdr-'+iso+'" style="'+(past?'opacity:.35':'')+'">'
+    var _canSel=selMode&&!past&&!doff;
+    var _selClass=_canSel?' cdh-selectable':'';
+    var _onclickAttr=_canSel?' onclick="toggleDateColumn(\''+iso+'\')"':'';
+    return '<div class="cdh'+(doff?' day-off':'')+_selClass+'" id="hdr-'+iso+'"'+_onclickAttr+' style="'+(past?'opacity:.35':'')+'">'
       +'<div class="cdn'+effCls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+effCls+'">'+d.getDate()+(holidays.has(iso)?'<span style="font-size:7px;vertical-align:top;margin-left:1px">祝</span>':'')+(doff?'✕':'')+'</div><div class="dob"></div></div>';
   }).join('');
   var body=document.getElementById('cal-body-t');
   body.style.gridTemplateColumns=COL;body.innerHTML='';
   TIMES.forEach(function(t){
-    var tl=document.createElement('div');tl.className='tlbl';tl.textContent=t;body.appendChild(tl);
+    var tl=document.createElement('div');
+    tl.className='tlbl'+(selMode?' tlbl-selectable':'');
+    tl.textContent=t;
+    if(selMode){(function(tt){tl.onclick=function(){toggleTimeRow(tt);};})(t);}
+    body.appendChild(tl);
     dates.forEach(function(date){
       var k=ck(date,t),iso=localISO(date);
       var sets=slotSets[k],hasSets=sets&&sets.size>0;
