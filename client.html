@@ -84,8 +84,28 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .cal-outer{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 @media (max-width: 767px){
   .cal-outer{overflow-x:visible;overflow-y:visible;}
-  .cal-head{position:sticky;top:80px;background:#fff;z-index:30;box-shadow:0 1px 0 #e8e8e8;}
+  .cal-head{position:sticky;top:106px;background:#fff;z-index:30;box-shadow:0 1px 0 #e8e8e8;}
   .cdh{background:#fff;}
+  .legend-mobile{
+    display:flex !important;
+    align-items:center;
+    gap:5px;
+    padding:5px 10px;
+    background:#fafafa;
+    border-top:0.5px solid #e5e5e5;
+    border-bottom:0.5px solid #e5e5e5;
+    font-size:9.5px;
+    overflow-x:auto;
+    white-space:nowrap;
+    position:sticky;
+    top:80px;
+    z-index:35;
+  }
+  .lm-cat{color:#1a1a1a;font-weight:700;flex-shrink:0;}
+  .lm-item{display:inline-flex;align-items:center;gap:3px;flex-shrink:0;color:#444;}
+  .lm-color{width:10px;height:10px;border-radius:2px;border:1px solid;flex-shrink:0;display:inline-block;}
+  .lm-sep{color:#ccc;flex-shrink:0;}
+  #client-screen .legend-bar-bottom-mobile-hide{display:none;}
 }
 .cal-inner{padding:6px 4px max(16px,env(safe-area-inset-bottom,16px));min-width:0;width:100%;}
 .cal-head{display:grid;margin-bottom:2px;}
@@ -238,6 +258,15 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
     <button class="t-tab" id="ctab-my" onclick="switchCTab('my')">マイページ</button>
   </div>
   <div id="ctab-cal-content">
+    <div class="legend-mobile" style="display:none;">
+      <span class="lm-cat">ピラティス</span>
+      <span class="lm-item"><span class="lm-color" style="background:#dcfce7;border-color:#86efac"></span>横浜</span>
+      <span class="lm-item"><span class="lm-color" style="background:#f3e8ff;border-color:#d8b4fe"></span>目黒</span>
+      <span class="lm-sep">／</span>
+      <span class="lm-cat">トレーニング</span>
+      <span class="lm-item"><span class="lm-color" style="background:#e0f2fe;border-color:#7dd3fc"></span>横浜</span>
+      <span class="lm-item"><span class="lm-color" style="background:#fce7f3;border-color:#f9a8d4"></span>恵比寿</span>
+    </div>
     <div class="week-bar">
       <button class="wbtn" id="c-prev-wk" onclick="changeWeek(-1)">‹</button>
       <span class="wlbl" id="wlbl-c"></span>
@@ -247,7 +276,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
       <div class="cal-head" id="cal-head-c"></div>
       <div class="cal-body" id="cal-body-c"></div>
     </div></div>
-    <div style="display:flex;gap:10px;padding:6px 14px 2px;flex-wrap:wrap;">
+    <div class="legend-bar-bottom-mobile-hide" style="display:flex;gap:10px;padding:6px 14px 2px;flex-wrap:wrap;">
       <div class="li"><div class="ld" style="background:#f3e8ff;border:1px solid #d8b4fe"></div>P・目黒</div>
       <div class="li"><div class="ld" style="background:#dcfce7;border:1px solid #86efac"></div>P・横浜</div>
       <div class="li"><div class="ld" style="background:#e0f2fe;border:1px solid #7dd3fc"></div>T・横浜</div>
