@@ -301,13 +301,15 @@ function _recomputeBlockedSlots(){
     if(_bp.length<2)return;
     var _biso=_bp[0],_bhi=parseInt(_bp[1]);
     if(isNaN(_bhi))return;
-    var _otherMls=_allMls.filter(function(ml){return ml!==bkMl;});
     [-1,1].forEach(function(d){
       var _bh=_bhi+d;
       if(_bh<10||_bh>21)return;
       var _bk=_biso+'_'+_bh+':00';
       if(!blockedSlots[_bk])blockedSlots[_bk]=new Set();
-      _otherMls.forEach(function(ml){blockedSlots[_bk].add(ml);});
+      _allMls.forEach(function(ml){
+        if(ml===bkMl)return;
+        blockedSlots[_bk].add(ml);
+      });
     });
   });
 }
