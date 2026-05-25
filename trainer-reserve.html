@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=15"></script>
+<script src="common.js?v=16"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -48,9 +48,9 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .t-tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:#666;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;}
 .t-tab.active{color:#c2410c;border-bottom-color:#c2410c;}
 .mode-selector{display:flex;background:#f5f5f5;border-bottom:0.5px solid #e5e5e5;}
-.msel-btn{flex:1;margin:10px 12px;padding:10px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;text-align:center;background:#fff;color:#666;}
+.msel-btn{flex:1;margin:10px 12px;padding:10px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;text-align:center;background:#fff;color:#666;box-sizing:border-box;}
 .msel-btn.mode-add{background:#f97316;color:#fff;}
-.msel-btn.mode-add.active{background:#c2410c;color:#fff;}
+.msel-btn.mode-add.active{background:#fff;color:#f97316;border:1.5px dashed #f97316;}
 .action-toolbar{display:none;padding:8px 14px;border-bottom:1px solid;}
 .action-toolbar.active{display:block;position:sticky;top:80px;z-index:30;}
 .at-add{background:#fffbeb;border-color:#fde68a;}
@@ -58,11 +58,10 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .at-row{display:flex;align-items:center;gap:5px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;}
 .at-row-area{gap:4px;margin-top:8px;}
 .at-count{font-size:10.5px;font-weight:600;white-space:nowrap;flex:1;color:#92400e;}
-.at-cancel-new{background:#fff;color:#92400e;border:1px solid #fcd34d;border-radius:6px;padding:6px 9px;font-size:10.5px;font-weight:600;cursor:pointer;flex-shrink:0;}
-.at-del-new{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;padding:6px 9px;font-size:10.5px;font-weight:600;cursor:pointer;flex-shrink:0;}
-.atc-all{background:#fff;color:#1a1a1a;border:1px solid #d1d5db;border-radius:6px;padding:6px 9px;font-size:10px;font-weight:600;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+.at-del-new{background:#dc2626;color:#fff;border:1px solid #dc2626;border-radius:6px;padding:7px 11px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;min-width:62px;}
+.atc-all{background:#fff;color:#1a1a1a;border:1px solid #d1d5db;border-radius:6px;padding:7px 11px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;white-space:nowrap;min-width:62px;}
 .at-done-new{margin-top:8px;width:100%;background:#16a34a;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;}
-.atc{padding:6px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;overflow:visible;}
+.atc{padding:7px 11px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;overflow:visible;min-width:62px;text-align:center;}
 .btn-filter-booked{display:block;margin:0 12px 8px;padding:8px;width:calc(100% - 24px);background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;}
 .btn-filter-booked.on{background:#16a34a;color:#fff;border-color:#16a34a;}
 .dimmed-cell{opacity:0.2;pointer-events:none;}
@@ -284,12 +283,11 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
     <button class="btn-filter-booked" id="btnFilterBooked" onclick="toggleBookingFilter()">📅 予約のみ表示</button>
     <div class="action-toolbar at-add" id="at-add">
       <div class="at-row">
-        <button class="at-cancel-new" onclick="cancelSel()">← 中止</button>
+        <button class="atc-all" onclick="selectAllCells()">全部</button>
         <button class="atc atc-pm" onclick="assignSel('pilates','meguro')">P・目黒</button>
         <button class="atc atc-py" onclick="assignSel('pilates','yokohama')">P・横浜</button>
         <button class="atc atc-ty" onclick="assignSel('training','yokohama')">T・横浜</button>
         <button class="atc atc-te" onclick="assignSel('training','ebisu')">T・恵比寿</button>
-        <button class="atc-all" onclick="selectAllCells()">全部</button>
         <button class="at-del-new" onclick="confirmRemoveSel()">削除</button>
       </div>
       <button class="at-done-new" onclick="confirmSel()">✓ 完了して保存</button>
@@ -460,7 +458,7 @@ async function loadData(force){
   L(false);
 }
 
-function deepCopySlotSets(s){var c={};for(var k in s){c[k]=new Set(s[k]);}return c;}function clearSelState(){selMode=false;selCells=new Set();preSelSlotSets=null;document.getElementById('msel-add').classList.remove('active');document.getElementById('at-add').classList.remove('active');document.documentElement.style.setProperty('--sel-bar-h','0px');var _fb=document.getElementById('btnFilterBooked');if(_fb)_fb.style.display='';}function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;preSelSlotSets=deepCopySlotSets(slotSets);document.getElementById('msel-add').classList.add('active');document.getElementById('at-add').classList.add('active');var _fb=document.getElementById('btnFilterBooked');if(_fb)_fb.style.display='none';renderT();requestAnimationFrame(function(){var h=document.getElementById('at-add').offsetHeight;document.documentElement.style.setProperty('--sel-bar-h',h+'px');});}
+function deepCopySlotSets(s){var c={};for(var k in s){c[k]=new Set(s[k]);}return c;}function clearSelState(){selMode=false;selCells=new Set();preSelSlotSets=null;var _msa=document.getElementById('msel-add');_msa.classList.remove('active');_msa.textContent='＋ 空き枠を追加';document.getElementById('at-add').classList.remove('active');document.documentElement.style.setProperty('--sel-bar-h','0px');var _fb=document.getElementById('btnFilterBooked');if(_fb)_fb.style.display='';}function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;preSelSlotSets=deepCopySlotSets(slotSets);var _msa=document.getElementById('msel-add');_msa.classList.add('active');_msa.textContent='× 選択モード中（タップで中止）';document.getElementById('at-add').classList.add('active');var _fb=document.getElementById('btnFilterBooked');if(_fb)_fb.style.display='none';renderT();requestAnimationFrame(function(){var h=document.getElementById('at-add').offsetHeight;document.documentElement.style.setProperty('--sel-bar-h',h+'px');});}
 function toggleBookingFilter(){filterBookedOnly=!filterBookedOnly;var btn=document.getElementById('btnFilterBooked');if(filterBookedOnly){btn.textContent='✓ 予約のみ表示中';btn.classList.add('on');}else{btn.textContent='📅 予約のみ表示';btn.classList.remove('on');}renderT();}
 function openActionDialog(title,body,confirmLabel,onConfirm){document.getElementById('adTitle').textContent=title;document.getElementById('adBody').textContent=body;var btn=document.getElementById('adConfirm');btn.textContent=confirmLabel;btn.onclick=function(){closeActionDialog();onConfirm();};document.getElementById('actionDialog').style.display='flex';}
 function closeActionDialog(){document.getElementById('actionDialog').style.display='none';}
