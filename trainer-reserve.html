@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=7"></script>
+<script src="common.js?v=8"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -754,9 +754,10 @@ function openMenuPickerForLoc(date,t,k,loc,menus){
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">メニューを選んでください</div><div style="background:'+lcol.bg+';border:1.5px solid '+lcol.bd+';color:'+lcol.tc+';border-radius:12px;padding:14px 16px;margin:6px 0 14px;text-align:center"><div style="font-size:24px;font-weight:700;line-height:1.2">'+LOCS[loc]+'</div><div style="font-size:11px;margin-top:6px;opacity:.85">'+ds+'　'+t+'〜'+et(t)+'（1時間）</div></div><div style="margin-top:8px">'+btns+'</div>';
   openPanel();
 }
-function doBook(iso,t,menu,loc,k){closePanel();openCPanel(new Date(iso+'T00:00:00'),t,menu+'-'+loc,k);}
+function doBook(iso,t,menu,loc,k){if(isPastSlot(iso,t)){closePanel();showToast('⏰ 既に開始時刻を過ぎた枠には予約できません');return;}closePanel();openCPanel(new Date(iso+'T00:00:00'),t,menu+'-'+loc,k);}
 
 function openCellPicker(date,t,k,combos){
+  if(isPastSlot(localISO(date),t)){showToast('⏰ 既に開始時刻を過ぎた枠には予約できません');return;}
   closeCellPicker();
   var iso=localISO(date);
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
@@ -793,6 +794,7 @@ function closeCellPicker(){
 }
 
 function openSlotDetail(date,t,k){
+  if(isPastSlot(localISO(date),t)){showToast('⏰ 既に開始時刻を過ぎた枠には予約できません');return;}
   var sets=slotSets[k]||new Set();
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var rows='';sets.forEach(function(ml){var _isBlk=blockedSlots[k]&&blockedSlots[k].has(ml);var _statusHtml=_isBlk?'<span style="font-size:10px;color:#9ca3af;font-weight:600">🚶 移動時間のため予約不可</span>':'<span style="font-size:10px;color:#16a34a">空き</span>';var _rowStyle=_isBlk?'opacity:0.6;':'';rows+='<div class="infor" style="'+_rowStyle+'"><span class="stag '+(TC[ml]||'')+'" style="font-size:10px;padding:2px 7px">'+(TL[ml]||ml)+'</span><div style="display:flex;align-items:center;gap:6px">'+_statusHtml+'<button onclick="rmMl(\''+k+'\',\''+ml+'\')" style="font-size:9px;padding:2px 6px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer">削除</button></div></div>';});

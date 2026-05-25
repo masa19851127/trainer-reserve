@@ -88,6 +88,12 @@ function isPast(d){
   return x<t;
 }
 
+// 過去スロット判定（iso日付＋時刻文字列が現在時刻より過去か）
+function isPastSlot(iso,t){
+  var slotDate=new Date(iso+'T'+t+':00');
+  return slotDate<new Date();
+}
+
 // 当日判定
 function isToday(d){return d.toDateString()===new Date().toDateString();}
 
