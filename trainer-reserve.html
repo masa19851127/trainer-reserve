@@ -714,24 +714,50 @@ function renderT(){
           sl.appendChild(mkTags(sets));
         } else {
           sl.className='slot';
-          sl.style.cssText='display:flex;flex-direction:row;flex-wrap:wrap;align-content:center;justify-content:center;padding:2px;gap:2px;background:transparent;border:none;';
           var _orderT=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];
           var _combosT=[...sets].sort(function(a,b){return _orderT.indexOf(a)-_orderT.indexOf(b);});
-          _combosT.forEach(function(ml){
+          var _nT=_combosT.length;
+          var _isMobT=window.matchMedia('(max-width: 767px)').matches;
+          var _mkBtnT=function(ml,colMode){
             var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};
             var _isBlkT=blockedSlots[k]&&blockedSlots[k].has(ml);
             var btn=document.createElement('button');
             if(_isBlkT){
-              btn.style.cssText='flex:0 0 auto;border-radius:4px;border:1px dashed #d1d5db;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;cursor:pointer;padding:3px 6px;white-space:nowrap;position:relative;font-family:inherit;';
+              if(colMode){
+                btn.style.cssText='border-radius:4px;border:1px dashed #d1d5db;background:#f3f4f6;color:#9ca3af;font-size:9px;font-weight:700;cursor:pointer;padding:1px 2px;font-family:inherit;white-space:nowrap;width:100%;line-height:1.2;flex:1;display:flex;align-items:center;justify-content:center;position:relative;';
+              } else {
+                btn.style.cssText='flex:0 0 auto;border-radius:4px;border:1px dashed #d1d5db;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;cursor:pointer;padding:3px 6px;white-space:nowrap;position:relative;font-family:inherit;';
+              }
               btn.innerHTML=(TL[ml]||LOCS[ml.split('-')[1]])+'<span style="position:absolute;top:-4px;right:-3px;font-size:9px;line-height:1;background:#fff;border-radius:50%;padding:1px">🚶</span>';
               btn.onclick=function(e){e.preventDefault();e.stopPropagation();alert('移動時間のためお客様から予約不可です');};
             } else {
-              btn.style.cssText='flex:0 0 auto;border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:10px;font-weight:700;cursor:pointer;padding:3px 6px;white-space:nowrap;font-family:inherit;';
+              if(colMode){
+                btn.style.cssText='border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:9px;font-weight:700;cursor:pointer;padding:1px 2px;font-family:inherit;white-space:nowrap;width:100%;line-height:1.2;flex:1;display:flex;align-items:center;justify-content:center;';
+              } else {
+                btn.style.cssText='flex:0 0 auto;border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:10px;font-weight:700;cursor:pointer;padding:3px 6px;white-space:nowrap;font-family:inherit;';
+              }
               btn.textContent=TL[ml]||LOCS[ml.split('-')[1]];
               (function(dd,tt,kk){btn.onclick=function(e){e.preventDefault();e.stopPropagation();openSlotDetail(dd,tt,kk);};})(date,t,k);
             }
-            sl.appendChild(btn);
-          });
+            return btn;
+          };
+          if(_isMobT){
+            if(_nT===4){
+              sl.style.cssText='display:flex;flex-direction:column;justify-content:flex-start;gap:1px;padding:2px 2px 14px 2px;background:transparent;border:none;cursor:pointer;position:relative;';
+              _combosT.slice(0,3).forEach(function(ml){sl.appendChild(_mkBtnT(ml,true));});
+              var _badgeT=document.createElement('span');
+              _badgeT.style.cssText='position:absolute;bottom:1px;right:1px;background:#9ca3af;color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:7px;line-height:1;pointer-events:none;';
+              _badgeT.textContent='+1';
+              sl.appendChild(_badgeT);
+            } else {
+              var _justT=_nT===3?'space-between':'center';
+              sl.style.cssText='display:flex;flex-direction:column;justify-content:'+_justT+';gap:2px;padding:2px;background:transparent;border:none;cursor:pointer;';
+              _combosT.forEach(function(ml){sl.appendChild(_mkBtnT(ml,true));});
+            }
+          } else {
+            sl.style.cssText='display:flex;flex-direction:row;flex-wrap:wrap;align-content:center;justify-content:center;padding:2px;gap:2px;background:transparent;border:none;';
+            _combosT.forEach(function(ml){sl.appendChild(_mkBtnT(ml,false));});
+          }
           (function(dd,tt,kk){sl.onclick=function(){openSlotDetail(dd,tt,kk);};})(date,t,k);
         }
       }
@@ -794,7 +820,7 @@ function renderC(){
       else if(past){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       else if(mine){sl.className='slot c-mine';sl.innerHTML='<span style="font-size:7px;color:#fff;font-weight:700">✅ 予約済</span>';(function(dd,tt,kk){sl.onclick=function(){openMyBk(dd,tt,kk);};})(date,t,k);}
       else if(bk&&bk._booked){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
-      else if(availMls.length>0){var _uMls=availMls.filter(function(ml){return !(blockedSlots[k]&&blockedSlots[k].has(ml));});if(_uMls.length===0){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{var _order=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];var _combos=_uMls.slice().sort(function(a,b){return _order.indexOf(a)-_order.indexOf(b);});sl.className='slot';var _n=_combos.length;var _isMob=window.matchMedia('(max-width: 767px)').matches;var _openPickerC=function(){if(_combos.length===1){var p=_combos[0].split('-');doBook(localISO(date),t,p[0],p[1],k);}else{openCellPicker(date,t,k,_combos);}};if(_isMob){if(_n===4){sl.style.cssText='display:flex;flex-direction:column;justify-content:space-between;gap:2px;padding:2px;background:transparent;border:none;cursor:pointer;position:relative;';var _shown4=_combos.slice(0,3);_shown4.forEach(function(ml){var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};var btn=document.createElement('button');btn.style.cssText='border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:10px;font-weight:700;cursor:pointer;padding:2px 4px;font-family:inherit;white-space:nowrap;width:100%;line-height:1.2;flex:1;display:flex;align-items:center;justify-content:center;';btn.textContent=TL[ml]||LOCS[ml.split('-')[1]];btn.onclick=function(e){e.preventDefault();e.stopPropagation();_openPickerC();};sl.appendChild(btn);});var _badge=document.createElement('span');_badge.style.cssText='position:absolute;bottom:1px;right:1px;background:#9ca3af;color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:7px;line-height:1;pointer-events:none;';_badge.textContent='+1';sl.appendChild(_badge);}else{var _just=_n===3?'space-between':'center';sl.style.cssText='display:flex;flex-direction:column;justify-content:'+_just+';gap:2px;padding:2px;background:transparent;border:none;cursor:pointer;';_combos.forEach(function(ml){var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};var btn=document.createElement('button');var _bs='border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:10px;font-weight:700;cursor:pointer;padding:2px 4px;font-family:inherit;white-space:nowrap;width:100%;line-height:1.2;display:flex;align-items:center;justify-content:center;';if(_n===3){_bs+='flex:1;min-height:0;';}else{_bs+='flex:0 0 auto;height:18px;';}btn.style.cssText=_bs;btn.textContent=TL[ml]||LOCS[ml.split('-')[1]];btn.onclick=function(e){e.preventDefault();e.stopPropagation();_openPickerC();};sl.appendChild(btn);});}}else{sl.style.cssText='display:flex;flex-direction:row;flex-wrap:wrap;align-content:center;justify-content:center;padding:2px;gap:2px;background:transparent;border:none;cursor:pointer;';_combos.forEach(function(ml){var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};var pts=ml.split('-'),m=pts[0],l=pts[1];var btn=document.createElement('button');btn.style.cssText='flex:0 0 auto;border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:10px;font-weight:700;cursor:pointer;padding:3px 7px;white-space:nowrap;font-family:inherit;';btn.textContent=TL[ml]||(LOCS[l]);btn.onclick=function(e){e.preventDefault();e.stopPropagation();_openPickerC();};sl.appendChild(btn);});}sl.onclick=function(e){e.stopPropagation();_openPickerC();};}}
+      else if(availMls.length>0){var _uMls=availMls.filter(function(ml){return !(blockedSlots[k]&&blockedSlots[k].has(ml));});if(_uMls.length===0){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else if(isToday(date)){sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}else{var _order=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];var _combos=_uMls.slice().sort(function(a,b){return _order.indexOf(a)-_order.indexOf(b);});sl.className='slot';var _n=_combos.length;var _isMob=window.matchMedia('(max-width: 767px)').matches;var _openPickerC=function(){if(_combos.length===1){var p=_combos[0].split('-');doBook(localISO(date),t,p[0],p[1],k);}else{openCellPicker(date,t,k,_combos);}};if(_isMob){if(_n===4){sl.style.cssText='display:flex;flex-direction:column;justify-content:flex-start;gap:1px;padding:2px 2px 14px 2px;background:transparent;border:none;cursor:pointer;position:relative;';var _shown4=_combos.slice(0,3);_shown4.forEach(function(ml){var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};var btn=document.createElement('button');btn.style.cssText='border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:9px;font-weight:700;cursor:pointer;padding:1px 2px;font-family:inherit;white-space:nowrap;width:100%;line-height:1.2;flex:1;display:flex;align-items:center;justify-content:center;';btn.textContent=TL[ml]||LOCS[ml.split('-')[1]];btn.onclick=function(e){e.preventDefault();e.stopPropagation();_openPickerC();};sl.appendChild(btn);});var _badge=document.createElement('span');_badge.style.cssText='position:absolute;bottom:1px;right:1px;background:#9ca3af;color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:7px;line-height:1;pointer-events:none;';_badge.textContent='+1';sl.appendChild(_badge);}else{var _just=_n===3?'space-between':'center';sl.style.cssText='display:flex;flex-direction:column;justify-content:'+_just+';gap:2px;padding:2px;background:transparent;border:none;cursor:pointer;';_combos.forEach(function(ml){var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};var btn=document.createElement('button');var _bs='border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:9px;font-weight:700;cursor:pointer;padding:1px 2px;font-family:inherit;white-space:nowrap;width:100%;line-height:1.2;display:flex;align-items:center;justify-content:center;';if(_n===3){_bs+='flex:1;min-height:0;';}else{_bs+='flex:0 0 auto;height:18px;';}btn.style.cssText=_bs;btn.textContent=TL[ml]||LOCS[ml.split('-')[1]];btn.onclick=function(e){e.preventDefault();e.stopPropagation();_openPickerC();};sl.appendChild(btn);});}}else{sl.style.cssText='display:flex;flex-direction:row;flex-wrap:wrap;align-content:center;justify-content:center;padding:2px;gap:2px;background:transparent;border:none;cursor:pointer;';_combos.forEach(function(ml){var col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};var pts=ml.split('-'),m=pts[0],l=pts[1];var btn=document.createElement('button');btn.style.cssText='flex:0 0 auto;border-radius:4px;border:1px solid '+col.bd+';background:'+col.bg+';color:'+col.tc+';font-size:10px;font-weight:700;cursor:pointer;padding:3px 7px;white-space:nowrap;font-family:inherit;';btn.textContent=TL[ml]||(LOCS[l]);btn.onclick=function(e){e.preventDefault();e.stopPropagation();_openPickerC();};sl.appendChild(btn);});}sl.onclick=function(e){e.stopPropagation();_openPickerC();};}}
       else{sl.className='slot c-empty';sl.innerHTML='<span style="font-size:9px;color:#9ca3af;font-weight:700">✕</span>';}
       sc.appendChild(sl);body.appendChild(sc);
     });
