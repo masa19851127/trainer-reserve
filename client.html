@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=1"></script>
+<script src="common.js?v=2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -277,7 +277,6 @@ var holidays=new Set();
 var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),drag=false,preSelSlotSets=null;
 var clients=[];
 var weekCache={};
-function _fullLabel(ml){var p=ml.split('-');var ms=p[0]==='training'?'トレーニング':'ピラティス';return ms+'：'+(LOCS[p[1]]||p[1]);}
 function _recomputeBlockedSlots(){
   blockedSlots={};
   var _allMls=['pilates-meguro','pilates-yokohama','training-yokohama','training-ebisu'];
@@ -306,22 +305,6 @@ function _saveToCache(){var key=_cacheKey();weekCache[key]={slotSets:Object.keys
 function invalidateWeekCache(){weekCache={};}
 
 function L(s){document.getElementById('loading').style.display=s?'flex':'none';}
-function isPast(d){var t=new Date();t.setHours(0,0,0,0);var x=new Date(d);x.setHours(0,0,0,0);return x<t;}
-function isToday(d){return d.toDateString()===new Date().toDateString();}
-function isTodayStr(iso){return new Date(iso).toDateString()===new Date().toDateString();}
-function localISO(d){var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+dd;}
-function ck(d,t){return localISO(d)+'_'+t;}
-function et(t){return (parseInt(t)+1)+':00';}
-function fmt(d){return (d.getMonth()+1)+'/'+d.getDate();}
-function wkDates(o){
-  var n=new Date(),dy=n.getDay(),m=new Date(n);
-  m.setDate(n.getDate()-(dy===0?6:dy-1)+o*7);
-  var a=[];for(var i=0;i<7;i++){var d=new Date(m);d.setDate(m.getDate()+i);a.push(d);}return a;
-}
-function clientWkDates(o){
-  var n=new Date();n.setHours(0,0,0,0);
-  var a=[];for(var i=0;i<7;i++){var d=new Date(n);d.setDate(n.getDate()+o*7+i);a.push(d);}return a;
-}
 
 
 async function doClientLogin(){
