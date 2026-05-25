@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=5"></script>
+<script src="common.js?v=6"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -953,11 +953,25 @@ async function showMyPageData(email,wrap){
     html+='<div style="font-size:11px;color:#666;margin-bottom:12px">'+email+'</div>';
   }
   html+='<div style="font-size:12px;font-weight:700;margin-bottom:8px">予約履歴</div>';
-  var items=[];
-  (br.data||[]).forEach(function(bk){items.push({date_key:bk.date_key,menu:bk.menu,loc:bk.loc,name:bk.name,email:bk.email,cancelled:false});});
+  var samedayKeys=new Set();
   (sdRes.data||[]).forEach(function(l){
     if(!l.note)return;var p=l.note.split('|');if(p.length<4)return;
-    items.push({date_key:p[1],menu:p[2],loc:p[3],cancelled:true});
+    samedayKeys.add(p[1]);
+  });
+  var items=[];
+  var seenKeys=new Set();
+  (br.data||[]).forEach(function(bk){
+    var st='active';
+    if(bk.status==='cancelled'){
+      st=samedayKeys.has(bk.date_key)?'sameday':'cancelled';
+    }
+    items.push({date_key:bk.date_key,menu:bk.menu,loc:bk.loc,name:bk.name,email:bk.email,status:st});
+    seenKeys.add(bk.date_key);
+  });
+  (sdRes.data||[]).forEach(function(l){
+    if(!l.note)return;var p=l.note.split('|');if(p.length<4)return;
+    if(seenKeys.has(p[1]))return;
+    items.push({date_key:p[1],menu:p[2],loc:p[3],status:'sameday'});
   });
   items.sort(function(a,b){return b.date_key>a.date_key?1:(b.date_key<a.date_key?-1:0);});
   if(items.length>0){
@@ -968,13 +982,15 @@ async function showMyPageData(email,wrap){
       var isPastDate=bkDate<today;
       var sd=isTodayStr(iso);
       var dsDisp=(bkDate.getMonth()+1)+'月'+bkDate.getDate()+'日（'+DJ[bkDate.getDay()]+'）';
-      if(item.cancelled){
-        html+='<div class="my-bk-card" style="opacity:0.65;background:#f9fafb"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500;color:#6b7280">'+dsDisp+' '+t+'〜'+et(t)+'</div><span class="ctag" style="background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb">'+MENUS[item.menu]+'</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px"><div style="font-size:11px;color:#9ca3af">'+LOCS[item.loc]+'</div><span style="font-size:10px;background:#fef9c3;color:#854d0e;border-radius:4px;padding:2px 6px;border:0.5px solid #fde047">当日キャンセル</span></div></div>';
+      if(item.status==='sameday'){
+        html+='<div class="my-bk-card" style="opacity:0.65;background:#f9fafb"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500;color:#6b7280">'+dsDisp+' '+t+'〜'+et(t)+'</div><span class="ctag" style="background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb">'+MENUS[item.menu]+'</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px"><div style="font-size:11px;color:#9ca3af">'+LOCS[item.loc]+'</div><span style="font-size:10px;background:#fee2e2;color:#991b1b;border-radius:4px;padding:2px 6px;border:0.5px solid #fca5a5">⚠ 当日キャンセル</span></div></div>';
+      } else if(item.status==='cancelled'){
+        html+='<div class="my-bk-card" style="opacity:0.65;background:#f9fafb"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500;color:#6b7280">'+dsDisp+' '+t+'〜'+et(t)+'</div><span class="ctag" style="background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb">'+MENUS[item.menu]+'</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px"><div style="font-size:11px;color:#9ca3af">'+LOCS[item.loc]+'</div><span style="font-size:10px;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:2px 6px;border:0.5px solid #d1d5db">キャンセル済</span></div></div>';
       } else {
         var cancelBtn='';
         if(!isPastDate){
           var btnSt='font-size:11px;border:0.5px solid #f43f5e;color:#be123c;background:none;border-radius:6px;padding:3px 9px;cursor:pointer';
-          cancelBtn='<button style="'+btnSt+'" onclick="clientCancel(\''+item.date_key+'\',\''+iso+'\',\''+t+'\',\''+item.menu+'\',\''+item.loc+'\',\''+item.name+'\',\''+item.email+'\')">'+(sd?'⚠ 当日キャンセル':'キャンセル')+'</button>';
+          cancelBtn='<button style="'+btnSt+'" onclick="clientCancel(\''+item.date_key+'\',\''+iso+'\',\''+t+'\',\''+item.menu+'\',\''+item.loc+'\',\''+item.name+'\',\''+item.email+'\')">'+(sd?'⚠ 当日キャンセルする':'キャンセルする')+'</button>';
         }
         html+='<div class="my-bk-card"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500">'+dsDisp+' '+t+'〜'+et(t)+'</div><span class="ctag '+(MTAG[item.menu]||'')+'">'+MENUS[item.menu]+'</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px"><div style="font-size:11px;color:#666">'+LOCS[item.loc]+'</div>'+cancelBtn+'</div></div>';
       }
@@ -1161,13 +1177,12 @@ async function saveClientNote(email){
 }
 async function addTix(email,amount,label,reset){
   L(true);
+  var cr=await sb.from('clients').select('total_tickets,used_tickets').eq('email',email).maybeSingle();
+  var c=cr.data||{};
+  var remaining=(c.total_tickets||0)-(c.used_tickets||0);
   var newTotal,newUsed;
-  if(reset){newTotal=amount;newUsed=0;}
-  else{
-    var cr=await sb.from('clients').select('total_tickets,used_tickets').eq('email',email).maybeSingle();
-    var c=cr.data||{};
-    newTotal=(c.total_tickets||0)+amount;newUsed=c.used_tickets||0;
-  }
+  if(reset||remaining<=0){newTotal=amount;newUsed=0;}
+  else{newTotal=(c.total_tickets||0)+amount;newUsed=c.used_tickets||0;}
   await sb.from('clients').update({total_tickets:newTotal,used_tickets:newUsed}).eq('email',email);
   await sb.from('ticket_logs').insert({client_email:email,type:'purchase',amount:amount,note:label+'追加'});
   L(false);closePanel();await loadClients();showToast('✅ '+label+'を追加しました');
