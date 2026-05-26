@@ -1,4 +1,4 @@
-<!-- deployed: 2026-05-26 -->
+<!-- deployed: 2026-05-27 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -10,7 +10,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=20260526"></script>
+<script src="common.js?v=20260527"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -1147,7 +1147,8 @@ function renderReport(){
 }
 
 
-async function loadClients(){var r=await sb.from('clients').select('*').order('name');clients=r.data||[];renderClients();}function confirmDeleteClient(email,name){if(!confirm(name+'さんを削除しますか？この操作は取り消せません。'))return;deleteClientByEmail(email);}async function deleteClientByEmail(email){L(true);await sb.from('clients').delete().eq('email',email);L(false);showToast('削除しました');await loadClients();}
+async function loadClients(){var r=await sb.from('clients').select('*').order('name');clients=r.data||[];renderClients();}function openActionDialog(title,body,confirmLabel,onConfirm){var ov=document.createElement('div');ov.id='_actDlg';ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1001;display:flex;align-items:center;justify-content:center;padding:20px;';ov.innerHTML='<div style="background:#fff;border-radius:14px;padding:22px 20px;width:100%;max-width:330px;box-shadow:0 10px 40px rgba(0,0,0,0.3)"><div style="font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px">'+title+'</div><div style="font-size:13px;color:#4b5563;line-height:1.6;margin-bottom:18px;white-space:pre-wrap">'+body+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button id="_adCancel" style="padding:10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;font-family:inherit">戻る</button><button id="_adConfirm" style="padding:10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#dc2626;color:#fff;border:none;font-family:inherit">'+confirmLabel+'</button></div></div>';document.body.appendChild(ov);ov.querySelector('#_adCancel').onclick=function(){ov.remove();};ov.querySelector('#_adConfirm').onclick=function(){ov.remove();onConfirm();};}
+function confirmDeleteClient(email,name){openActionDialog('お客様を削除',name+'さんを削除します。\nこの操作は取り消せません。','削除する',function(){deleteClientByEmail(email);});}async function deleteClientByEmail(email){L(true);await sb.from('clients').delete().eq('email',email);L(false);showToast('削除しました');await loadClients();}
 function renderClients(){
   var q=(document.getElementById('cm-search').value||'').toLowerCase();
   var list=document.getElementById('cm-list');

@@ -1,4 +1,4 @@
-<!-- deployed: 2026-05-26 -->
+<!-- deployed: 2026-05-27 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -10,7 +10,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=20260526"></script>
+<script src="common.js?v=20260527"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -1068,13 +1068,30 @@ function openMyBk(date,t,k){
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">あなたの予約</div><div class="psub">'+ds+'</div><div style="background:#dcfce7;border-radius:9px;padding:12px 14px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#15803d;margin-bottom:4px">✅ 予約確定済み</div><div style="font-size:12px;color:#166534">🕐 '+t+'〜'+et(t)+'（1時間）</div></div><div class="infor"><span class="ik">メニュー</span><span class="iv">'+MENUS[bk.menu]+'</span></div><div class="infor"><span class="ik">場所</span><span class="iv">'+LOCS[bk.loc]+'</span></div>'+(sd?'<div style="background:#fef9c3;border:0.5px solid #fde047;border-radius:8px;padding:10px 12px;margin:10px 0;font-size:11px;color:#854d0e">⚠ 当日キャンセルは回数券1回分の消化となります</div>':'')+cancelBtn;
   openPanel();
 }
+function openCancelDialog(detail,isSameDay,onConfirm){
+  var ov=document.createElement('div');
+  ov.id='_cancelDlg';
+  ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1001;display:flex;align-items:center;justify-content:center;padding:20px;';
+  var ttl=isSameDay?'<div style="font-size:15px;font-weight:600;color:#dc2626;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span>⚠</span>当日キャンセルになります</div>':'<div style="font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px">予約をキャンセル</div>';
+  var bd=isSameDay?'以下の予約をキャンセルします。':'以下の予約をキャンセルします。よろしいですか？';
+  var dbg=isSameDay?'background:#fef2f2;border-left:3px solid #dc2626;':'background:#f9fafb;border-left:3px solid #d1d5db;';
+  var wn=isSameDay?'<div style="background:#fef2f2;border:0.5px solid #fca5a5;border-radius:8px;padding:10px 12px;margin-bottom:18px"><div style="font-size:12px;color:#991b1b;line-height:1.6">当日キャンセルのため、<strong>回数券1回分が消化されます</strong>。</div></div>':'';
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;padding:22px 20px;width:100%;max-width:330px;box-shadow:0 10px 40px rgba(0,0,0,0.3)">'+ttl+'<div style="font-size:13px;color:#4b5563;line-height:1.6;margin-bottom:8px">'+bd+'</div><div style="'+dbg+'border-radius:8px;padding:10px 12px;font-size:12px;color:#374151;margin-bottom:18px">'+detail+'</div>'+wn+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button id="_cdCancel" style="padding:10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;font-family:inherit">戻る</button><button id="_cdConfirm" style="padding:10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#dc2626;color:#fff;border:none;font-family:inherit">キャンセルする</button></div></div>';
+  document.body.appendChild(ov);
+  ov.querySelector('#_cdCancel').onclick=function(){closeCancelDialog();};
+  ov.querySelector('#_cdConfirm').onclick=function(){closeCancelDialog();onConfirm();};
+}
+function closeCancelDialog(){var el=document.getElementById('_cancelDlg');if(el)el.remove();}
 async function clientCancel(k,iso,t,menu,loc,name,email){
   var sd=isTodayStr(iso);
-  if(sd){
-    if(!confirm('当日キャンセルのため、回数券1回分が消化されます。\nキャンセルしてよろしいですか？'))return;
-  } else {
-    if(!confirm('この予約をキャンセルしてよろしいですか？'))return;
-  }
+  var date=new Date(iso+'T00:00:00');
+  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
+  var menuLabel=menu==='training'?'トレーニング':'ピラティス';
+  var locLabel=LOCS[loc]||loc;
+  var detail=ds+' '+t+'〜'+et(t)+'<br>'+locLabel+' ／ '+menuLabel;
+  openCancelDialog(detail,sd,function(){_doClientCancel(k,iso,t,menu,loc,name,email,sd);});
+}
+async function _doClientCancel(k,iso,t,menu,loc,name,email,sd){
   L(true);await deleteBooking(k);
   var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
   if(cr.data){
@@ -1242,7 +1259,7 @@ function renderReport(){
 }
 
 
-async function loadClients(){var r=await sb.from('clients').select('*').order('name');clients=r.data||[];renderClients();}function confirmDeleteClient(email,name){if(!confirm(name+'さんを削除しますか？この操作は取り消せません。'))return;deleteClientByEmail(email);}async function deleteClientByEmail(email){L(true);await sb.from('clients').delete().eq('email',email);L(false);showToast('削除しました');await loadClients();}
+async function loadClients(){var r=await sb.from('clients').select('*').order('name');clients=r.data||[];renderClients();}function confirmDeleteClient(email,name){openActionDialog('お客様を削除',name+'さんを削除します。\nこの操作は取り消せません。','削除する',function(){deleteClientByEmail(email);});}async function deleteClientByEmail(email){L(true);await sb.from('clients').delete().eq('email',email);L(false);showToast('削除しました');await loadClients();}
 function renderClients(){
   var q=(document.getElementById('cm-search').value||'').toLowerCase();
   var list=document.getElementById('cm-list');
