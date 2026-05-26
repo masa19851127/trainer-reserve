@@ -9,7 +9,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=16"></script>
+<script src="common.js?v=17"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -647,9 +647,10 @@ function renderT(){
       var sc=document.createElement('div');sc.className='slot-cell'+(filterBookedOnly&&!selMode&&!bk?' dimmed-cell':'');
       var sl=document.createElement('div');sl.className='slot';
       if(bk&&past){
-        sl.className='slot '+(BKC[bk.menu+'-'+bk.loc]||'t-bk-pm');sl.style.opacity='.45';sl.style.pointerEvents='none';
+        sl.className='slot '+(BKC[bk.menu+'-'+bk.loc]||'t-bk-pm');sl.style.opacity='.45';
         var last=bk.name?(bk.name.split(/[\s\u3000]/)[0]):'';
         sl.innerHTML='<span style="font-size:7px;font-weight:700;overflow:hidden;max-width:100%;text-overflow:ellipsis" class="'+(BLC[bk.menu+'-'+bk.loc]||'')+'">'+LOCS[bk.loc]+'：'+last+'様</span>';
+        if(!selMode){(function(dd,tt,kk){sl.onclick=function(){openBkDetail(dd,tt,kk);};})(date,t,k);}
       } else if(past){sl.className='slot t-idle';sl.style.opacity='.2';sl.style.pointerEvents='none';}
       else if(doff){sl.className='slot t-dayoff';sl.innerHTML='<span class="x-off">✕</span>';}
       else if(bk){
@@ -964,10 +965,14 @@ function addToSel(k){closePanel();if(!selMode)toggleSelMode();selCells.add(k);up
 
 function openBkDetail(date,t,k){
   var bk=bookings[k];
+  var past=isPast(date);
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var _col=MLCOL[bk.menu+'-'+bk.loc]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};
   var bg=_col.bg, tc=_col.tc;
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約詳細</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div style="background:'+bg+';border-radius:9px;padding:11px 13px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:'+tc+'">'+LOCS[bk.loc]+'：'+bk.name+'様</div><div style="font-size:11px;color:#666;margin-top:3px">'+MENUS[bk.menu]+'　'+t+'〜'+et(t)+'</div></div><div class="infor"><span class="ik">電話番号</span><span class="iv">'+(bk.phone||'未入力')+'</span></div><div class="infor"><span class="ik">メール</span><span class="iv">'+(bk.email||'未入力')+'</span></div><div class="infor"><span class="ik">メッセージ</span><span class="iv">'+(bk.message||'なし')+'</span></div><button class="bd" style="border-color:#f43f5e;color:#be123c" onclick="tCancel(\''+k+'\',\''+localISO(date)+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">この予約をキャンセルする</button>';
+  var _footHtml=past
+    ?'<div style="font-size:11px;color:#9ca3af;text-align:center;padding:10px;background:#f9fafb;border-radius:8px;margin-top:8px">過去の予約のため操作できません</div>'
+    :'<button class="bd" style="border-color:#f43f5e;color:#be123c" onclick="tCancel(\''+k+'\',\''+localISO(date)+'\',\''+t+'\',\''+bk.menu+'\',\''+bk.loc+'\',\''+bk.name+'\',\''+bk.email+'\')">この予約をキャンセルする</button>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約詳細</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div style="background:'+bg+';border-radius:9px;padding:11px 13px;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:'+tc+'">'+LOCS[bk.loc]+'：'+bk.name+'様</div><div style="font-size:11px;color:#666;margin-top:3px">'+MENUS[bk.menu]+'　'+t+'〜'+et(t)+'</div></div><div class="infor"><span class="ik">電話番号</span><span class="iv">'+(bk.phone||'未入力')+'</span></div><div class="infor"><span class="ik">メール</span><span class="iv">'+(bk.email||'未入力')+'</span></div><div class="infor"><span class="ik">メッセージ</span><span class="iv">'+(bk.message||'なし')+'</span></div>'+_footHtml;
   openPanel();
 }
 async function tCancel(k,iso,t,menu,loc,name,email){
