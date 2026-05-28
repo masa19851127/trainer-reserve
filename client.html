@@ -1,4 +1,4 @@
-<!-- deployed: 2026-05-27 -->
+<!-- deployed: 2026-05-28 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -860,7 +860,7 @@ function openCPanel(date,t,ml,k){
   var iso=localISO(date);
   var _prefill=myName||localStorage.getItem('myName')||'';
   var _col=MLCOL[ml]||{bg:'#f5f5f5',bd:'#e5e5e5',tc:'#1a1a1a'};
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約する</div><div class="psub">'+ds+'</div><div style="background:'+_col.bg+';border:1.5px solid '+_col.bd+';color:'+_col.tc+';border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;font-size:17px;font-weight:700">'+_fullLabel(ml)+'</div><div style="background:#f5f5f5;border-radius:7px;padding:8px 11px;margin-bottom:14px;font-size:12px;color:#666">🕐 '+t+'〜'+et(t)+'（1時間※お着替え込み）</div><div class="fgrp"><label class="flbl">お名前 <span style="color:#e94560">*</span></label><input class="finp" id="fn" placeholder="山田 太郎" value="'+escHtml(_prefill)+'"></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="fp" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メッセージ（任意）</label><textarea class="finp" id="fm" rows="2" placeholder="気になることなど"></textarea></div><button class="bp" onclick="confirmBk(\''+iso+'\',\''+t+'\',\''+ml+'\',\''+k+'\')">予約を確定する</button>';
+  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">予約する</div><div class="psub">'+ds+'</div><div style="background:'+_col.bg+';border:1.5px solid '+_col.bd+';color:'+_col.tc+';border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;font-size:17px;font-weight:700">'+_fullLabel(ml)+'</div><div style="background:#f5f5f5;border-radius:7px;padding:8px 11px;margin-bottom:14px;font-size:12px;color:#666">🕐 '+t+'〜'+et(t)+'（1時間※お着替え込み）</div><div class="fgrp"><label class="flbl">お名前</label><input class="finp" id="fn" value="'+escHtml(_prefill)+'" readonly style="background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></div><div class="fgrp"><label class="flbl">電話番号</label><input class="finp" id="fp" type="tel" placeholder="090-XXXX-XXXX"></div><div class="fgrp"><label class="flbl">メッセージ（任意）</label><textarea class="finp" id="fm" rows="2" placeholder="気になることなど"></textarea></div><button class="bp" onclick="confirmBk(\''+iso+'\',\''+t+'\',\''+ml+'\',\''+k+'\')">予約を確定する</button>';
   openPanel();
 }
 async function confirmBk(iso,t,ml,k){
