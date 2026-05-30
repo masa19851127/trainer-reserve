@@ -1,4 +1,4 @@
-<!-- deployed: 2026-05-28 -->
+<!-- deployed: 2026-05-30 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -874,7 +874,7 @@ async function confirmBk(iso,t,ml,k){
   var phone=document.getElementById('fp').value,msg=document.getElementById('fm').value;
   if(blockedSlots[k]&&blockedSlots[k].has(menu+'-'+loc)){showToast('⚠ 移動時間のため予約できません');return;}
   L(true);
-  var chk=await sb.from('bookings').select('date_key').eq('date_key',k).maybeSingle();
+  var chk=await sb.from('bookings').select('date_key').eq('date_key',k).eq('status','confirmed').maybeSingle();
   if(chk.data){L(false);showToast('⚠ この枠はすでに予約済みです');await loadData();renderC();return;}
   var cr=await sb.from('clients').select('*').eq('email',email).maybeSingle();
   if(cr.data){
