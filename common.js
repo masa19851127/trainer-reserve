@@ -121,7 +121,7 @@ async function deleteSlot(k,m,l){await sb.from('slots').delete().match({date_key
 async function deleteAllSlots(k){await sb.from('slots').delete().eq('date_key',k);}
 async function saveDayOff(iso){await sb.from('day_offs').upsert({date_iso:iso},{onConflict:'date_iso'});await sb.from('slots').delete().like('date_key',iso+'%');}
 async function deleteDayOff(iso){await sb.from('day_offs').delete().eq('date_iso',iso);}
-async function saveBooking(k,menu,loc,name,email,phone,msg){var r=await sb.from('bookings').insert({date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg});return !r.error;}
+async function saveBooking(k,menu,loc,name,email,phone,msg){var r=await sb.from('bookings').upsert({date_key:k,menu:menu,loc:loc,name:name,email:email,phone:phone,message:msg,status:'confirmed',created_at:new Date().toISOString()},{onConflict:'date_key'});return !r.error;}
 async function deleteBooking(k){await sb.from('bookings').update({status:'cancelled'}).eq('date_key',k);}
 
 // === メール送信 ===
