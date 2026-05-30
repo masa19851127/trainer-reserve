@@ -1,4 +1,4 @@
-<!-- deployed: 2026-05-30 -->
+<!-- deployed: 2026-05-30b -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1044,6 +1044,7 @@ async function showMyPageData(email,wrap){
     if(bk.status==='cancelled'){
       st=samedayKeys.has(bk.date_key)?'sameday':'cancelled';
     }
+    if(st==='cancelled')return;
     items.push({date_key:bk.date_key,menu:bk.menu,loc:bk.loc,name:bk.name,email:bk.email,status:st});
     seenKeys.add(bk.date_key);
   });
