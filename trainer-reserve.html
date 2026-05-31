@@ -1,4 +1,4 @@
-<!-- deployed: 2026-05-31b -->
+<!-- deployed: 2026-05-31c -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1330,14 +1330,14 @@ async function openClientDetail(email){
   var bkHtml='';
   if(histItems.length){
     histItems.forEach(function(item){
-      var parts=item.date_key.split('-');
-      var ds=parseInt(parts[1])+'月'+parseInt(parts[2].substring(0,2))+'日';
+      var _d=new Date(item.date_key.split('_')[0]+'T00:00:00');
+      var ds=(_d.getMonth()+1)+'/'+_d.getDate()+'（'+DJ[_d.getDay()]+'）';
       var t=item.date_key.split('_')[1]||'';
       var badge=item.type==='sameday'?'<span style="font-size:9px;background:#fef9c3;color:#854d0e;border-radius:3px;padding:1px 5px;margin-left:4px">当日キャンセル</span>'
         :item.type==='cancelled'?'<span style="font-size:9px;background:#fee2e2;color:#b91c1c;border-radius:3px;padding:1px 5px;margin-left:4px">キャンセル</span>':'';;
       var dimmed=item.type!=='confirmed'?'opacity:.6;':'';
       var menuShort=item.menu==='training'?'トレーニング':(MENUS[item.menu]||item.menu||'');
-      bkHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12px;'+dimmed+'"><span style="color:#444">'+ds+(t?' '+t:'')+badge+'</span><span style="color:#666">'+menuShort+' / '+(LOCS[item.loc]||item.loc||'')+'</span></div>';
+      bkHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:11px;'+dimmed+'"><span style="color:#444">'+ds+(t?' '+t:'')+badge+'</span><span style="color:#666">'+menuShort+' / '+(LOCS[item.loc]||item.loc||'')+'</span></div>';
     });
   } else {
     bkHtml='<div style="color:#999;font-size:12px;text-align:center;padding:10px">予約履歴なし</div>';
