@@ -1,4 +1,4 @@
-<!-- deployed: 2026-05-30 -->
+<!-- deployed: 2026-05-31 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1325,6 +1325,7 @@ async function openClientDetail(email){
     if(!bkKeys.has(p[1])){histItems.push({date_key:p[1],menu:p[2],loc:p[3],type:'sameday'});}
     else{var h=histItems.find(function(x){return x.date_key===p[1];});if(h)h.type='sameday';}
   });
+  histItems=histItems.filter(function(item){return item.type!=='cancelled';});
   histItems.sort(function(a,b){return b.date_key>a.date_key?1:(b.date_key<a.date_key?-1:0);});
   var bkHtml='';
   if(histItems.length){
