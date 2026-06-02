@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>予約サイトの使い方｜Trainer Reserve</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Helvetica Neue", Arial, sans-serif;
+  background: #faf9f7;
+  color: #2c2c2a;
+  line-height: 1.7;
+  padding: 24px 16px 100px; /* 下に固定バーぶんの余白 */
+}
+.wrap { max-width: 680px; margin: 0 auto; }
+
+/* ヒーロー */
+.hero {
+  text-align: center;
+  padding: 36px 24px;
+  background: #fff;
+  border-radius: 16px;
+  margin-bottom: 36px;
+  border: 0.5px solid #e5e3dc;
+}
+.hero h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; color: #c2410c; }
+.hero p { font-size: 14px; color: #5f5e5a; }
+
+/* 目次 */
+.toc {
+  background: #fff;
+  border: 0.5px solid #e5e3dc;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 40px;
+}
+.toc h2 { font-size: 13px; font-weight: 500; margin-bottom: 12px; color: #888780; letter-spacing: 1px; }
+.toc ol { list-style: none; counter-reset: tocnum; }
+.toc li {
+  counter-increment: tocnum;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #2c2c2a;
+  border-bottom: 0.5px solid #f1efe8;
+}
+.toc li:last-child { border-bottom: none; }
+.toc li::before {
+  content: counter(tocnum) ". ";
+  color: #c2410c;
+  font-weight: 500;
+  margin-right: 6px;
+}
+
+/* セクション */
+.section { margin-bottom: 48px; }
+.section-label {
+  font-size: 11px;
+  color: #888780;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.section-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #c2410c;
+  color: #2c2c2a;
+}
+
+/* フロー図 */
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  border: 0.5px solid #e5e3dc;
+}
+.flow-step {
+  flex: 1;
+  min-width: 100px;
+  background: #fff5ef;
+  border: 1px solid #f5c4b3;
+  border-radius: 8px;
+  padding: 10px 6px;
+  text-align: center;
+  font-size: 12px;
+  color: #993c1d;
+  line-height: 1.4;
+  font-weight: 500;
+}
+.flow-arrow { font-size: 16px; color: #c2410c; flex-shrink: 0; }
+
+/* ステップ */
+.step {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #c2410c;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 16px;
+}
+.step-num.info {
+  background: #fff;
+  color: #c2410c;
+  border: 2px solid #c2410c;
+  font-style: italic;
+}
+.step-body {
+  flex: 1;
+  background: #fff;
+  border: 0.5px solid #e5e3dc;
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-width: 0;
+}
+.step-title {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #2c2c2a;
+}
+.step-desc {
+  font-size: 13px;
+  color: #5f5e5a;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+.step-desc:last-child { margin-bottom: 0; }
+.step-desc strong { color: #2c2c2a; font-weight: 500; }
+.shot {
+  margin-top: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 0.5px solid #e5e3dc;
+  background: #faf9f7;
+}
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* TIPカード */
+.tip, .warn {
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 16px 0;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.tip { background: #e6f1fb; }
+.warn { background: #faeeda; }
+.tip-icon, .warn-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  margin-top: 1px;
+}
+.tip-icon { background: #185fa5; color: #fff; }
+.warn-icon { background: #BA7517; color: #fff; }
+.tip-body, .warn-body {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.tip-body { color: #0c447c; }
+.warn-body { color: #854f0b; }
+.tip-title, .warn-title {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+/* よくある質問 */
+.faq {
+  background: #fff;
+  border: 0.5px solid #e5e3dc;
+  border-radius: 12px;
+  padding: 4px 20px;
+}
+.faq-item {
+  border-bottom: 0.5px solid #f1efe8;
+  padding: 16px 0;
+}
+.faq-item:last-child { border-bottom: none; }
+.faq-q {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2c2c2a;
+  margin-bottom: 6px;
+}
+.faq-q::before { content: "Q. "; color: #c2410c; }
+.faq-a {
+  font-size: 13px;
+  color: #5f5e5a;
+  line-height: 1.7;
+  padding-left: 22px;
+}
+.faq-a::before { content: "A. "; color: #888780; font-weight: 500; margin-left: -22px; padding-right: 8px; }
+
+/* 連絡先 */
+.contact {
+  text-align: center;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  margin-top: 40px;
+  font-size: 13px;
+  color: #5f5e5a;
+  line-height: 1.7;
+  border: 0.5px solid #e5e3dc;
+}
+
+/* 固定バー（一番下） */
+.fixed-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 0.5px solid #e5e3dc;
+  padding: 12px 16px;
+  z-index: 100;
+}
+.fixed-bar-inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+.book-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  background: #16a34a;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+.book-btn:hover, .book-btn:active {
+  background: #15803d;
+}
+.book-btn::before {
+  content: "→ ";
+  margin-right: 4px;
+}
+
+@media (max-width: 480px) {
+  body { padding: 16px 12px 90px; }
+  .hero { padding: 28px 16px; }
+  .hero h1 { font-size: 20px; }
+  .section-title { font-size: 18px; }
+  .step-body { padding: 14px 16px; }
+  .flow-step { min-width: 80px; font-size: 11px; }
+  .book-btn { font-size: 14px; padding: 12px 20px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ヒーロー -->
+  <div class="hero">
+    <h1>予約サイトの使い方</h1>
+    <p>スマホから簡単に予約・キャンセルができます<br>はじめての方はこちらの手順でご利用ください</p>
+  </div>
+
+  <!-- 目次 -->
+  <div class="toc">
+    <h2>目次</h2>
+    <ol>
+      <li>はじめてのログイン</li>
+      <li>予約の流れ</li>
+      <li>マイページの見方</li>
+      <li>予約のキャンセル方法</li>
+      <li>回数券の確認方法</li>
+      <li>メールについて</li>
+      <li>よくある質問</li>
+    </ol>
+  </div>
+
+  <!-- SECTION 1: ログイン -->
+  <div class="section">
+    <p class="section-label">SECTION 1</p>
+    <h2 class="section-title">はじめてのログイン</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3 class="step-title">トレーナーから送られたURLを開く</h3>
+        <p class="step-desc">URLをタップして開きます。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3 class="step-title">メールアドレスを入力</h3>
+        <p class="step-desc">事前に登録されたメールアドレスを入力。パスワードはありません。</p>
+        <div class="shot">
+          <img src="images/01_login.jpg" alt="ログイン画面のスクリーンショット">
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">i</span>
+      <div class="tip-body">
+        <p class="tip-title">2回目以降は自動ログイン</p>
+        <p>1度入力すれば次回からは自動でログイン状態が保たれます。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: 予約 -->
+  <div class="section">
+    <p class="section-label">SECTION 2</p>
+    <h2 class="section-title">予約の流れ</h2>
+
+    <div class="flow">
+      <div class="flow-step">枠を選ぶ</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">メニュー・場所</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">確定</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">完了メール</div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3 class="step-title">カレンダーから希望の時間を選ぶ</h3>
+        <p class="step-desc">色付きのタグ（P・目黒など）が付いている枠が予約可能です。タップしてください。</p>
+        <div class="shot">
+          <img src="images/02_calendar.jpg" alt="カレンダー画面のスクリーンショット">
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3 class="step-title">メニュー・場所を選ぶ</h3>
+        <p class="step-desc">表示された一覧から選択。1時間（お着替え込み）でのご案内です。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3 class="step-title">予約フォームを確認</h3>
+        <p class="step-desc">お名前は自動入力されます。電話番号・メッセージは任意です。</p>
+        <div class="shot">
+          <img src="images/03_book_form.jpg" alt="予約フォームのスクリーンショット">
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3 class="step-title">「予約を確定する」をタップ</h3>
+        <p class="step-desc">確定すると即座に予約が完了します。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3 class="step-title">確認メールが届く</h3>
+        <p class="step-desc">登録メールアドレス宛に予約確認メールが自動送信されます。</p>
+      </div>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">!</span>
+      <div class="warn-body">
+        <p class="warn-title">当日の新規予約はできません</p>
+        <p>当日の枠は予約不可となっています。前日までにご予約ください。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: マイページ -->
+  <div class="section">
+    <p class="section-label">SECTION 3</p>
+    <h2 class="section-title">マイページの見方</h2>
+
+    <div class="step">
+      <div class="step-num info">i</div>
+      <div class="step-body">
+        <h3 class="step-title">「マイページ」タブで確認</h3>
+        <p class="step-desc">画面上部の「マイページ」タブで、<strong>回数券の残数・予約一覧・履歴</strong>が見られます。</p>
+        <div class="shot">
+          <img src="images/04_mypage.jpg" alt="マイページのスクリーンショット">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: キャンセル -->
+  <div class="section">
+    <p class="section-label">SECTION 4</p>
+    <h2 class="section-title">予約のキャンセル方法</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3 class="step-title">マイページから予約をタップ</h3>
+        <p class="step-desc">キャンセルしたい予約をタップして詳細を開きます。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3 class="step-title">「キャンセルする」をタップ</h3>
+        <p class="step-desc">確認ダイアログが表示されます。「キャンセルする」を選ぶと確定します。</p>
+        <div class="shot">
+          <img src="images/05_cancel_dialog.jpg" alt="キャンセル確認ダイアログのスクリーンショット">
+        </div>
+      </div>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">!</span>
+      <div class="warn-body">
+        <p class="warn-title">当日キャンセルについて</p>
+        <p>当日のキャンセルは回数券が1回分消化されます。前日までのご連絡をお願いします。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: 回数券 -->
+  <div class="section">
+    <p class="section-label">SECTION 5</p>
+    <h2 class="section-title">回数券の確認方法</h2>
+
+    <div class="step">
+      <div class="step-num info">i</div>
+      <div class="step-body">
+        <h3 class="step-title">マイページ上部に残数表示</h3>
+        <p class="step-desc"><strong>「残り回数 6/8回」</strong>のように表示されます。<br>予約・キャンセルに応じて自動で更新されます。</p>
+        <div class="shot">
+          <img src="images/04_mypage.jpg" alt="回数券残数のスクリーンショット">
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">i</span>
+      <div class="tip-body">
+        <p class="tip-title">回数券が足りなくなったら</p>
+        <p>追加購入はトレーナーまで直接ご連絡ください。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: メール -->
+  <div class="section">
+    <p class="section-label">SECTION 6</p>
+    <h2 class="section-title">メールについて</h2>
+
+    <div class="step">
+      <div class="step-num info">i</div>
+      <div class="step-body">
+        <h3 class="step-title">予約・キャンセルで自動送信</h3>
+        <p class="step-desc">予約完了時とキャンセル時に、登録メールアドレス宛に自動でメールが届きます。</p>
+        <p class="step-desc"><strong>届かない場合</strong>は迷惑メールフォルダをご確認ください。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: FAQ -->
+  <div class="section">
+    <p class="section-label">SECTION 7</p>
+    <h2 class="section-title">よくある質問</h2>
+
+    <div class="faq">
+      <div class="faq-item">
+        <p class="faq-q">当日に新しく予約はできますか？</p>
+        <p class="faq-a">当日の新規予約はできません。前日までにご予約ください。</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">予約した場所を変更したいです</p>
+        <p class="faq-a">一度キャンセルしてから、希望の場所で予約し直してください。</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">予約完了メールが届きません</p>
+        <p class="faq-a">迷惑メールフォルダをご確認ください。それでも見つからない場合はトレーナーまでご連絡ください。</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">パスワードを忘れました</p>
+        <p class="faq-a">パスワードは設定されていません。ご登録のメールアドレスのみでログインできます。</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">回数券が足りない時は？</p>
+        <p class="faq-a">追加購入はトレーナーまで直接ご連絡ください。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 連絡先 -->
+  <div class="contact">
+    ご不明な点はお気軽に<br>トレーナーまでお問い合わせください
+  </div>
+
+</div>
+
+<!-- 固定の予約ボタン -->
+<div class="fixed-bar">
+  <div class="fixed-bar-inner">
+    <a href="https://masa19851127.github.io/trainer-reserve/client.html" class="book-btn">予約サイトを開く</a>
+  </div>
+</div>
+
+</body>
+</html>
