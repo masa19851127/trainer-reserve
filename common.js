@@ -116,7 +116,6 @@ const sb=supabase.createClient(SB_URL,SB_KEY);
 // === DB操作関数 ===
 
 async function saveSlot(k,menu,loc){await sb.from('slots').insert({date_key:k,menu:menu,loc:loc,is_off:false});}
-async function saveOffSlot(k){await sb.from('slots').delete().eq('date_key',k);await sb.from('slots').insert({date_key:k,menu:null,loc:null,is_off:true});}
 async function deleteSlot(k,m,l){await sb.from('slots').delete().match({date_key:k,menu:m,loc:l});}
 async function deleteAllSlots(k){await sb.from('slots').delete().eq('date_key',k);}
 async function saveDayOff(iso){await sb.from('day_offs').upsert({date_iso:iso},{onConflict:'date_iso'});await sb.from('slots').delete().like('date_key',iso+'%');}

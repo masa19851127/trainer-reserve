@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-02a -->
+<!-- deployed: 2026-06-02b -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -10,7 +10,7 @@
 <title>Trainer Reserve</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="common.js?v=20260530"></script>
+<script src="common.js?v=20260602"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent;background:#fff;color:#1a1a1a;}
@@ -96,7 +96,6 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .cdh.day-off .cdd{color:#f43f5e;}
 .dob{display:none;position:absolute;bottom:1px;left:3px;right:3px;height:2px;background:#f43f5e;border-radius:1px;}
 .cdh.day-off .dob{display:block;}
-.cdh.off-mode-hover:hover{background:#fff1f2;cursor:pointer;border-radius:4px;}
 .cal-body{display:grid;border-top:1px solid #e8e8e8;border-left:1px solid #e8e8e8;}
 .tlbl{font-size:9px;color:#bbb;text-align:right;padding:3px 3px 0 0;display:flex;align-items:flex-start;justify-content:flex-end;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;height:64px;background:#fafafa;min-width:0;overflow:hidden;}
 .cdd.sat{color:#1e40af;}
@@ -383,7 +382,7 @@ var mode='',wkOff=0,rpOff=0;
 var slotSets={},offSlots={},dayOffs={},bookings={},blockedSlots={};
 var myBookings=new Set(),myEmail=localStorage.getItem('myEmail')||'',myName=localStorage.getItem('myName')||'';
 var holidays=new Set();
-var selMode=false,offMode=false,selCells=new Set(),offCells=new Set(),preSelSlotSets=null;
+var selMode=false,selCells=new Set(),preSelSlotSets=null;
 var filterBookedOnly=false;
 var clients=[];
 
@@ -424,7 +423,7 @@ function backToLogin(){
   document.getElementById('client-screen').style.display='none';
   document.getElementById('pw-input').value='';
   document.getElementById('pw-err').textContent='';
-  wkOff=0;rpOff=0;mode='';localStorage.removeItem('sessionMode');localStorage.removeItem('trainerTab');localStorage.removeItem('clientTab');cancelSel();cancelOffMode();
+  wkOff=0;rpOff=0;mode='';localStorage.removeItem('sessionMode');localStorage.removeItem('trainerTab');localStorage.removeItem('clientTab');cancelSel();
 }
 
 async function loadData(force){
@@ -459,7 +458,7 @@ async function loadData(force){
   L(false);
 }
 
-function deepCopySlotSets(s){var c={};for(var k in s){c[k]=new Set(s[k]);}return c;}function clearSelState(){selMode=false;selCells=new Set();preSelSlotSets=null;var _msa=document.getElementById('msel-add');_msa.classList.remove('active');_msa.textContent='＋ 空き枠を追加';document.getElementById('at-add').classList.remove('active');document.documentElement.style.setProperty('--sel-bar-h','0px');var _fb=document.getElementById('btnFilterBooked');if(_fb)_fb.style.display='';}function toggleSelMode(){if(offMode)cancelOffMode();if(selMode){cancelSel();return;}selMode=true;preSelSlotSets=deepCopySlotSets(slotSets);var _msa=document.getElementById('msel-add');_msa.classList.add('active');_msa.textContent='× 選択モード中（タップで中止）';document.getElementById('at-add').classList.add('active');var _fb=document.getElementById('btnFilterBooked');if(_fb)_fb.style.display='none';renderT();requestAnimationFrame(function(){var h=document.getElementById('at-add').offsetHeight;document.documentElement.style.setProperty('--sel-bar-h',h+'px');});}
+function deepCopySlotSets(s){var c={};for(var k in s){c[k]=new Set(s[k]);}return c;}function clearSelState(){selMode=false;selCells=new Set();preSelSlotSets=null;var _msa=document.getElementById('msel-add');_msa.classList.remove('active');_msa.textContent='＋ 空き枠を追加';document.getElementById('at-add').classList.remove('active');document.documentElement.style.setProperty('--sel-bar-h','0px');var _fb=document.getElementById('btnFilterBooked');if(_fb)_fb.style.display='';}function toggleSelMode(){if(selMode){cancelSel();return;}selMode=true;preSelSlotSets=deepCopySlotSets(slotSets);var _msa=document.getElementById('msel-add');_msa.classList.add('active');_msa.textContent='× 選択モード中（タップで中止）';document.getElementById('at-add').classList.add('active');var _fb=document.getElementById('btnFilterBooked');if(_fb)_fb.style.display='none';renderT();requestAnimationFrame(function(){var h=document.getElementById('at-add').offsetHeight;document.documentElement.style.setProperty('--sel-bar-h',h+'px');});}
 function toggleBookingFilter(){filterBookedOnly=!filterBookedOnly;var btn=document.getElementById('btnFilterBooked');if(filterBookedOnly){btn.textContent='✓ 予約のみ表示中';btn.classList.add('on');}else{btn.textContent='📅 予約のみ表示';btn.classList.remove('on');}renderT();}
 function openActionDialog(title,body,confirmLabel,onConfirm){document.getElementById('adTitle').textContent=title;document.getElementById('adBody').textContent=body;var btn=document.getElementById('adConfirm');btn.textContent=confirmLabel;btn.onclick=function(){closeActionDialog();onConfirm();};document.getElementById('actionDialog').style.display='flex';}
 function closeActionDialog(){document.getElementById('actionDialog').style.display='none';}
@@ -506,7 +505,6 @@ function toggleTimeRow(t){
   updSC();renderT();
 }
 function cancelSel(){if(preSelSlotSets!==null){slotSets=preSelSlotSets;}clearSelState();renderT();}
-function cancelOffMode(){offMode=false;offCells=new Set();}
 function updSC(){var _el=document.getElementById('sel-count');if(_el)_el.textContent=selCells.size+'枠選択中';}
 
 function assignSel(menu,loc){
@@ -583,18 +581,6 @@ async function confirmSel(){
     renderT();
     showToast('⚠ 保存に失敗しました');
   }
-}
-async function applyOff(){
-  if(!offCells.size){showToast('⚠ 枠を選んでください');return;}L(true);
-  for(var k of offCells){await saveOffSlot(k);offSlots[k]=true;delete slotSets[k];}
-  invalidateWeekCache();
-  L(false);offCells=new Set();updOC();renderT();showToast('✕ 対応不可にしました');
-}
-async function cancelOff(){
-  if(!offCells.size){showToast('⚠ 枠を選んでください');return;}L(true);
-  for(var k of offCells){await sb.from('slots').delete().match({date_key:k,is_off:true});delete offSlots[k];}
-  invalidateWeekCache();
-  L(false);offCells=new Set();updOC();renderT();showToast('OFF解除しました');
 }
 async function toggleDayOff(iso){
   L(true);
@@ -1009,13 +995,6 @@ async function tCancel(k,iso,t,menu,loc,name,email){
   invalidateWeekCache();
   closePanel();await loadData();renderT();showToast('予約をキャンセルしました');
 }
-
-function openOffDetail(date,t,k){
-  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
-  document.getElementById('pc').innerHTML='<button class="pcl" onclick="closePanel()">×</button><div class="ptitle">対応不可の枠</div><div class="psub">'+ds+'　'+t+'〜'+et(t)+'</div><div style="background:#ffe4e6;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#9f1239">✕ 対応不可に設定されています</div><button class="bd" onclick="cancelOffSingle(\''+k+'\')">対応不可を解除する</button>';
-  openPanel();
-}
-async function cancelOffSingle(k){L(true);await sb.from('slots').delete().match({date_key:k,is_off:true});invalidateWeekCache();L(false);delete offSlots[k];closePanel();renderT();showToast('対応不可を解除しました');}
 
 function openCPanel(date,t,ml,k){
   if(isToday(date)){showToast('⚠ 当日予約はできません');return;}
