@@ -1,4 +1,4 @@
-<!-- deployed: 2026-05-31c -->
+<!-- deployed: 2026-06-02a -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -553,6 +553,7 @@ async function confirmSel(){
         var dr=await sb.from('slots').delete().eq('date_key',k);
         if(dr.error)throw new Error(dr.error.message);
       }else{
+        if(newSet.size>0){var ofr=await sb.from('slots').delete().eq('date_key',k).eq('is_off',true);if(ofr.error)throw new Error(ofr.error.message);}
         for(var ml of newSet){
           if(!oldSet.has(ml)){
             var pts=ml.split('-');
