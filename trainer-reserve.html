@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-02b -->
+<!-- deployed: 2026-06-12a -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -216,6 +216,9 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .ad-btn{padding:10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;}
 .ad-cancel{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
 .ad-confirm{background:#dc2626;color:#fff;}
+.t-memo{background:#f1f5f9;border:.5px solid #cbd5e1;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;}
+.memo-icon{font-size:9px;line-height:1;}
+.memo-txt{font-size:8px;font-weight:500;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90%;text-align:center;}
 </style>
 </head>
 <body>
@@ -384,6 +387,7 @@ var myBookings=new Set(),myEmail=localStorage.getItem('myEmail')||'',myName=loca
 var holidays=new Set();
 var selMode=false,selCells=new Set(),preSelSlotSets=null;
 var filterBookedOnly=false;
+var trainerMemos={};
 var clients=[];
 
 function L(s){document.getElementById('loading').style.display=s?'flex':'none';}
@@ -454,6 +458,11 @@ async function loadData(force){
   _recomputeBlockedSlots();
   var r3=await sb.from('day_offs').select('*').gte('date_iso',s).lte('date_iso',e);
   dayOffs={};(r3.data||[]).forEach(function(r){dayOffs[r.date_iso]=true;});
+  if(mode==='trainer'){
+    var memoRes=await sb.from('trainer_memos').select('*').gte('date_key',s).lte('date_key',e+'_z');
+    trainerMemos={};
+    (memoRes.data||[]).forEach(function(row){trainerMemos[row.date_key]={id:row.id,memo_text:row.memo_text};});
+  }
   _saveToCache();
   L(false);
 }
@@ -721,6 +730,22 @@ function renderT(){
             updSC();
           };
         })(k,sl);
+      }
+      if(!selMode&&mode==='trainer'&&!past&&!doff){
+        var _memo=trainerMemos[k];
+        if(_memo){
+          sl.className='slot t-memo';
+          sl.innerHTML='<span class="memo-icon">📝</span><span class="memo-txt">'+escHtml(_memo.memo_text)+'</span>';
+          (function(_k,_m){sl.onclick=function(e){e.stopPropagation();openMemoDeleteDialog(_k,_m);};})(k,_memo);
+        } else if(!bk){
+          (function(_k,_date,_t,_oo){
+            sl.addEventListener('click',function(){
+              if(selMode||_oo)return;
+              var ds=(_date.getMonth()+1)+'月'+_date.getDate()+'日（'+DJ[_date.getDay()]+'）';
+              openMemoAddModal(_k,ds+'　'+_t+'〜'+et(_t));
+            });
+          })(k,date,t,sl.onclick);
+        }
       }
       sc.appendChild(sl);body.appendChild(sc);
     });
@@ -1396,6 +1421,47 @@ async function changeWeek(d){if(d<0&&mode==='client'&&wkOff<=0)return;wkOff+=d;a
 function openPanel(){document.getElementById('panel').classList.add('open');document.getElementById('overlay').classList.add('show');}
 function closePanel(){document.getElementById('panel').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
+
+function openMemoAddModal(k,dateLabel){
+  var bg=document.createElement('div');
+  bg.id='memo-modal-bg';
+  bg.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;';
+  var modal=document.createElement('div');
+  modal.style.cssText='background:#fff;border-radius:14px;padding:20px 18px;width:min(300px,88vw);box-shadow:0 10px 36px rgba(0,0,0,.2);';
+  modal.innerHTML=
+    '<div style="font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:4px">メモを追加</div>'
+    +'<div style="font-size:11px;color:#666;margin-bottom:14px">'+escHtml(dateLabel)+'</div>'
+    +'<input id="memo-input" type="text" maxlength="20" placeholder="例：釣り、授業、新宿" style="width:100%;padding:9px 11px;border:0.5px solid #e5e5e5;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit;box-sizing:border-box;">'
+    +'<div style="display:flex;gap:8px;">'
+      +'<button onclick="closeMemoModal()" style="flex:1;padding:10px;border-radius:8px;border:0.5px solid #e5e5e5;background:#f5f5f5;font-size:13px;cursor:pointer;font-family:inherit;">キャンセル</button>'
+      +'<button onclick="saveMemo(\''+k+'\')" style="flex:1;padding:10px;border-radius:8px;border:none;background:#1a1a2e;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">保存</button>'
+    +'</div>';
+  bg.appendChild(modal);
+  bg.addEventListener('click',function(e){if(e.target===bg)closeMemoModal();});
+  document.body.appendChild(bg);
+  setTimeout(function(){var inp=document.getElementById('memo-input');if(inp)inp.focus();},100);
+}
+function closeMemoModal(){var bg=document.getElementById('memo-modal-bg');if(bg)bg.remove();}
+async function saveMemo(k){
+  var inp=document.getElementById('memo-input');if(!inp)return;
+  var txt=inp.value.trim();
+  if(!txt){showToast('⚠ メモを入力してください');return;}
+  closeMemoModal();L(true);
+  var r=await sb.from('trainer_memos').insert({date_key:k,memo_text:txt});
+  L(false);
+  if(r.error){showToast('⚠ 保存に失敗しました');return;}
+  invalidateWeekCache();await loadData();renderT();showToast('📝 メモを保存しました');
+}
+function openMemoDeleteDialog(k,memo){
+  openActionDialog('メモを削除','「'+memo.memo_text+'」を削除しますか？','削除する',function(){deleteMemo(k,memo.id);});
+}
+async function deleteMemo(k,id){
+  L(true);
+  var r=await sb.from('trainer_memos').delete().eq('id',id);
+  L(false);
+  if(r.error){showToast('⚠ 削除に失敗しました');return;}
+  invalidateWeekCache();await loadData();renderT();showToast('🗑 メモを削除しました');
+}
 
 window.onload=async function(){
   loadHolidays();
