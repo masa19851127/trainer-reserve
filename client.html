@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-02a -->
+<!-- deployed: 2026-06-12 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -267,7 +267,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
   <div class="logo">Trainer <span>Reserve</span></div>
   <div style="display:flex;align-items:center;gap:8px">
     <span class="tbadge" id="topbar-badge"></span>
-    <button class="logout-btn" onclick="backToLogin()">ログアウト</button>
+    <button class="logout-btn" onclick="confirmLogout()">ログアウト</button>
   </div>
 </div>
 
@@ -288,6 +288,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
       <span class="lm-item"><span class="lm-color" style="background:#fce7f3;border-color:#f9a8d4"></span>恵比寿</span>
     </div>
     <div class="week-bar">
+      <button class="wbtn" id="c-prev-wk" onclick="changeWeek(-1)">‹</button>
       <span class="wlbl" id="wlbl-c"></span>
       <button class="wbtn" onclick="changeWeek(1)">›</button>
     </div>
@@ -359,6 +360,13 @@ async function doClientLogin(){
   document.getElementById('topbar-badge').className='tbadge tbadge-c';
   document.getElementById('client-screen').style.display='block';
   L(true);loadData().then(function(){renderC();L(false);});
+}
+function confirmLogout(){
+  document.getElementById('cdTitle').textContent='ログアウト';
+  document.getElementById('cdBody').textContent='ログアウトしますか？';
+  document.getElementById('cdConfirm').textContent='ログアウト';
+  document.getElementById('cdWarn').style.display='none';
+  openCancelDialog('',false,function(){backToLogin();});
 }
 function backToLogin(){
   document.getElementById('client-login-screen').style.display='flex';
@@ -899,7 +907,6 @@ async function confirmBk(iso,t,ml,k){
   invalidateWeekCache();
   L(false);
   document.getElementById('pc').innerHTML='<button class="pcl" onclick="closeBk()">×</button><div class="ptitle">✅ 予約が確定しました！</div><div class="psub">確認メールをお送りしました</div><div style="background:#dcfce7;border-radius:9px;padding:14px;margin-bottom:14px"><div style="font-size:12px;color:#166534">📧 '+email+' にメールを送りました</div></div><div class="infor"><span class="ik">日時</span><span class="iv">'+ds+'　'+t+'〜'+et(t)+'</span></div><div class="infor"><span class="ik">メニュー</span><span class="iv">'+MENUS[menu]+'</span></div><div class="infor"><span class="ik">場所</span><span class="iv">'+LOCS[loc]+'</span></div><button class="bp" onclick="closeBk()">閉じる</button>';
-  showToast('✅ '+name+'様の予約が完了しました！');
 }
 function closeBk(){closePanel();renderC();}
 
