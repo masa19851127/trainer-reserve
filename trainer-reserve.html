@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12b -->
+<!-- deployed: 2026-06-12c -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -433,7 +433,17 @@ function backToLogin(){
 async function loadData(force){
   myEmail=localStorage.getItem('myEmail')||'';
   var key=_cacheKey();
-  if(!force&&weekCache[key]){_restoreFromCache(weekCache[key]);return;}
+  if(!force&&weekCache[key]){
+    _restoreFromCache(weekCache[key]);
+    if(mode==='trainer'){
+      var dates=wkDates(wkOff);
+      var s=localISO(dates[0]),e=localISO(dates[6]);
+      var memoRes=await sb.from('trainer_memos').select('*').gte('date_key',s).lte('date_key',e+'_z');
+      trainerMemos={};
+      (memoRes.data||[]).forEach(function(row){trainerMemos[row.date_key]={id:row.id,memo_text:row.memo_text};});
+    }
+    return;
+  }
   L(true);
   var dates=mode==='client'?clientWkDates(wkOff):wkDates(wkOff);
   var s=localISO(dates[0]),e=localISO(dates[6]);
