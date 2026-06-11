@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12b -->
+<!-- deployed: 2026-06-12c -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -362,11 +362,11 @@ async function doClientLogin(){
   L(true);loadData().then(function(){renderC();L(false);});
 }
 function confirmLogout(){
-  document.getElementById('cdTitle').textContent='ログアウト';
+  document.getElementById('cdTitle').textContent='ログアウトしますか？';
   document.getElementById('cdTitle').className='cd-title';
-  document.getElementById('cdBody').textContent='ログアウトしますか？';
+  document.getElementById('cdBody').textContent='';
   document.getElementById('cdDetail').innerHTML='';
-  document.getElementById('cdDetail').className='cd-detail';
+  document.getElementById('cdDetail').style.display='none';
   document.getElementById('cdWarn').style.display='none';
   document.getElementById('cdConfirm').textContent='ログアウト';
   document.getElementById('cdConfirm').onclick=function(){
@@ -929,6 +929,7 @@ function openMyBk(date,t,k){
   openPanel();
 }
 function openCancelDialog(detail,isSameDay,onConfirm){
+  document.getElementById('cdDetail').style.display='block';
   var title=document.querySelector('#cdTitle');
   var body=document.querySelector('#cdBody');
   var detailEl=document.querySelector('#cdDetail');
