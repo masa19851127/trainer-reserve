@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12 -->
+<!-- deployed: 2026-06-12b -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -363,10 +363,17 @@ async function doClientLogin(){
 }
 function confirmLogout(){
   document.getElementById('cdTitle').textContent='ログアウト';
+  document.getElementById('cdTitle').className='cd-title';
   document.getElementById('cdBody').textContent='ログアウトしますか？';
-  document.getElementById('cdConfirm').textContent='ログアウト';
+  document.getElementById('cdDetail').innerHTML='';
+  document.getElementById('cdDetail').className='cd-detail';
   document.getElementById('cdWarn').style.display='none';
-  openCancelDialog('',false,function(){backToLogin();});
+  document.getElementById('cdConfirm').textContent='ログアウト';
+  document.getElementById('cdConfirm').onclick=function(){
+    closeCancelDialog();
+    backToLogin();
+  };
+  document.getElementById('cancelDialog').style.display='flex';
 }
 function backToLogin(){
   document.getElementById('client-login-screen').style.display='flex';
