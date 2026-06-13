@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12j -->
+<!-- deployed: 2026-06-12k -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -619,6 +619,9 @@ function mkTags(sets){
 
 
 function renderT(){
+  var _imgs=['pic/eva01.png','pic/garo1.png','pic/garo2.png','pic/yadon.png'];
+  var _imgEl=document.getElementById('eva-img');
+  if(_imgEl) _imgEl.src=_imgs[Math.floor(Math.random()*_imgs.length)];
   var dates=wkDates(wkOff);
   document.getElementById('wlbl-t').textContent=fmt(dates[0])+' – '+fmt(dates[6]);
   var COL='32px repeat(7,minmax(0,1fr))';
