@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12g -->
+<!-- deployed: 2026-06-12h -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -225,7 +225,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 <div id="loading" class="loading-overlay">読み込み中...</div>
 
 <div class="login-screen" id="login-screen">
-  <div class="login-logo">Trainer <span>Reserve</span><img src="eva01.png" style="height:36px;vertical-align:middle;margin-left:6px;"></div>
+  <div class="login-logo">Trainer <span>Reserve</span></div>
   <div class="login-sub">お選びください</div>
   <div class="login-cards">
     <div class="login-card lc-trainer" onclick="goTrainerPw()">
@@ -243,7 +243,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 
 <div class="pw-screen" id="client-login-screen">
   <div class="pw-box">
-    <div class="pw-logo">Trainer <span>Reserve</span><img src="eva01.png" style="height:36px;vertical-align:middle;margin-left:6px;"></div>
+    <div class="pw-logo">Trainer <span>Reserve</span></div>
     <div class="pw-sub">メールアドレスでログイン</div>
     <label class="flbl">メールアドレス</label>
     <input class="pw-input" id="cl-email-inp" type="email" placeholder="yourmail@example.com">
@@ -255,7 +255,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 
 <div class="pw-screen" id="pw-screen">
   <div class="pw-box">
-    <div class="pw-logo">Trainer <span>Reserve</span><img src="eva01.png" style="height:36px;vertical-align:middle;margin-left:6px;"></div>
+    <div class="pw-logo">Trainer <span>Reserve</span></div>
     <div class="pw-sub">トレーナー専用ログイン</div>
     <label class="flbl">パスワード</label>
     <input class="pw-input" id="pw-input" type="password" placeholder="パスワードを入力">
@@ -266,7 +266,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 </div>
 
 <div class="topbar" id="topbar">
-  <div class="logo">Trainer <span>Reserve</span><img src="eva01.png" style="height:36px;vertical-align:middle;margin-left:6px;"></div>
+  <div class="logo">Trainer <span>Reserve</span><img id="eva-img" src="eva01.png" style="height:36px;vertical-align:middle;margin-left:6px;display:none;"></div>
   <div style="display:flex;align-items:center;gap:8px">
     <span class="tbadge" id="topbar-badge"></span>
     <button class="logout-btn" onclick="backToLogin()">ログアウト</button>
@@ -425,6 +425,7 @@ function backToLogin(){
   document.getElementById('topbar').style.display='none';
   document.getElementById('trainer-screen').style.display='none';
   document.getElementById('client-screen').style.display='none';
+  document.getElementById('eva-img').style.display='none';
   document.getElementById('pw-input').value='';
   document.getElementById('pw-err').textContent='';
   wkOff=0;rpOff=0;mode='';localStorage.removeItem('sessionMode');localStorage.removeItem('trainerTab');localStorage.removeItem('clientTab');cancelSel();
@@ -1484,6 +1485,7 @@ window.onload=async function(){
       document.getElementById('topbar-badge').textContent='トレーナー';
       document.getElementById('topbar-badge').className='tbadge tbadge-t';
       document.getElementById('trainer-screen').style.display='block';
+      document.getElementById('eva-img').style.display='inline';
       mode='trainer';L(true);loadData().then(function(){renderT();L(false);});
     } else {
       document.getElementById('pw-err').textContent='パスワードが違います';
@@ -1505,6 +1507,7 @@ window.onload=async function(){
     document.getElementById('topbar-badge').textContent='トレーナー';
     document.getElementById('topbar-badge').className='tbadge tbadge-t';
     document.getElementById('trainer-screen').style.display='block';
+    document.getElementById('eva-img').style.display='inline';
     mode='trainer';L(true);
     try{await loadData();renderT();}finally{L(false);}
     var savedTTab=localStorage.getItem('trainerTab');
