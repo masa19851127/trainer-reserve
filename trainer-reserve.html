@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12l -->
+<!-- deployed: 2026-06-12m -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -439,7 +439,7 @@ async function loadData(force){
     if(mode==='trainer'){
       var dates=wkDates(wkOff);
       var s=localISO(dates[0]),e=localISO(dates[6]);
-      var memoRes=await sb.from('trainer_memos').select('*').gte('date_key',s).lte('date_key',e+'_z');
+      var memoRes=await sb.from('trainer_memos').select('*').order('date_key',{ascending:true});
       trainerMemos={};
       (memoRes.data||[]).forEach(function(row){trainerMemos[row.date_key]={id:row.id,memo_text:row.memo_text};});
     }
@@ -470,7 +470,7 @@ async function loadData(force){
   var r3=await sb.from('day_offs').select('*').gte('date_iso',s).lte('date_iso',e);
   dayOffs={};(r3.data||[]).forEach(function(r){dayOffs[r.date_iso]=true;});
   if(mode==='trainer'){
-    var memoRes=await sb.from('trainer_memos').select('*').gte('date_key',s).lte('date_key',e+'_z');
+    var memoRes=await sb.from('trainer_memos').select('*').order('date_key',{ascending:true});
     trainerMemos={};
     (memoRes.data||[]).forEach(function(row){trainerMemos[row.date_key]={id:row.id,memo_text:row.memo_text};});
   }
