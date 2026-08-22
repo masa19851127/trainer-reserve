@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12m -->
+<!-- deployed: 2026-06-12n -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -96,6 +96,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .cdh.day-off .cdd{color:#f43f5e;}
 .dob{display:none;position:absolute;bottom:1px;left:3px;right:3px;height:2px;background:#f43f5e;border-radius:1px;}
 .cdh.day-off .dob{display:block;}
+.zero-day-line{display:block;height:2px;background:#dc143c;border-radius:1px;margin:2px auto 0;width:70%;cursor:pointer;}
 .cal-body{display:grid;border-top:1px solid #e8e8e8;border-left:1px solid #e8e8e8;}
 .tlbl{font-size:9px;color:#bbb;text-align:right;padding:3px 3px 0 0;display:flex;align-items:flex-start;justify-content:flex-end;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;height:64px;background:#fafafa;min-width:0;overflow:hidden;}
 .cdd.sat{color:#1e40af;}
@@ -331,6 +332,10 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
       <div id="rp-bars" class="rp-bars"></div>
       <div class="rp-section-ttl">お客様別セッション数（今月）</div>
       <div id="rp-ranking"></div>
+      <div style="margin-top:20px;">
+        <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px">場所代・交通費コスト</div>
+        <div id="rp-cost"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -380,6 +385,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 <script>
 const TR_PW='masa1127';
 const TR_EMAIL='masa.nu.pe.27@gmail.com';
+var LOCATION_COST={'meguro':2500,'ebisu':2500,'yokohama':1800};
 
 var mode='',wkOff=0,rpOff=0;
 var slotSets={},offSlots={},dayOffs={},bookings={},blockedSlots={};
@@ -639,8 +645,11 @@ function renderT(){
     if(past)_styleParts.push('opacity:.35');
     if(_canSel)_styleParts.push('cursor:pointer');
     var _styleAttr=_styleParts.length?' style="'+_styleParts.join(';')+'"':'';
+    var _hasSlot=Object.keys(slotSets).some(function(sk){return sk.startsWith(iso+'_');});
+    var _hasBk=Object.keys(bookings).some(function(bk){return bk.startsWith(iso+'_');});
+    var _isZeroDay=!selMode&&!past&&!doff&&_hasSlot&&!_hasBk;
     return '<div class="cdh'+(doff?' day-off':'')+_selClass+'" id="hdr-'+iso+'" data-iso="'+iso+'"'+_onclickAttr+_styleAttr+'>'
-      +'<div class="cdn'+effCls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+effCls+'">'+d.getDate()+(holidays.has(iso)?'<span style="font-size:7px;vertical-align:top;margin-left:1px">祝</span>':'')+(doff?'✕':'')+'</div><div class="dob"></div></div>';
+      +'<div class="cdn'+effCls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+effCls+'">'+d.getDate()+(holidays.has(iso)?'<span style="font-size:7px;vertical-align:top;margin-left:1px">祝</span>':'')+(doff?'✕':'')+'</div>'+(_isZeroDay?'<span class="zero-day-line" onclick="openZeroDayDialog(\''+iso+'\',event)"></span>':'')+'<div class="dob"></div></div>';
   }).join('');
   var body=document.getElementById('cal-body-t');
   body.style.gridTemplateColumns=COL;body.innerHTML='';
@@ -1293,6 +1302,28 @@ function renderReport(){
     rankHtml+='<div class="rp-rank-row"><div class="'+numCls+'">'+(i+1)+'</div><div class="rp-rank-name">'+name+'</div><div class="rp-rank-cnt">'+cnt+'回</div>'+remainHtml+'</div>';
   });
   document.getElementById('rp-ranking').innerHTML=rankHtml;
+  var totalCost=0;
+  var costRows='';
+  var locKeys=['meguro','ebisu','yokohama'];
+  var locLabels={'meguro':'目黒','ebisu':'恵比寿','yokohama':'横浜'};
+  locKeys.forEach(function(loc){
+    var cnt=bks.filter(function(b){return b.loc===loc;}).length;
+    if(cnt===0)return;
+    var cost=cnt*(LOCATION_COST[loc]||0);
+    totalCost+=cost;
+    costRows+='<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:12px;">'
+      +'<span style="color:#666">'+locLabels[loc]+'（'+cnt+'件）</span>'
+      +'<span style="font-weight:500;color:#1a1a1a">¥'+cost.toLocaleString()+'</span>'
+      +'</div>';
+  });
+  if(costRows){
+    costRows+='<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;font-weight:700;">'
+      +'<span>合計コスト</span>'
+      +'<span style="color:#dc143c">¥'+totalCost.toLocaleString()+'</span>'
+      +'</div>';
+  }
+  var costEl=document.getElementById('rp-cost');
+  if(costEl)costEl.innerHTML=costRows||'<div style="color:#999;font-size:13px;text-align:center;padding:12px">データなし</div>';
 }
 
 
@@ -1475,6 +1506,31 @@ async function deleteMemo(k,id){
   L(false);
   if(r.error){showToast('⚠ 削除に失敗しました');return;}
   invalidateWeekCache();await loadData();renderT();showToast('🗑 メモを削除しました');
+}
+
+function openZeroDayDialog(iso,e){
+  if(e)e.stopPropagation();
+  if(selMode)return;
+  var date=new Date(iso+'T00:00:00');
+  var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
+  var slotCount=Object.keys(slotSets).filter(function(k){return k.startsWith(iso+'_');}).length;
+  openActionDialog(
+    'この日をクローズ',
+    ds+'\n予約0件 / 空き枠'+slotCount+'枠をすべて削除します。よろしいですか？',
+    'クローズする',
+    function(){ closeZeroDay(iso); }
+  );
+}
+
+async function closeZeroDay(iso){
+  L(true);
+  var r=await sb.from('slots').delete().gte('date_key',iso+'_').lte('date_key',iso+'_z');
+  if(r.error){L(false);showToast('⚠ 削除に失敗しました');return;}
+  Object.keys(slotSets).forEach(function(k){if(k.startsWith(iso+'_'))delete slotSets[k];});
+  invalidateWeekCache();
+  L(false);
+  renderT();
+  showToast('✅ '+iso.slice(5).replace('-','/')+'をクローズしました');
 }
 
 window.onload=async function(){
