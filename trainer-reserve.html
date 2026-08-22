@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12t -->
+<!-- deployed: 2026-06-12u -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -760,13 +760,14 @@ function renderT(){
           };
         })(k,sl);
       }
-      if(!selMode&&mode==='trainer'&&!past&&!doff){
+      if(!selMode&&mode==='trainer'&&!doff){
         var _memo=trainerMemos[k];
-        if(_memo){
+        if(_memo&&!(past&&bk)){
           sl.className='slot t-memo';
           sl.innerHTML='<span class="memo-icon">📝</span><span class="memo-txt">'+escHtml(_memo.memo_text)+'</span>';
-          (function(_k,_m){sl.onclick=function(e){e.stopPropagation();openMemoDeleteDialog(_k,_m);};})(k,_memo);
-        } else if(!bk){
+          if(past){sl.style.opacity='.45';sl.style.pointerEvents='none';}
+          else{(function(_k,_m){sl.onclick=function(e){e.stopPropagation();openMemoDeleteDialog(_k,_m);};})(k,_memo);}
+        } else if(!past&&!bk){
           (function(_k,_date,_t,_oo){
             sl.addEventListener('click',function(){
               if(selMode||_oo)return;
