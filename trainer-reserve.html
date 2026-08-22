@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12r -->
+<!-- deployed: 2026-06-12s -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -194,8 +194,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .rp-section-ttl{font-size:12px;font-weight:700;color:#666;margin-bottom:10px;}
 .rp-cost-box{border:1px solid #eee;border-radius:10px;background:#fafafa;padding:12px 14px;margin-bottom:18px;}
 .rp-cost-ttl{font-size:12px;font-weight:700;color:#666;margin-bottom:8px;}
-.rp-cost-main{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:15px;font-weight:700;color:#1a1a1a;}
-.rp-cost-total{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding:9px 0 2px;border-top:2px solid #e8e8e8;font-size:16px;font-weight:700;}
+.rp-cost-total{display:flex;justify-content:space-between;align-items:center;padding:2px 0 4px;font-size:17px;font-weight:700;}
 .rp-cost-sub{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;color:#999;}
 .rp-cost-sub-ttl{font-size:11px;font-weight:700;color:#999;margin-top:10px;padding-top:8px;border-top:1px solid #eee;}
 .rp-cost-note{font-size:10px;color:#bbb;margin-top:6px;}
@@ -1316,8 +1315,11 @@ function renderReport(){
   var locKeys=['meguro','ebisu','yokohama'];
   var locLabels={'meguro':'目黒','ebisu':'恵比寿','yokohama':'横浜'};
   var sdSet={};(rpData.sameday||[]).forEach(function(k){sdSet[k]=true;});
+  var rpRng=rpRange(rpOff),todayIso=localISO(new Date());
+  var cutToday=(todayIso>=rpRng.start&&todayIso<=rpRng.end)?todayIso:'';
   var costBks=rpData.bookings.filter(function(b){
     if(!registeredEmails.has(b.email))return false;
+    if(b.date_key.slice(0,10)>todayIso)return false;
     if(b.status==='confirmed')return true;
     return b.status==='cancelled'&&sdSet[b.date_key]===true;
   });
@@ -1336,17 +1338,17 @@ function renderReport(){
   var sdCnt=costBks.filter(function(b){return b.status==='cancelled';}).length;
   var costHtml='';
   if(costBks.length){
-    costHtml='<div class="rp-cost-main"><span>🏢 施設利用料</span><span>¥'+facTotal.toLocaleString()+'</span></div>'
-      +'<div class="rp-cost-main"><span>🚃 交通費</span><span>¥'+trTotal.toLocaleString()+'</span></div>'
-      +'<div class="rp-cost-total"><span>合計コスト</span>'
+    costHtml='<div class="rp-cost-total"><span>合計コスト</span>'
       +'<span style="color:#dc143c">¥'+(facTotal+trTotal).toLocaleString()+'</span></div>'
       +'<div class="rp-cost-sub-ttl">内訳</div>'+subRows
       +'<div class="rp-cost-sub"><span>🚃 交通費（'+dayCnt+'日）</span><span>¥'+trTotal.toLocaleString()+'</span></div>'
       +'<div class="rp-cost-note">※施設利用料は1セッションごと・交通費は1日あたり¥'+TRANSIT_COST.toLocaleString()+'（往復）で1日1回まで'
+      +(cutToday?'<br>※'+(cutToday.slice(5).replace('-','/'))+'までの実績（先の予約は含まない）':'')
       +(sdCnt?'<br>※当日キャンセル'+sdCnt+'件を含む':'')+'</div>';
   }
   var costEl=document.getElementById('rp-cost');
-  if(costEl)costEl.innerHTML=costHtml||'<div style="color:#999;font-size:13px;text-align:center;padding:12px">データなし</div>';
+  var costNone=rpRng.start>todayIso?'まだ実績なし（先の予約は集計しません）':'データなし';
+  if(costEl)costEl.innerHTML=costHtml||'<div style="color:#999;font-size:13px;text-align:center;padding:12px">'+costNone+'</div>';
 }
 
 
