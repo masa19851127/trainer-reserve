@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12s -->
+<!-- deployed: 2026-06-12t -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -193,8 +193,8 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .rp-card-lbl{font-size:11px;color:#666;}
 .rp-section-ttl{font-size:12px;font-weight:700;color:#666;margin-bottom:10px;}
 .rp-cost-box{border:1px solid #eee;border-radius:10px;background:#fafafa;padding:12px 14px;margin-bottom:18px;}
-.rp-cost-ttl{font-size:12px;font-weight:700;color:#666;margin-bottom:8px;}
-.rp-cost-total{display:flex;justify-content:space-between;align-items:center;padding:2px 0 4px;font-size:17px;font-weight:700;}
+.rp-cost-main{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:15px;font-weight:700;color:#1a1a1a;}
+.rp-cost-total{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding:9px 0 2px;border-top:2px solid #e8e8e8;font-size:16px;font-weight:700;}
 .rp-cost-sub{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;color:#999;}
 .rp-cost-sub-ttl{font-size:11px;font-weight:700;color:#999;margin-top:10px;padding-top:8px;border-top:1px solid #eee;}
 .rp-cost-note{font-size:10px;color:#bbb;margin-top:6px;}
@@ -335,7 +335,6 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
         <div class="rp-card"><div class="rp-card-num" id="rp-clients">—</div><div class="rp-card-lbl">お客様数</div></div>
       </div>
       <div class="rp-cost-box">
-        <div class="rp-cost-ttl">🏢 施設利用料・🚃 交通費</div>
         <div id="rp-cost"></div>
       </div>
       <div class="rp-section-ttl">場所・メニュー別セッション数</div>
@@ -1338,7 +1337,9 @@ function renderReport(){
   var sdCnt=costBks.filter(function(b){return b.status==='cancelled';}).length;
   var costHtml='';
   if(costBks.length){
-    costHtml='<div class="rp-cost-total"><span>合計コスト</span>'
+    costHtml='<div class="rp-cost-main"><span>🏢 施設利用料</span><span>¥'+facTotal.toLocaleString()+'</span></div>'
+      +'<div class="rp-cost-main"><span>🚃 交通費</span><span>¥'+trTotal.toLocaleString()+'</span></div>'
+      +'<div class="rp-cost-total"><span>合計コスト</span>'
       +'<span style="color:#dc143c">¥'+(facTotal+trTotal).toLocaleString()+'</span></div>'
       +'<div class="rp-cost-sub-ttl">内訳</div>'+subRows
       +'<div class="rp-cost-sub"><span>🚃 交通費（'+dayCnt+'日）</span><span>¥'+trTotal.toLocaleString()+'</span></div>'
