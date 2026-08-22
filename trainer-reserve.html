@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12n -->
+<!-- deployed: 2026-06-12o -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -192,6 +192,12 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .rp-card-num{font-size:28px;font-weight:700;line-height:1;margin-bottom:4px;color:#1a1a1a;}
 .rp-card-lbl{font-size:11px;color:#666;}
 .rp-section-ttl{font-size:12px;font-weight:700;color:#666;margin-bottom:10px;}
+.rp-cost-box{border:1px solid #eee;border-radius:10px;background:#fafafa;padding:12px 14px;margin-bottom:18px;}
+.rp-cost-ttl{font-size:12px;font-weight:700;color:#666;margin-bottom:8px;}
+.rp-cost-main{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:15px;font-weight:700;color:#1a1a1a;}
+.rp-cost-main .rp-cost-none{font-size:12px;font-weight:500;color:#bbb;}
+.rp-cost-total{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding:9px 0 2px;border-top:2px solid #e8e8e8;font-size:16px;font-weight:700;}
+.rp-cost-sub{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;color:#999;}
 .rp-bars{margin-bottom:18px;}
 .rp-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .rp-bar-lbl{font-size:11px;font-weight:600;width:68px;flex-shrink:0;color:#444;}
@@ -212,7 +218,7 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .ad-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
 .ad-box{background:#fff;border-radius:14px;padding:22px 20px;width:100%;max-width:330px;box-shadow:0 10px 40px rgba(0,0,0,0.3);}
 .ad-title{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px;}
-.ad-body{font-size:13px;color:#4b5563;line-height:1.6;margin-bottom:18px;}
+.ad-body{font-size:13px;color:#4b5563;line-height:1.6;margin-bottom:18px;white-space:pre-line;}
 .ad-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .ad-btn{padding:10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;}
 .ad-cancel{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
@@ -328,14 +334,14 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
         <div class="rp-card"><div class="rp-card-num" id="rp-total">—</div><div class="rp-card-lbl">総セッション数</div></div>
         <div class="rp-card"><div class="rp-card-num" id="rp-clients">—</div><div class="rp-card-lbl">お客様数</div></div>
       </div>
+      <div class="rp-cost-box">
+        <div class="rp-cost-ttl">🏢 施設利用料・🚃 交通費</div>
+        <div id="rp-cost"></div>
+      </div>
       <div class="rp-section-ttl">場所・メニュー別セッション数</div>
       <div id="rp-bars" class="rp-bars"></div>
       <div class="rp-section-ttl">お客様別セッション数（今月）</div>
       <div id="rp-ranking"></div>
-      <div style="margin-top:20px;">
-        <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px">場所代・交通費コスト</div>
-        <div id="rp-cost"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -385,7 +391,11 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 <script>
 const TR_PW='masa1127';
 const TR_EMAIL='masa.nu.pe.27@gmail.com';
-var LOCATION_COST={'meguro':2500,'ebisu':2500,'yokohama':1800};
+var LOCATION_COST={
+  'meguro':{facility:2500,transit:0},
+  'ebisu':{facility:2500,transit:0},
+  'yokohama':{facility:1800,transit:0}
+};
 
 var mode='',wkOff=0,rpOff=0;
 var slotSets={},offSlots={},dayOffs={},bookings={},blockedSlots={};
@@ -1302,28 +1312,31 @@ function renderReport(){
     rankHtml+='<div class="rp-rank-row"><div class="'+numCls+'">'+(i+1)+'</div><div class="rp-rank-name">'+name+'</div><div class="rp-rank-cnt">'+cnt+'回</div>'+remainHtml+'</div>';
   });
   document.getElementById('rp-ranking').innerHTML=rankHtml;
-  var totalCost=0;
-  var costRows='';
   var locKeys=['meguro','ebisu','yokohama'];
   var locLabels={'meguro':'目黒','ebisu':'恵比寿','yokohama':'横浜'};
+  var facTotal=0,trTotal=0,subRows='',anyCnt=false;
   locKeys.forEach(function(loc){
     var cnt=bks.filter(function(b){return b.loc===loc;}).length;
     if(cnt===0)return;
-    var cost=cnt*(LOCATION_COST[loc]||0);
-    totalCost+=cost;
-    costRows+='<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:12px;">'
-      +'<span style="color:#666">'+locLabels[loc]+'（'+cnt+'件）</span>'
-      +'<span style="font-weight:500;color:#1a1a1a">¥'+cost.toLocaleString()+'</span>'
-      +'</div>';
+    anyCnt=true;
+    var lc=LOCATION_COST[loc]||{};
+    var fac=cnt*(lc.facility||0),tr=cnt*(lc.transit||0);
+    facTotal+=fac;trTotal+=tr;
+    subRows+='<div class="rp-cost-sub"><span>'+locLabels[loc]+'（'+cnt+'件）</span>'
+      +'<span>¥'+(fac+tr).toLocaleString()+'</span></div>';
   });
-  if(costRows){
-    costRows+='<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;font-weight:700;">'
-      +'<span>合計コスト</span>'
-      +'<span style="color:#dc143c">¥'+totalCost.toLocaleString()+'</span>'
-      +'</div>';
+  var costHtml='';
+  if(anyCnt){
+    var hasTr=locKeys.some(function(loc){return (LOCATION_COST[loc]||{}).transit>0;});
+    costHtml='<div class="rp-cost-main"><span>🏢 施設利用料</span><span>¥'+facTotal.toLocaleString()+'</span></div>'
+      +'<div class="rp-cost-main"><span>🚃 交通費</span>'
+      +(hasTr?'<span>¥'+trTotal.toLocaleString()+'</span>':'<span class="rp-cost-none">未設定</span>')+'</div>'
+      +'<div class="rp-cost-total"><span>合計コスト</span>'
+      +'<span style="color:#dc143c">¥'+(facTotal+trTotal).toLocaleString()+'</span></div>'
+      +subRows;
   }
   var costEl=document.getElementById('rp-cost');
-  if(costEl)costEl.innerHTML=costRows||'<div style="color:#999;font-size:13px;text-align:center;padding:12px">データなし</div>';
+  if(costEl)costEl.innerHTML=costHtml||'<div style="color:#999;font-size:13px;text-align:center;padding:12px">データなし</div>';
 }
 
 
