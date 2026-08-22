@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12p -->
+<!-- deployed: 2026-06-12q -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -197,7 +197,11 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .rp-cost-main{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:15px;font-weight:700;color:#1a1a1a;}
 .rp-cost-main .rp-cost-none{font-size:12px;font-weight:500;color:#bbb;}
 .rp-cost-total{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding:9px 0 2px;border-top:2px solid #e8e8e8;font-size:16px;font-weight:700;}
-.rp-cost-sub{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;color:#999;}
+.rp-cost-sub{display:grid;grid-template-columns:1fr auto auto auto;gap:6px;padding:4px 0;font-size:11px;color:#999;}
+.rp-cost-sub span+span{text-align:right;white-space:nowrap;}
+.rp-cost-sub .rp-cost-rowtot{color:#666;font-weight:700;}
+.rp-cost-sub-ttl{font-size:11px;font-weight:700;color:#999;margin-top:10px;padding-top:8px;border-top:1px solid #eee;}
+.rp-cost-note{font-size:10px;color:#bbb;margin-top:6px;}
 .rp-bars{margin-bottom:18px;}
 .rp-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .rp-bar-lbl{font-size:11px;font-weight:600;width:68px;flex-shrink:0;color:#444;}
@@ -1323,7 +1327,9 @@ function renderReport(){
     var fac=cnt*(lc.facility||0),tr=cnt*(lc.transit||0);
     facTotal+=fac;trTotal+=tr;
     subRows+='<div class="rp-cost-sub"><span>'+locLabels[loc]+'（'+cnt+'件）</span>'
-      +'<span>¥'+(fac+tr).toLocaleString()+'</span></div>';
+      +'<span>🏢¥'+fac.toLocaleString()+'</span>'
+      +'<span>🚃¥'+tr.toLocaleString()+'</span>'
+      +'<span class="rp-cost-rowtot">¥'+(fac+tr).toLocaleString()+'</span></div>';
   });
   var costHtml='';
   if(anyCnt){
@@ -1333,7 +1339,9 @@ function renderReport(){
       +(hasTr?'<span>¥'+trTotal.toLocaleString()+'</span>':'<span class="rp-cost-none">未設定</span>')+'</div>'
       +'<div class="rp-cost-total"><span>合計コスト</span>'
       +'<span style="color:#dc143c">¥'+(facTotal+trTotal).toLocaleString()+'</span></div>'
-      +subRows;
+      +'<div class="rp-cost-sub-ttl">内訳</div>'+subRows;
+    var trVals=locKeys.map(function(loc){return (LOCATION_COST[loc]||{}).transit||0;}).filter(function(v,i,a){return a.indexOf(v)===i;});
+    if(hasTr&&trVals.length===1)costHtml+='<div class="rp-cost-note">※交通費は1件あたり¥'+trVals[0].toLocaleString()+'（往復）</div>';
   }
   var costEl=document.getElementById('rp-cost');
   if(costEl)costEl.innerHTML=costHtml||'<div style="color:#999;font-size:13px;text-align:center;padding:12px">データなし</div>';
