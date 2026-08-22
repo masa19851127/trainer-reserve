@@ -1,4 +1,4 @@
-<!-- deployed: 2026-06-12q -->
+<!-- deployed: 2026-06-12r -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -195,11 +195,8 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 .rp-cost-box{border:1px solid #eee;border-radius:10px;background:#fafafa;padding:12px 14px;margin-bottom:18px;}
 .rp-cost-ttl{font-size:12px;font-weight:700;color:#666;margin-bottom:8px;}
 .rp-cost-main{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:15px;font-weight:700;color:#1a1a1a;}
-.rp-cost-main .rp-cost-none{font-size:12px;font-weight:500;color:#bbb;}
 .rp-cost-total{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding:9px 0 2px;border-top:2px solid #e8e8e8;font-size:16px;font-weight:700;}
-.rp-cost-sub{display:grid;grid-template-columns:1fr auto auto auto;gap:6px;padding:4px 0;font-size:11px;color:#999;}
-.rp-cost-sub span+span{text-align:right;white-space:nowrap;}
-.rp-cost-sub .rp-cost-rowtot{color:#666;font-weight:700;}
+.rp-cost-sub{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;color:#999;}
 .rp-cost-sub-ttl{font-size:11px;font-weight:700;color:#999;margin-top:10px;padding-top:8px;border-top:1px solid #eee;}
 .rp-cost-note{font-size:10px;color:#bbb;margin-top:6px;}
 .rp-bars{margin-bottom:18px;}
@@ -395,11 +392,8 @@ body{font-family:'Noto Sans JP',sans-serif;user-select:none;-webkit-tap-highligh
 <script>
 const TR_PW='masa1127';
 const TR_EMAIL='masa.nu.pe.27@gmail.com';
-var LOCATION_COST={
-  'meguro':{facility:2500,transit:2068},
-  'ebisu':{facility:2500,transit:2068},
-  'yokohama':{facility:1800,transit:2068}
-};
+var LOCATION_COST={'meguro':2500,'ebisu':2500,'yokohama':1800};
+var TRANSIT_COST=2068;
 
 var mode='',wkOff=0,rpOff=0;
 var slotSets={},offSlots={},dayOffs={},bookings={},blockedSlots={};
@@ -1275,15 +1269,18 @@ async function loadReport(){
   L(true);
   var r1=await sb.from('bookings').select('*').gte('date_key',rng.start).lte('date_key',rng.end+'_z');
   var r2=await sb.from('clients').select('*');
+  var r3=await sb.from('ticket_logs').select('note').eq('type','cancel_sameday');
   L(false);
-  rpData={bookings:r1.data||[],clients:r2.data||[]};
+  var sdKeys=[];
+  (r3.data||[]).forEach(function(row){var p=(row.note||'').split('|');if(p.length>1&&p[1])sdKeys.push(p[1]);});
+  rpData={bookings:r1.data||[],clients:r2.data||[],sameday:sdKeys};
   renderReport();
 }
 async function changeRpMonth(d){rpOff+=d;await loadReport();}
 function renderReport(){
   var cls=rpData.clients;
   var registeredEmails=new Set(cls.map(function(c){return c.email;}));
-  var bks=rpData.bookings.filter(function(b){return registeredEmails.has(b.email);});
+  var bks=rpData.bookings.filter(function(b){return b.status==='confirmed'&&registeredEmails.has(b.email);});
   var totalSessions=bks.length;
   var uniqueClients=new Set(bks.map(function(b){return b.email;})).size;
   document.getElementById('rp-total').textContent=totalSessions;
@@ -1318,30 +1315,35 @@ function renderReport(){
   document.getElementById('rp-ranking').innerHTML=rankHtml;
   var locKeys=['meguro','ebisu','yokohama'];
   var locLabels={'meguro':'目黒','ebisu':'恵比寿','yokohama':'横浜'};
-  var facTotal=0,trTotal=0,subRows='',anyCnt=false;
-  locKeys.forEach(function(loc){
-    var cnt=bks.filter(function(b){return b.loc===loc;}).length;
-    if(cnt===0)return;
-    anyCnt=true;
-    var lc=LOCATION_COST[loc]||{};
-    var fac=cnt*(lc.facility||0),tr=cnt*(lc.transit||0);
-    facTotal+=fac;trTotal+=tr;
-    subRows+='<div class="rp-cost-sub"><span>'+locLabels[loc]+'（'+cnt+'件）</span>'
-      +'<span>🏢¥'+fac.toLocaleString()+'</span>'
-      +'<span>🚃¥'+tr.toLocaleString()+'</span>'
-      +'<span class="rp-cost-rowtot">¥'+(fac+tr).toLocaleString()+'</span></div>';
+  var sdSet={};(rpData.sameday||[]).forEach(function(k){sdSet[k]=true;});
+  var costBks=rpData.bookings.filter(function(b){
+    if(!registeredEmails.has(b.email))return false;
+    if(b.status==='confirmed')return true;
+    return b.status==='cancelled'&&sdSet[b.date_key]===true;
   });
+  var facTotal=0,subRows='';
+  locKeys.forEach(function(loc){
+    var cnt=costBks.filter(function(b){return b.loc===loc;}).length;
+    if(cnt===0)return;
+    var fac=cnt*(LOCATION_COST[loc]||0);
+    facTotal+=fac;
+    subRows+='<div class="rp-cost-sub"><span>'+locLabels[loc]+'（'+cnt+'件）</span>'
+      +'<span>¥'+fac.toLocaleString()+'</span></div>';
+  });
+  var costDays={};costBks.forEach(function(b){costDays[b.date_key.split('_')[0]]=true;});
+  var dayCnt=Object.keys(costDays).length;
+  var trTotal=dayCnt*TRANSIT_COST;
+  var sdCnt=costBks.filter(function(b){return b.status==='cancelled';}).length;
   var costHtml='';
-  if(anyCnt){
-    var hasTr=locKeys.some(function(loc){return (LOCATION_COST[loc]||{}).transit>0;});
+  if(costBks.length){
     costHtml='<div class="rp-cost-main"><span>🏢 施設利用料</span><span>¥'+facTotal.toLocaleString()+'</span></div>'
-      +'<div class="rp-cost-main"><span>🚃 交通費</span>'
-      +(hasTr?'<span>¥'+trTotal.toLocaleString()+'</span>':'<span class="rp-cost-none">未設定</span>')+'</div>'
+      +'<div class="rp-cost-main"><span>🚃 交通費</span><span>¥'+trTotal.toLocaleString()+'</span></div>'
       +'<div class="rp-cost-total"><span>合計コスト</span>'
       +'<span style="color:#dc143c">¥'+(facTotal+trTotal).toLocaleString()+'</span></div>'
-      +'<div class="rp-cost-sub-ttl">内訳</div>'+subRows;
-    var trVals=locKeys.map(function(loc){return (LOCATION_COST[loc]||{}).transit||0;}).filter(function(v,i,a){return a.indexOf(v)===i;});
-    if(hasTr&&trVals.length===1)costHtml+='<div class="rp-cost-note">※交通費は1件あたり¥'+trVals[0].toLocaleString()+'（往復）</div>';
+      +'<div class="rp-cost-sub-ttl">内訳</div>'+subRows
+      +'<div class="rp-cost-sub"><span>🚃 交通費（'+dayCnt+'日）</span><span>¥'+trTotal.toLocaleString()+'</span></div>'
+      +'<div class="rp-cost-note">※施設利用料は1セッションごと・交通費は1日あたり¥'+TRANSIT_COST.toLocaleString()+'（往復）で1日1回まで'
+      +(sdCnt?'<br>※当日キャンセル'+sdCnt+'件を含む':'')+'</div>';
   }
   var costEl=document.getElementById('rp-cost');
   if(costEl)costEl.innerHTML=costHtml||'<div style="color:#999;font-size:13px;text-align:center;padding:12px">データなし</div>';
