@@ -1427,7 +1427,7 @@ async function consumeTix(email){
 function updStats(){
   var ds=wkDates(wkOff).map(function(d){return localISO(d);});
   var a=0,b=0;
-  Object.keys(slotSets).forEach(function(k){if(ds.some(function(d){return k.startsWith(d);})&&!bookings[k])a+=slotSets[k].size;});
+  Object.keys(slotSets).forEach(function(k){if(ds.some(function(d){return k.startsWith(d);})&&!bookings[k]&&slotSets[k].size>0)a+=1;});
   Object.keys(bookings).forEach(function(k){if(ds.some(function(d){return k.startsWith(d);}))b++;});
   document.getElementById('sta').textContent=a;document.getElementById('stb').textContent=b;
 }
