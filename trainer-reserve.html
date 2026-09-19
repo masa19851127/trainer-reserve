@@ -653,7 +653,7 @@ function renderT(){
     var _styleAttr=_styleParts.length?' style="'+_styleParts.join(';')+'"':'';
     var _hasSlot=Object.keys(slotSets).some(function(sk){return sk.startsWith(iso+'_');});
     var _hasBk=Object.keys(bookings).some(function(bk){return bk.startsWith(iso+'_');});
-    var _isZeroDay=!selMode&&!past&&!doff&&_hasSlot&&!_hasBk;
+    var _isZeroDay=!selMode&&!past&&!doff&&_hasSlot&&!_hasBk&&_daysAhead(d)<=ZERO_DAY_MARK_DAYS;
     return '<div class="cdh'+(doff?' day-off':'')+_selClass+'" id="hdr-'+iso+'" data-iso="'+iso+'"'+_onclickAttr+_styleAttr+'>'
       +'<div class="cdn'+effCls+'">'+DJ[d.getDay()]+'</div><div class="cdd'+(isToday(d)?' today':'')+effCls+'">'+d.getDate()+(holidays.has(iso)?'<span style="font-size:7px;vertical-align:top;margin-left:1px">祝</span>':'')+(doff?'✕':'')+'</div>'+(_isZeroDay?'<span class="zero-day-line" onclick="openZeroDayDialog(\''+iso+'\',event)"></span>':'')+'<div class="dob"></div></div>';
   }).join('');
@@ -1535,6 +1535,9 @@ async function deleteMemo(k,id){
   invalidateWeekCache();await loadData();renderT();showToast('🗑 メモを削除しました');
 }
 
+// 予約0件マーカー（赤線）：その日の3日前から表示する
+var ZERO_DAY_MARK_DAYS=3;
+function _daysAhead(d){var a=new Date(d);a.setHours(0,0,0,0);var b=new Date();b.setHours(0,0,0,0);return Math.round((a-b)/86400000);}
 function openZeroDayDialog(iso,e){
   if(e)e.stopPropagation();
   if(selMode)return;
@@ -1551,6 +1554,10 @@ function openZeroDayDialog(iso,e){
 
 async function closeZeroDay(iso){
   L(true);
+  // 赤線が出てから押すまでの間に予約が入ってたら、クローズしない
+  var bchk=await sb.from('bookings').select('date_key').eq('status','confirmed').gte('date_key',iso+'_').lte('date_key',iso+'_z').limit(1);
+  if(bchk.error){L(false);showToast('⚠ 予約の確認に失敗しました。もう一度お試しください');return;}
+  if((bchk.data||[]).length>0){L(false);showToast('⚠ この日に予約が入ったため、クローズしませんでした');await loadData(true);renderT();return;}
   var r=await sb.from('slots').delete().gte('date_key',iso+'_').lte('date_key',iso+'_z');
   if(r.error){L(false);showToast('⚠ 削除に失敗しました');return;}
   Object.keys(slotSets).forEach(function(k){if(k.startsWith(iso+'_'))delete slotSets[k];});
