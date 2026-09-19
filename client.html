@@ -395,11 +395,11 @@ async function loadData(force){
   slotSets={};offSlots={};
   (r1.data||[]).forEach(function(row){
     if(row.is_off){offSlots[row.date_key]=true;}
-    else{if(!slotSets[row.date_key])slotSets[row.date_key]=new Set();slotSets[row.date_key].add(row.menu+'-'+row.loc);slotCreated[row.date_key+'|'+row.menu+'-'+row.loc]=row.created_at;}
+    else{if(!slotSets[row.date_key])slotSets[row.date_key]=new Set();slotSets[row.date_key].add(row.menu+'-'+row.loc);}
   });
   if(mode==='client'){
-    var r2a=await sb.from('bookings').select('date_key,loc,menu,created_at').eq('status','confirmed').gte('date_key',s).lte('date_key',e+'_z');
-    bookings={};(r2a.data||[]).forEach(function(r){bookings[r.date_key]={date_key:r.date_key,loc:r.loc,menu:r.menu,created_at:r.created_at,_booked:true};});
+    var r2a=await sb.from('bookings').select('date_key,loc,menu').eq('status','confirmed').gte('date_key',s).lte('date_key',e+'_z');
+    bookings={};(r2a.data||[]).forEach(function(r){bookings[r.date_key]={date_key:r.date_key,loc:r.loc,menu:r.menu,_booked:true};});
     myBookings=new Set();
     if(myEmail){
       var r2b=await sb.from('bookings').select('*').eq('email',myEmail).eq('status','confirmed').gte('date_key',s).lte('date_key',e+'_z');
@@ -532,28 +532,16 @@ document.addEventListener('touchmove',function(e){
   if(selMode&&!selCells.has(kk)){selCells.add(kk);updSC();el.className='slot t-sel-add';}
 },{passive:false});
 
-// 自動クローズ：対象日の3日前23:59（＝締切。2日前の0:00）の時点で、
-// その日に確定予約が1件も無ければ、その日は完全クローズ（お客様画面で空き枠を出さない）。
-// ・判定は「締切の時点で予約があったか」。締切後に入った予約では復活しない
-// ・締切後にトレーナーが追加した枠だけは表示する
+// 自動クローズ：対象日の3日前23:59を過ぎたら（＝2日前の0:00以降）、
+// その日に確定予約が1件も無ければ、お客様画面ではその日の空き枠を出さない。
 // 表示だけの処理。DB・既存予約・回数券・移動ブロックには一切触らない。
 var AUTO_CLOSE_DAYS=2;
-var slotCreated={};
-function _autoCloseCutoff(date){var c=new Date(date);c.setHours(0,0,0,0);c.setDate(c.getDate()-AUTO_CLOSE_DAYS);return c;}
+function _daysUntil(date){var a=new Date(date);a.setHours(0,0,0,0);var b=new Date();b.setHours(0,0,0,0);return Math.round((a-b)/86400000);}
 function isAutoClosedDay(date){
-  var cut=_autoCloseCutoff(date);
-  if(new Date()<cut)return false;
+  if(_daysUntil(date)>AUTO_CLOSE_DAYS)return false;
   var pre=localISO(date)+'_';
-  for(var k in bookings){
-    if(k.indexOf(pre)!==0)continue;
-    var ca=bookings[k].created_at;
-    if(!ca||new Date(ca)<cut)return false;
-  }
+  for(var k in bookings){if(k.indexOf(pre)===0)return false;}
   return true;
-}
-function isSlotAddedAfterCutoff(k,ml,date){
-  var ca=slotCreated[k+'|'+ml];
-  return !!ca&&new Date(ca)>=_autoCloseCutoff(date);
 }
 function renderC(){
   var dates=clientWkDates(wkOff);
@@ -588,7 +576,7 @@ function renderC(){
       var past=isPast(date);
       var availMls=[];
       var autoClosed=isAutoClosedDay(date);
-      if(sets&&!bk&&!past&&!doff&&!isOff)sets.forEach(function(ml){if(!autoClosed||isSlotAddedAfterCutoff(k,ml,date))availMls.push(ml);});
+      if(sets&&!bk&&!past&&!doff&&!isOff&&!autoClosed)sets.forEach(function(ml){availMls.push(ml);});
       var sc=document.createElement('div');
       sc.className='slot-cell';
       var sl=document.createElement('div');
@@ -894,7 +882,7 @@ async function cancelOffSingle(k){L(true);await sb.from('slots').delete().match(
 
 function openCPanel(date,t,ml,k){
   if(isToday(date)){showToast('⚠ 当日予約はできません');return;}
-  if(isAutoClosedDay(date)&&!isSlotAddedAfterCutoff(k,ml,date)){showToast('⚠ この日の予約受付は終了しました');renderC();return;}
+  if(isAutoClosedDay(date)){showToast('⚠ この日の予約受付は終了しました');renderC();return;}
   var p=ml.split('-'),menu=p[0],loc=p[1];
   var ds=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var iso=localISO(date);
@@ -914,16 +902,10 @@ async function confirmBk(iso,t,ml,k){
   var phone=document.getElementById('fp').value,msg=document.getElementById('fm').value;
   if(blockedSlots[k]&&blockedSlots[k].has(menu+'-'+loc)){showToast('⚠ 移動時間のため予約できません');return;}
   L(true);
-  var _d0=new Date(iso+'T00:00:00'),_cut=_autoCloseCutoff(_d0);
-  if(new Date()>=_cut){
-    var dchk=await sb.from('bookings').select('date_key').eq('status','confirmed').gte('date_key',iso).lte('date_key',iso+'_z').lt('created_at',_cut.toISOString()).limit(1);
-    var dayClosed=dchk.error?isAutoClosedDay(_d0):(dchk.data||[]).length===0;
-    if(dayClosed){
-      var schk=await sb.from('slots').select('created_at').eq('date_key',k).eq('menu',menu).eq('loc',loc).eq('is_off',false).limit(1);
-      var sRow=(schk.data||[])[0];
-      var slotNew=schk.error?isSlotAddedAfterCutoff(k,ml,_d0):(!!sRow&&new Date(sRow.created_at)>=_cut);
-      if(!slotNew){L(false);closePanel();showToast('⚠ この日の予約受付は終了しました');await loadData(true);renderC();return;}
-    }
+  if(_daysUntil(new Date(iso+'T00:00:00'))<=AUTO_CLOSE_DAYS){
+    var dchk=await sb.from('bookings').select('date_key').eq('status','confirmed').gte('date_key',iso).lte('date_key',iso+'_z').limit(1);
+    var dayEmpty=dchk.error?isAutoClosedDay(new Date(iso+'T00:00:00')):(dchk.data||[]).length===0;
+    if(dayEmpty){L(false);closePanel();showToast('⚠ この日の予約受付は終了しました');await loadData(true);renderC();return;}
   }
   var chk=await sb.from('bookings').select('date_key').eq('date_key',k).eq('status','confirmed').maybeSingle();
   if(chk.data){L(false);showToast('⚠ この枠はすでに予約済みです');await loadData();renderC();return;}
